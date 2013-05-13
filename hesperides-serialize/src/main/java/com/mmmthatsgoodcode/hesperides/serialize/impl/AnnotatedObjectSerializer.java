@@ -19,12 +19,12 @@ import com.mmmthatsgoodcode.hesperides.serialize.SerializerRegistry;
  *
  * @param <T>
  */
-public class AnnotatedObjectSerializer implements Serializer<Object> {
+public class AnnotatedObjectSerializer<T> implements Serializer<T> {
 
-	public Node serialize(Class type, Object object) {
+	public Node serialize(Class type, T object) {
 						
-		Node node = new NodeImpl();
-
+		Node node = new NodeImpl<String, T>();
+		node.setType(type);
 		
 		for (Field field:object.getClass().getFields()) {
 			try {
@@ -35,7 +35,7 @@ public class AnnotatedObjectSerializer implements Serializer<Object> {
 				// see if this is an @Id field
 				
 				// this is something we'll have to work with
-				Node childNode = new NodeImpl();
+				Node childNode = new NodeImpl<String, T>();
 
 				
 				childNode = SerializerRegistry.getInstance().get(field.getType()).serialize(field.getType(), field.get(object));				
@@ -52,9 +52,17 @@ public class AnnotatedObjectSerializer implements Serializer<Object> {
 	}
 
 	
-	public Object deserialize(Node graph) {
-		// TODO Auto-generated method stub
-		return null;
+	public T deserialize(Node node) {
+		
+		T instance = null;
+		try {
+			instance = (T) node.getType().newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+		}
+		
+		return instance;
+		
 	}
 
 }

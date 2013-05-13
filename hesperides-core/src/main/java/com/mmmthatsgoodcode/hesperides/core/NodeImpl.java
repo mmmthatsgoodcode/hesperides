@@ -13,7 +13,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	private int hint = Hesperides.Types.OBJECT;
 	private int nameHint = Hesperides.Types.STRING;
 
-	private Class type = Object.class;
+	private Class<T> type = null;
 
 	private T value = null;
 	private N name = null;

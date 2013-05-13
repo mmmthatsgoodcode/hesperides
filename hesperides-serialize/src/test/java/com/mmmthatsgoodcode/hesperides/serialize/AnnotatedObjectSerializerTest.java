@@ -17,10 +17,12 @@ import org.junit.Test;
 
 import com.google.common.io.Files;
 import com.mmmthatsgoodcode.hesperides.core.Node;
+import com.mmmthatsgoodcode.hesperides.serialize.impl.AnnotatedObjectSerializer;
 
 public class AnnotatedObjectSerializerTest {
 
 	private ComplexObject co;
+	private AnnotatedObjectSerializer<ComplexObject> serializer = new AnnotatedObjectSerializer<ComplexObject>();
 	
 	public final static class ComplexObject {
 
@@ -91,8 +93,13 @@ public class AnnotatedObjectSerializerTest {
 	@Test
 	public void testSerializeComplexObject() {
 		
+		
 	
-		Node serializedCo = SerializerRegistry.getInstance().get(ComplexObject.class).serialize(ComplexObject.class, co);
-		System.out.println(serializedCo);
+		Node serializedCo = serializer.serialize(ComplexObject.class, co);
+
+		ComplexObject deserializedCo = serializer.deserialize(serializedCo);
+	
+		System.out.println(deserializedCo);
+		
 	}
 }

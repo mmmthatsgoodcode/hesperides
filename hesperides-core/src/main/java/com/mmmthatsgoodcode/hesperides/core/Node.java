@@ -22,7 +22,7 @@ public interface Node<N, T> extends Iterable<Node> {
 
 	
 	public void setType(Class type);
-	public Class getType();
+	public Class<T> getType();
 	
 	
 	public Node getRoot();
