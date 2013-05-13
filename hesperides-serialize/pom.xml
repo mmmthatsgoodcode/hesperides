@@ -8,9 +8,9 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.mmmthatsgoodcode</groupId>
-  <artifactId>hersperides-serializer</artifactId>
+  <artifactId>hersperides-serialize</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>hersperides-serializer</name>
+  <name>hersperides-serialize</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
