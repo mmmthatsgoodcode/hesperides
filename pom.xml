@@ -5,7 +5,7 @@
 	<groupId>com.mmmthatsgoodcode</groupId>
 	<artifactId>hesperides</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
 	<name>hesperides</name>
 	<url>http://maven.apache.org</url>
@@ -50,4 +50,8 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<modules>
+		<module>hersperides-serializer</module>
+		<module>hesperides-cassify</module>
+	</modules>
 </project>
