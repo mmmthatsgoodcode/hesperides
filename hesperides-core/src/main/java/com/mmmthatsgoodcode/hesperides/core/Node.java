@@ -1,13 +1,29 @@
 package com.mmmthatsgoodcode.hesperides.core;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
-public interface Node<T> extends Iterable<Node> {
+public interface Node<N, T> extends Iterable<Node> {
 
-	public T getValue();
-	public void setValue(T value);
+	public Object getValue();
+	public void setValue(String value);
+	public void setValue(Integer value);
+	public void setValue(Long value);
+	public void setValue(Float value);
+	public void setValue(Boolean value);
+	public void setValue(ByteBuffer value);
+
+	public void setName(int hint, N name);
+	public N getName();
 	
-	public int getType();
+	public int getHint();
+	
+	public int getNameHint();
+
+	
+	public void setType(Class type);
+	public Class getType();
+	
 	
 	public Node getRoot();
 	public void setRoot(Node root);
