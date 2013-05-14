@@ -33,16 +33,16 @@ public class MapTransformer<T extends Map> implements Transformer<T> {
 		return this.valueType;
 	}	
 	
-	public Node serialize(Class type, T map) throws TransformationException {
+	public Node serialize(T map) throws TransformationException {
 		
 		Node mapNode = new NodeImpl();
-		mapNode.setType(type);
+		mapNode.setType(map.getClass());
 
 		Iterator iterator = map.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry entry = (Map.Entry) iterator.next();
 			
-			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).serialize(entry.getValue().getClass(), entry.getValue()) ;
+			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).serialize(entry.getValue()) ;
 
 			childNode.setName( Hesperides.Hints.typeToHint(getKeyGenericType()), entry.getKey() );
 			childNode.setType(getValueGenericType());

@@ -12,12 +12,12 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 public class ListTransformer<T extends List> implements Transformer<T> {
 
 	@Override
-	public Node serialize(Class type, T object) throws TransformationException {
+	public Node serialize(T object) throws TransformationException {
 		Node listNode = new NodeImpl();
-		listNode.setType(type);
+		listNode.setType(object.getClass());
 		
 		for(Object child:((T) object)) {
-			Node childNode = TransformerRegistry.getInstance().get(child.getClass()).serialize(child.getClass(), child);
+			Node childNode = TransformerRegistry.getInstance().get(child.getClass()).serialize(child);
 			listNode.addChild(childNode);
 		}
 		

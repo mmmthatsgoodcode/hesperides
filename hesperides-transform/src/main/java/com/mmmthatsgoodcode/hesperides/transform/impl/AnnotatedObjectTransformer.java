@@ -31,10 +31,10 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
  */
 public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 
-	public Node serialize(Class type, T object) throws TransformationException {
+	public Node serialize(T object) throws TransformationException {
 						
 		Node node = new NodeImpl<String, T>();
-		node.setType(type);
+		node.setType(object.getClass());
 
 		for (Field field:object.getClass().getDeclaredFields()) {
 			try {
@@ -54,7 +54,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 					}
 
-					childNode = TransformerRegistry.getInstance().get(field).serialize(field.getType(), field.get(object));				
+					childNode = TransformerRegistry.getInstance().get(field).serialize(field.get(object));				
 					childNode.setName(Hesperides.Hints.STRING, field.getName());
 					node.addChild(childNode);
 				

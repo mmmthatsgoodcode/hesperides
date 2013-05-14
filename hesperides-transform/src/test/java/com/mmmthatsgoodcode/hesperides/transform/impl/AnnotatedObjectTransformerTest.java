@@ -126,7 +126,7 @@ public class AnnotatedObjectTransformerTest {
 		
 		TransformerRegistry.getInstance().register(scoresSerializer, ComplexObject.class.getField("someScores"));
 		
-		Node serializedCo = serializer.serialize(ComplexObject.class, co);
+		Node serializedCo = serializer.serialize(co);
 
 		ComplexObject deserializedCo = serializer.deserialize(serializedCo);
 			

@@ -11,10 +11,10 @@ import com.mmmthatsgoodcode.hesperides.transform.Transformer;
 public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
 
 	@Override
-	public Node serialize(Class type, T object) {
+	public Node serialize(T object) {
 		
 		Node node = new NodeImpl();
-		node.setType(type);
+		node.setType(object.getClass());
 		
 		if (object instanceof Integer) {
 			node.setValue((Integer) object);

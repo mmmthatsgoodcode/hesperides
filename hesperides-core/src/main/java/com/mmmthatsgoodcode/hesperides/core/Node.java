@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface Node<N, T extends Object> extends Iterable<Node> {
 
-	public Object getValue();
+	public T getValue();
 	public void setValue(String value);
 	public void setValue(Integer value);
 	public void setValue(Long value);
@@ -20,8 +20,7 @@ public interface Node<N, T extends Object> extends Iterable<Node> {
 	
 	public int getNameHint();
 
-	
-	public void setType(Class type);
+	public void setType(Class<T> type);
 	public Class<T> getType();
 	
 	public Node addChild(Node child);
