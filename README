@@ -1,3 +1,7 @@
-Trees in Cassandra. Really.
+Cultivate a Garden in Cassandra. Anything from a couple bushes to a forest.
 
-See the Wiki and Unit tests for examples.
+hesperides-transform - Transform any Java Object in to a simple Graph representation : Node
+hesperides-cassify - Take a Node and turn it in to a set of ( Cassandra ) Columns
+hesperides-core - common code
+
+See the <a href="https://github.com/pgn84/hesperides/wiki">wiki</a> and unit tests for details
