@@ -11,7 +11,7 @@ import com.mmmthatsgoodcode.hesperides.transform.Transformer;
 public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
 
 	@Override
-	public Node serialize(T object) {
+	public Node transform(T object) {
 		
 		Node node = new NodeImpl();
 		node.setType(object.getClass());
@@ -46,7 +46,7 @@ public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
 	}
 
 	@Override
-	public T deserialize(Node<? extends Object, T> node) throws TransformationException {
+	public T transform(Node<? extends Object, T> node) throws TransformationException {
 		
 		return (T) node.getValue();
 

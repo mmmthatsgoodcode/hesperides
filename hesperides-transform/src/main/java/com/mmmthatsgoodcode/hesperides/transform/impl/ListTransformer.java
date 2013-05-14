@@ -12,12 +12,12 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 public class ListTransformer<T extends List> implements Transformer<T> {
 
 	@Override
-	public Node serialize(T object) throws TransformationException {
+	public Node transform(T object) throws TransformationException {
 		Node listNode = new NodeImpl();
 		listNode.setType(object.getClass());
 		
 		for(Object child:((T) object)) {
-			Node childNode = TransformerRegistry.getInstance().get(child.getClass()).serialize(child);
+			Node childNode = TransformerRegistry.getInstance().get(child.getClass()).transform(child);
 			listNode.addChild(childNode);
 		}
 		
@@ -26,14 +26,14 @@ public class ListTransformer<T extends List> implements Transformer<T> {
 	}
 
 	@Override
-	public T deserialize(Node<? extends Object, T> node) throws TransformationException {
+	public T transform(Node<? extends Object, T> node) throws TransformationException {
 		
 		T instance = null;
 		try {
 			instance = node.getType().newInstance();
 			
 			for (Node child:node) {
-				instance.add( TransformerRegistry.getInstance().get(child.getClass()).deserialize(child) );
+				instance.add( TransformerRegistry.getInstance().get(child.getClass()).transform(child) );
 			}
 			
 		} catch (InstantiationException | IllegalAccessException e) {

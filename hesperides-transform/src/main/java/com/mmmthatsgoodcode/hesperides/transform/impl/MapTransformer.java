@@ -33,7 +33,7 @@ public class MapTransformer<T extends Map> implements Transformer<T> {
 		return this.valueType;
 	}	
 	
-	public Node serialize(T map) throws TransformationException {
+	public Node transform(T map) throws TransformationException {
 		
 		Node mapNode = new NodeImpl();
 		mapNode.setType(map.getClass());
@@ -42,7 +42,7 @@ public class MapTransformer<T extends Map> implements Transformer<T> {
 		while (iterator.hasNext()) {
 			Map.Entry entry = (Map.Entry) iterator.next();
 			
-			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).serialize(entry.getValue()) ;
+			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).transform(entry.getValue()) ;
 
 			childNode.setName( Hesperides.Hints.typeToHint(getKeyGenericType()), entry.getKey() );
 			childNode.setType(getValueGenericType());
@@ -54,14 +54,14 @@ public class MapTransformer<T extends Map> implements Transformer<T> {
 		
 	}
 	
-	public T deserialize(Node<? extends Object, T> node) throws TransformationException {
+	public T transform(Node<? extends Object, T> node) throws TransformationException {
 		
 		T instance = null;
 		
 		try {
 			instance = node.getType().newInstance();
 			for (Node child:node) {
-				instance.put(child.getName(), TransformerRegistry.getInstance().get(child.getType()).deserialize(child));
+				instance.put(child.getName(), TransformerRegistry.getInstance().get(child.getType()).transform(child));
 			}
 			
 		} catch (InstantiationException | IllegalAccessException e) {

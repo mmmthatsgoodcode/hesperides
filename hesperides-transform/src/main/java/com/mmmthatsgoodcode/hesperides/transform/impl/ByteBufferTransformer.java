@@ -9,7 +9,7 @@ import com.mmmthatsgoodcode.hesperides.transform.Transformer;
 public class ByteBufferTransformer implements Transformer<ByteBuffer> {
 
 	@Override
-	public Node serialize(ByteBuffer object) {
+	public Node transform(ByteBuffer object) {
 		Node byteNode = new NodeImpl();
 		
 		byteNode.setValue((ByteBuffer)object);
@@ -19,7 +19,7 @@ public class ByteBufferTransformer implements Transformer<ByteBuffer> {
 	}
 
 	@Override
-	public ByteBuffer deserialize(Node node) {
+	public ByteBuffer transform(Node node) {
 		return (ByteBuffer) node.getValue();
 	}
 

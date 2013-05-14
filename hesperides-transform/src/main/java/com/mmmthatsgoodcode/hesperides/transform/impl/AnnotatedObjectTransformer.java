@@ -31,7 +31,7 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
  */
 public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 
-	public Node serialize(T object) throws TransformationException {
+	public Node transform(T object) throws TransformationException {
 						
 		Node node = new NodeImpl<String, T>();
 		node.setType(object.getClass());
@@ -54,7 +54,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 					}
 
-					childNode = TransformerRegistry.getInstance().get(field).serialize(field.get(object));				
+					childNode = TransformerRegistry.getInstance().get(field).transform(field.get(object));				
 					childNode.setName(Hesperides.Hints.STRING, field.getName());
 					node.addChild(childNode);
 				
@@ -70,7 +70,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 	}
 
 	
-	public T deserialize(Node<? extends Object, T> node) throws TransformationException {
+	public T transform(Node<? extends Object, T> node) throws TransformationException {
 		
 		T instance = null;
 			try {
@@ -101,7 +101,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 
 						field.setAccessible(true);
 						
-						field.set(instance, TransformerRegistry.getInstance().get(field).deserialize(fieldNode));
+						field.set(instance, TransformerRegistry.getInstance().get(field).transform(fieldNode));
 						
 					} catch (SecurityException e) {
 						throw new TransformationException("SecurityException caught while trying to set field "+fieldNode.getName()+" accessible on "+type.getSimpleName(), e);

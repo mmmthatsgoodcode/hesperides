@@ -126,9 +126,9 @@ public class AnnotatedObjectTransformerTest {
 		
 		TransformerRegistry.getInstance().register(scoresSerializer, ComplexObject.class.getField("someScores"));
 		
-		Node serializedCo = serializer.serialize(co);
+		Node serializedCo = serializer.transform(co);
 
-		ComplexObject deserializedCo = serializer.deserialize(serializedCo);
+		ComplexObject deserializedCo = serializer.transform(serializedCo);
 			
 		assertTrue(deserializedCo.equals(co));
 		
