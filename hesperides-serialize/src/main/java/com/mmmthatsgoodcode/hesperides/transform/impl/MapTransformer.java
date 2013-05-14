@@ -1,4 +1,4 @@
-package com.mmmthatsgoodcode.hesperides.serialize.impl;
+package com.mmmthatsgoodcode.hesperides.transform.impl;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,11 +9,11 @@ import java.util.Set;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.serialize.SerializationException;
-import com.mmmthatsgoodcode.hesperides.serialize.Serializer;
-import com.mmmthatsgoodcode.hesperides.serialize.SerializerRegistry;
+import com.mmmthatsgoodcode.hesperides.transform.TransformationException;
+import com.mmmthatsgoodcode.hesperides.transform.Transformer;
+import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
-public class MapSerializer<T extends Map> implements Serializer<T> {
+public class MapTransformer<T extends Map> implements Transformer<T> {
 
 	private Class<? extends Object> keyType = Object.class, valueType = Object.class;
 	
@@ -33,7 +33,7 @@ public class MapSerializer<T extends Map> implements Serializer<T> {
 		return this.valueType;
 	}	
 	
-	public Node serialize(Class type, T map) throws SerializationException {
+	public Node serialize(Class type, T map) throws TransformationException {
 		
 		Node mapNode = new NodeImpl();
 		mapNode.setType(type);
@@ -42,7 +42,7 @@ public class MapSerializer<T extends Map> implements Serializer<T> {
 		while (iterator.hasNext()) {
 			Map.Entry entry = (Map.Entry) iterator.next();
 			
-			Node childNode = SerializerRegistry.getInstance().get(getValueGenericType()).serialize(entry.getValue().getClass(), entry.getValue()) ;
+			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).serialize(entry.getValue().getClass(), entry.getValue()) ;
 
 			childNode.setName( Hesperides.Hints.typeToHint(getKeyGenericType()), entry.getKey() );
 			childNode.setType(getValueGenericType());
@@ -54,18 +54,18 @@ public class MapSerializer<T extends Map> implements Serializer<T> {
 		
 	}
 	
-	public T deserialize(Node<? extends Object, T> node) throws SerializationException {
+	public T deserialize(Node<? extends Object, T> node) throws TransformationException {
 		
 		T instance = null;
 		
 		try {
 			instance = node.getType().newInstance();
 			for (Node child:node) {
-				instance.put(child.getName(), SerializerRegistry.getInstance().get(child.getType()).deserialize(child));
+				instance.put(child.getName(), TransformerRegistry.getInstance().get(child.getType()).deserialize(child));
 			}
 			
 		} catch (InstantiationException | IllegalAccessException e) {
-			throw new SerializationException(e);
+			throw new TransformationException(e);
 		}
 
 		

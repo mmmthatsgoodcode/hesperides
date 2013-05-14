@@ -1,4 +1,4 @@
-package com.mmmthatsgoodcode.hesperides.serialize.impl;
+package com.mmmthatsgoodcode.hesperides.transform.impl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -17,9 +17,9 @@ import com.mmmthatsgoodcode.hesperides.annotation.Ignore;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.serialize.SerializationException;
-import com.mmmthatsgoodcode.hesperides.serialize.Serializer;
-import com.mmmthatsgoodcode.hesperides.serialize.SerializerRegistry;
+import com.mmmthatsgoodcode.hesperides.transform.TransformationException;
+import com.mmmthatsgoodcode.hesperides.transform.Transformer;
+import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 
 /**
@@ -29,9 +29,9 @@ import com.mmmthatsgoodcode.hesperides.serialize.SerializerRegistry;
  *
  * @param <T>
  */
-public class AnnotatedObjectSerializer<T> implements Serializer<T> {
+public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 
-	public Node serialize(Class type, T object) throws SerializationException {
+	public Node serialize(Class type, T object) throws TransformationException {
 						
 		Node node = new NodeImpl<String, T>();
 		node.setType(type);
@@ -51,10 +51,10 @@ public class AnnotatedObjectSerializer<T> implements Serializer<T> {
 					if (field.getAnnotation(Id.class) != null) {
 						int idFieldTypeHint = Hesperides.Hints.typeToHint(field.getType());
 						if (idFieldTypeHint == Hesperides.Hints.STRING) node.setName(idFieldTypeHint, field.get(object));
-						else throw new SerializationException("Id field can only be String"); // TODO add a constraint to the annotation ?
+						else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 					}
 
-					childNode = SerializerRegistry.getInstance().get(field).serialize(field.getType(), field.get(object));				
+					childNode = TransformerRegistry.getInstance().get(field).serialize(field.getType(), field.get(object));				
 					childNode.setName(Hesperides.Hints.STRING, field.getName());
 					node.addChild(childNode);
 				
@@ -70,7 +70,7 @@ public class AnnotatedObjectSerializer<T> implements Serializer<T> {
 	}
 
 	
-	public T deserialize(Node<? extends Object, T> node) throws SerializationException {
+	public T deserialize(Node<? extends Object, T> node) throws TransformationException {
 		
 		T instance = null;
 			try {
@@ -101,18 +101,18 @@ public class AnnotatedObjectSerializer<T> implements Serializer<T> {
 
 						field.setAccessible(true);
 						
-						field.set(instance, SerializerRegistry.getInstance().get(field).deserialize(fieldNode));
+						field.set(instance, TransformerRegistry.getInstance().get(field).deserialize(fieldNode));
 						
 					} catch (SecurityException e) {
-						throw new SerializationException("SecurityException caught while trying to set field "+fieldNode.getName()+" accessible on "+type.getSimpleName(), e);
+						throw new TransformationException("SecurityException caught while trying to set field "+fieldNode.getName()+" accessible on "+type.getSimpleName(), e);
 					} catch (NoSuchFieldException e) {
-						throw new SerializationException("Field "+fieldNode.getName()+" does not exist on "+type.getSimpleName());
+						throw new TransformationException("Field "+fieldNode.getName()+" does not exist on "+type.getSimpleName());
 					}
 					
 				}
 				
 			} catch ( IllegalAccessException e ) {
-				throw new SerializationException(e);
+				throw new TransformationException(e);
 			}
 		
 		

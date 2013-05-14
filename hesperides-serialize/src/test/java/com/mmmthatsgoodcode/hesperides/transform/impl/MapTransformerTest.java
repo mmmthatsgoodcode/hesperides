@@ -1,8 +1,8 @@
-package com.mmmthatsgoodcode.hesperides.serialize;
+package com.mmmthatsgoodcode.hesperides.transform.impl;
 
 import org.junit.Test;
 
-public class MapSerializerTest {
+public class MapTransformerTest {
 
 	@Test
 	public void testGenericMapSerialize() {

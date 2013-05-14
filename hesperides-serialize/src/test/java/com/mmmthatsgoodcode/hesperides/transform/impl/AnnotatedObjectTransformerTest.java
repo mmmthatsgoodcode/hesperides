@@ -1,4 +1,4 @@
-package com.mmmthatsgoodcode.hesperides.serialize;
+package com.mmmthatsgoodcode.hesperides.transform.impl;
 
 import static org.junit.Assert.*;
 
@@ -19,13 +19,15 @@ import org.junit.Test;
 import com.google.common.io.Files;
 import com.mmmthatsgoodcode.hesperides.annotation.Id;
 import com.mmmthatsgoodcode.hesperides.core.Node;
-import com.mmmthatsgoodcode.hesperides.serialize.impl.AnnotatedObjectSerializer;
-import com.mmmthatsgoodcode.hesperides.serialize.impl.MapSerializer;
+import com.mmmthatsgoodcode.hesperides.transform.TransformationException;
+import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
+import com.mmmthatsgoodcode.hesperides.transform.impl.AnnotatedObjectTransformer;
+import com.mmmthatsgoodcode.hesperides.transform.impl.MapTransformer;
 
-public class AnnotatedObjectSerializerTest {
+public class AnnotatedObjectTransformerTest {
 
 	private ComplexObject co;
-	private AnnotatedObjectSerializer<ComplexObject> serializer = new AnnotatedObjectSerializer<ComplexObject>();
+	private AnnotatedObjectTransformer<ComplexObject> serializer = new AnnotatedObjectTransformer<ComplexObject>();
 	
 	public final static class ComplexObject {
 
@@ -116,13 +118,13 @@ public class AnnotatedObjectSerializerTest {
 	}
 	
 	@Test
-	public void testSerializeComplexObject() throws SerializationException, NoSuchFieldException, SecurityException {
+	public void testSerializeComplexObject() throws TransformationException, NoSuchFieldException, SecurityException {
 	
-		MapSerializer<HashMap> scoresSerializer = new MapSerializer<HashMap>();
+		MapTransformer<HashMap> scoresSerializer = new MapTransformer<HashMap>();
 		scoresSerializer.setKeyGenericType(String.class);
 		scoresSerializer.setValueGenericType(Integer.class);
 		
-		SerializerRegistry.getInstance().register(scoresSerializer, ComplexObject.class.getField("someScores"));
+		TransformerRegistry.getInstance().register(scoresSerializer, ComplexObject.class.getField("someScores"));
 		
 		Node serializedCo = serializer.serialize(ComplexObject.class, co);
 

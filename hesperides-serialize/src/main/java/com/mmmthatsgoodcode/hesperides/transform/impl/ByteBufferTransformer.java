@@ -1,12 +1,12 @@
-package com.mmmthatsgoodcode.hesperides.serialize.impl;
+package com.mmmthatsgoodcode.hesperides.transform.impl;
 
 import java.nio.ByteBuffer;
 
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.serialize.Serializer;
+import com.mmmthatsgoodcode.hesperides.transform.Transformer;
 
-public class ByteBufferSerializer implements Serializer<ByteBuffer> {
+public class ByteBufferTransformer implements Transformer<ByteBuffer> {
 
 	@Override
 	public Node serialize(Class type, ByteBuffer object) {
