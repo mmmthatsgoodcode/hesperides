@@ -4,4 +4,4 @@ hesperides-transform - Transform any Java Object in to a simple Graph representa
 hesperides-cassify - Take a Node and turn it in to a set of ( Cassandra ) Columns
 hesperides-core - common code
 
-See the <a href="https://github.com/pgn84/hesperides/wiki">wiki</a> and unit tests for details
+See the wiki at https://github.com/pgn84/hesperides/wiki and unit tests for details
