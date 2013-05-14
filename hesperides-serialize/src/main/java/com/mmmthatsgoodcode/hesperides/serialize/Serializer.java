@@ -4,6 +4,6 @@ import com.mmmthatsgoodcode.hesperides.core.Node;
 
 public interface Serializer<T extends Object> {
 
-	public Node serialize(Class type, T object);
-	public T deserialize(Node node);
+	public Node serialize(Class type, T object) throws SerializationException;
+	public T deserialize(Node<? extends Object, T> node) throws SerializationException;
 }

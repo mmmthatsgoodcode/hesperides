@@ -8,17 +8,24 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 
-public class NodeImpl<N, T> implements Node<N, T> {
+public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
-	private int hint = Hesperides.Types.OBJECT;
-	private int nameHint = Hesperides.Types.STRING;
+	private int hint = Hesperides.Hints.OBJECT;
+	private int nameHint = Hesperides.Hints.STRING;
 
-	private Class<T> type = null;
+	private Class<? extends Object> type = NodeImpl.class;
 
 	private T value = null;
 	private N name = null;
-	private Node root = null;
 	private ArrayList<Node> children = new ArrayList<Node>();
+	
+	public NodeImpl() {
+		
+	}
+	
+	public NodeImpl(N name) {
+		setName(name);
+	}
 	
 	@Override
 	public T getValue() {
@@ -29,16 +36,6 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	@Override
 	public int getHint() {
 		return this.hint;
-	}
-
-	@Override
-	public Node getRoot() {
-		return this.root;
-	}
-
-	@Override
-	public void setRoot(Node root) {
-		this.root = root;
 	}
 
 	@Override
@@ -69,7 +66,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	public void setValue(String value) {
 		this.name = name;
 		this.value = (T) value;
-		this.hint = Hesperides.Types.STRING;
+		this.hint = Hesperides.Hints.STRING;
 	}
 
 
@@ -77,7 +74,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	public void setValue(Integer value) {
 		this.name = name;
 		this.value = (T) value;
-		this.hint = Hesperides.Types.INT;		
+		this.hint = Hesperides.Hints.INT;		
 	}
 
 
@@ -85,7 +82,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	public void setValue(Long value) {
 		this.name = name;
 		this.value = (T) value;
-		this.hint = Hesperides.Types.LONG;		
+		this.hint = Hesperides.Hints.LONG;		
 	}
 
 
@@ -93,7 +90,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	public void setValue(Float value) {
 		this.name = name;
 		this.value = (T) value;
-		this.hint = Hesperides.Types.FLOAT;		
+		this.hint = Hesperides.Hints.FLOAT;		
 	}
 
 
@@ -101,7 +98,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	public void setValue(Boolean value) {
 		this.name = name;
 		this.value = (T) value;
-		this.hint = Hesperides.Types.BOOLEAN;
+		this.hint = Hesperides.Hints.BOOLEAN;
 	}
 
 
@@ -109,7 +106,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	public void setValue(ByteBuffer value) {
 		this.name = name;
 		this.value = (T) value;
-		this.hint = Hesperides.Types.BYTES;		
+		this.hint = Hesperides.Hints.BYTES;		
 	}
 
 
@@ -118,6 +115,9 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		return this.name;
 	}
 
+	public void setName(N name) {
+		setName(Hesperides.Hints.typeToHint(name.getClass()), name);
+	}
 
 	@Override
 	public void setName(int hint, N name) {
@@ -148,6 +148,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		
 		ArrayList<String> out = new ArrayList<String>();
 		
+		out.add("Type: "+this.type.getSimpleName());
 		out.add("Name: "+this.name);
 		out.add("Value: "+this.value);
 		out.add("Children: ");

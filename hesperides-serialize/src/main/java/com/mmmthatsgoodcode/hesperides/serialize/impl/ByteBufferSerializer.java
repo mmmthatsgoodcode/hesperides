@@ -20,8 +20,7 @@ public class ByteBufferSerializer implements Serializer<ByteBuffer> {
 
 	@Override
 	public ByteBuffer deserialize(Node node) {
-		// TODO Auto-generated method stub
-		return null;
+		return (ByteBuffer) node.getValue();
 	}
 
 }

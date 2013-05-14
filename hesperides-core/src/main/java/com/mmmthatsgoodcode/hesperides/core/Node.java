@@ -3,7 +3,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
-public interface Node<N, T> extends Iterable<Node> {
+public interface Node<N, T extends Object> extends Iterable<Node> {
 
 	public Object getValue();
 	public void setValue(String value);
@@ -23,10 +23,6 @@ public interface Node<N, T> extends Iterable<Node> {
 	
 	public void setType(Class type);
 	public Class<T> getType();
-	
-	
-	public Node getRoot();
-	public void setRoot(Node root);
 	
 	public Node addChild(Node child);
 	public void addChildren(Iterable<Node> children);

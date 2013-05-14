@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Before;
@@ -16,8 +17,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.io.Files;
+import com.mmmthatsgoodcode.hesperides.annotation.Id;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.serialize.impl.AnnotatedObjectSerializer;
+import com.mmmthatsgoodcode.hesperides.serialize.impl.MapSerializer;
 
 public class AnnotatedObjectSerializerTest {
 
@@ -26,13 +29,17 @@ public class AnnotatedObjectSerializerTest {
 	
 	public final static class ComplexObject {
 
-		public String name;
+		@Id public String name;
 		public int redBalloons, blueBalls;
 		public boolean goodDayToDieHard;
 		public ByteBuffer lolcat;
 		public ArrayList<ComplexObject> someMoreComplexObject = new ArrayList<ComplexObject>();
+		public HashMap<String, Integer> someScores = new HashMap<String, Integer>();
+		public ComplexObject() {
+			
+		}
 		
-		public ComplexObject(String name, int redBalloons, int blueBalls, boolean goodDayToDieHard, byte[] lolcat, ArrayList<ComplexObject> someMoreComplexObjects) {
+		public ComplexObject(String name, int redBalloons, int blueBalls, boolean goodDayToDieHard, byte[] lolcat, ArrayList<ComplexObject> someMoreComplexObjects, HashMap<String, Integer> someScores) {
 			this.name = name;
 			this.redBalloons = redBalloons;
 			this.blueBalls = blueBalls;
@@ -41,6 +48,7 @@ public class AnnotatedObjectSerializerTest {
 				this.lolcat = ByteBuffer.allocate(lolcat.length); this.lolcat.put(lolcat);
 			}
 			
+			if (someScores != null) this.someScores = someScores;
 			if (someMoreComplexObjects != null) this.someMoreComplexObject = someMoreComplexObjects;
 		}
 		
@@ -52,11 +60,17 @@ public class AnnotatedObjectSerializerTest {
 					&& co.blueBalls == this.blueBalls
 					&& co.goodDayToDieHard == this.goodDayToDieHard
 					&& ((co.lolcat == null && this.lolcat == null) || (co.lolcat != null?co.lolcat.equals(this.lolcat):false))
+					&& co.someScores.equals(this.someScores)
 					&& co.someMoreComplexObject.equals(this.someMoreComplexObject);
 		}
 		
 		public String toString() {
-			return name + "/ " + redBalloons + "/ " + blueBalls + "/ " + (goodDayToDieHard==true?"it's a good day to die hard":"it's not a good day to die hard");
+			String out = name + "/ " + redBalloons + "/ " + blueBalls + "/ " + lolcat + "/" + (goodDayToDieHard==true?"it's a good day to die hard":"it's not a good day to die hard") + "/" + someScores;
+			if (someMoreComplexObject.size() > 0) out += "\nChildren: ";
+			for (ComplexObject co:someMoreComplexObject) {
+				out += co.toString()+", ";
+			}
+			return out;
 		}
 		
 	}
@@ -64,42 +78,57 @@ public class AnnotatedObjectSerializerTest {
 	@Before
 	public void setUp() throws IOException {
 		
-		
 		ArrayList<ComplexObject> complexObjectsList = new ArrayList<ComplexObject>();
-		complexObjectsList.add(new ComplexObject("absolutely not complex object", 1, 3, false, null, null));
-		complexObjectsList.add(new ComplexObject("slightly complex object", 4, 99, true, Files.toByteArray(new File("src/test/resources/14684_10151122609582396_558775634_n.jpg")), null));
-		
-		co = new ComplexObject("not too complex object", 99, 2, false, Files.toByteArray(new File("src/test/resources/1367665605997.gif")), complexObjectsList);
+		HashMap<String, Integer> scoresOne = new HashMap<String, Integer>();
+		scoresOne.put("foo", 123);
+		scoresOne.put("bar", 6);
 
+		HashMap<String, Integer> scoresTwo = new HashMap<String, Integer>();
+		scoresTwo.put("bzzz", 28394);
+		scoresTwo.put("a", 1);	
+		
+		complexObjectsList.add(new ComplexObject("absolutely not complex object", 1, 3, false, null, null, scoresOne));
+		complexObjectsList.add(new ComplexObject("slightly complex object", 4, 99, true, Files.toByteArray(new File("src/test/resources/14684_10151122609582396_558775634_n.jpg")), null, null));
+		
+		co = new ComplexObject("not too complex object", 99, 2, false, Files.toByteArray(new File("src/test/resources/1367665605997.gif")), complexObjectsList, scoresTwo);
 		
 	}
 	
 	@Test
 	public void testComplexObjectEquityOp() throws IOException {
 
+		HashMap<String, Integer> scoresOne = new HashMap<String, Integer>();
+		scoresOne.put("foo", 123);
+		scoresOne.put("bar", 6);
 		
-
+		HashMap<String, Integer> scoresTwo = new HashMap<String, Integer>();
+		scoresTwo.put("bzzz", 28394);
+		scoresTwo.put("a", 1);
+		
 		ArrayList<ComplexObject> complexObjectsList = new ArrayList<ComplexObject>();
-		complexObjectsList.add(new ComplexObject("absolutely not complex object", 1, 3, false, null, null));
-		complexObjectsList.add(new ComplexObject("slightly complex object", 4, 99, true, Files.toByteArray(new File("src/test/resources/14684_10151122609582396_558775634_n.jpg")), null));
+		complexObjectsList.add(new ComplexObject("absolutely not complex object", 1, 3, false, null, null, scoresOne));
+		complexObjectsList.add(new ComplexObject("slightly complex object", 4, 99, true, Files.toByteArray(new File("src/test/resources/14684_10151122609582396_558775634_n.jpg")), null, null));
 		
-		ComplexObject complexObject = new ComplexObject("not too complex object", 99, 2, false, Files.toByteArray(new File("src/test/resources/1367665605997.gif")), complexObjectsList);
-
-
-		assertTrue(co.equals(complexObject));		
+		ComplexObject complexObject = new ComplexObject("not too complex object", 99, 2, false, Files.toByteArray(new File("src/test/resources/1367665605997.gif")), complexObjectsList, scoresTwo);
+		
+		assertTrue(co.equals(complexObject));
 		
 	}
 	
 	@Test
-	public void testSerializeComplexObject() {
-		
-		
+	public void testSerializeComplexObject() throws SerializationException, NoSuchFieldException, SecurityException {
 	
+		MapSerializer<HashMap> scoresSerializer = new MapSerializer<HashMap>();
+		scoresSerializer.setKeyGenericType(String.class);
+		scoresSerializer.setValueGenericType(Integer.class);
+		
+		SerializerRegistry.getInstance().register(scoresSerializer, ComplexObject.class.getField("someScores"));
+		
 		Node serializedCo = serializer.serialize(ComplexObject.class, co);
 
 		ComplexObject deserializedCo = serializer.deserialize(serializedCo);
-	
-		System.out.println(deserializedCo);
+			
+		assertTrue(deserializedCo.equals(co));
 		
 	}
 }
