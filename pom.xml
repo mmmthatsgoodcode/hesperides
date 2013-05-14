@@ -52,7 +52,7 @@
 		</pluginManagement>
 	</build>
 	<modules>
-		<module>hersperides-serializer</module>
+		<module>hesperides-transform</module>
 		<module>hesperides-cassify</module>
 		<module>hesperides-core</module>
 	</modules>
