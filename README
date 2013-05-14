@@ -1,1 +1,17 @@
 Trees in Cassandra. Really.
+
+1) Transform any Java object to a Tree
+
+```java
+		ComplexObject complexObject = new ComplexObject(); // here's your object
+		AnnotatedObjectSerializer<ComplexObject> serializer = new AnnotatedObjectSerializer<ComplexObject>(); // the serializer for it
+
+		MapSerializer<HashMap> mapWithGenericsSerializer = new MapSerializer<HashMap>(); // this is to serialize generic maps. No custom serializer needed ( but definitely possible ) for ComplexObject
+		mapWithGenericsSerializer.setKeyGenericType(String.class);
+		mapWithGenericsSerializer.setValueGenericType(Integer.class);
+		
+		SerializerRegistry.getInstance().register(mapWithGenericsSerializer, ComplexObject.class.getField("mapWithGenericsTypeField")); // register the above serializer specifically for the generic map field in question
+		
+		Node serializedComplexObject = serializer.serialize(ComplexObject.class, complexObject); // go!
+
+```
