@@ -3,7 +3,7 @@
 Cultivate a Garden in Cassandra. Anything from a couple bushes to a forest.
 
 hesperides-transform - Transform any Java Object in to a simple representation of it's Graph : Nodes
-hesperides-cassify - Take a Node and turn it in to a set of ( Cassandra ) Columns
+hesperides-cassify - Take a Node and turn it in to a wide row, via set of Column Mutations. Uses properties for configuration details such as Keyspace and ColumnFamily names. 
 hesperides-core - common code
 
 See the wiki at https://github.com/pgn84/hesperides/wiki and unit tests for details
