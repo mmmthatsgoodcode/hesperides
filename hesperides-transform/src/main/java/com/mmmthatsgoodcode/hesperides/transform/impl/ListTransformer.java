@@ -11,13 +11,23 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 public class ListTransformer<T extends List> implements Transformer<T> {
 
+	private Class<? extends Object> valueType = Object.class;	
+	
+	public void setValueGenericType(Class valueType) {
+		this.valueType = valueType;
+	}
+	
+	public Class<? extends Object> getValueGenericType() {
+		return this.valueType;
+	}		
+	
 	@Override
 	public Node transform(T object) throws TransformationException {
 		Node listNode = new NodeImpl();
 		listNode.setType(object.getClass());
 		
 		for(Object child:((T) object)) {
-			Node childNode = TransformerRegistry.getInstance().get(child.getClass()).transform(child);
+			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).transform(child);
 			listNode.addChild(childNode);
 		}
 		
@@ -33,7 +43,7 @@ public class ListTransformer<T extends List> implements Transformer<T> {
 			instance = node.getType().newInstance();
 			
 			for (Node child:node) {
-				instance.add( TransformerRegistry.getInstance().get(child.getClass()).transform(child) );
+				instance.add( TransformerRegistry.getInstance().get(getValueGenericType()).transform(child) );
 			}
 			
 		} catch (InstantiationException | IllegalAccessException e) {

@@ -27,7 +27,7 @@ import com.mmmthatsgoodcode.hesperides.transform.impl.MapTransformer;
 public class AnnotatedObjectTransformerTest {
 
 	private ComplexObject co;
-	private AnnotatedObjectTransformer<ComplexObject> serializer = new AnnotatedObjectTransformer<ComplexObject>();
+	private AnnotatedObjectTransformer<ComplexObject> transformer = new AnnotatedObjectTransformer<ComplexObject>();
 	
 	public final static class ComplexObject {
 
@@ -120,15 +120,20 @@ public class AnnotatedObjectTransformerTest {
 	@Test
 	public void testSerializeComplexObject() throws TransformationException, NoSuchFieldException, SecurityException {
 	
-		MapTransformer<HashMap> scoresSerializer = new MapTransformer<HashMap>();
-		scoresSerializer.setKeyGenericType(String.class);
-		scoresSerializer.setValueGenericType(Integer.class);
+		MapTransformer<HashMap> scoresTransformer = new MapTransformer<HashMap>();
+		scoresTransformer.setKeyGenericType(String.class);
+		scoresTransformer.setValueGenericType(Integer.class);
 		
-		TransformerRegistry.getInstance().register(scoresSerializer, ComplexObject.class.getField("someScores"));
+		TransformerRegistry.getInstance().register(scoresTransformer, ComplexObject.class.getField("someScores"));
 		
-		Node serializedCo = serializer.transform(co);
+		ListTransformer<ArrayList> childObjectsListTransformer = new ListTransformer<ArrayList>();
+		childObjectsListTransformer.setValueGenericType(ComplexObject.class);
+	
+		TransformerRegistry.getInstance().register(childObjectsListTransformer, ComplexObject.class.getField("someMoreComplexObject"));
+	
+		Node serializedCo = transformer.transform(co);
 
-		ComplexObject deserializedCo = serializer.transform(serializedCo);
+		ComplexObject deserializedCo = transformer.transform(serializedCo);
 			
 		assertTrue(deserializedCo.equals(co));
 		
