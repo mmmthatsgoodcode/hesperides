@@ -4,8 +4,12 @@ Cultivate a Garden in Cassandra. Anything from a couple bushes to a forest.
 
 hesperides-transform - Transform any Java Object in to a simple representation of it's Graph : Nodes
 hesperides-cassify - Take a Node and turn it in to a wide row, via set of Column Mutations. Uses properties for configuration details such as Keyspace and ColumnFamily names. 
+hesperides-cassify-thrift - Create parameters for batch_mutate. For Thrift purists ( ..why would you do this to yourself? )
+hesperides-cassify-astyanax - Creates an Astyanax representation of the wide row, as Transformed from your Object by hesperides-transform
+hesperides-cassify-astyanax - Creates a Hector representation of the wide row, as Transformed from your Object by hesperides-transform
+
 hesperides-core - common code
 
 See the wiki at https://github.com/pgn84/hesperides/wiki and unit tests for details
 
-Example modules with top Cassandra client libraries are also in the works.
+An Example module with the supported Cassandra client libraries is also in the works.
