@@ -7,17 +7,20 @@
     <artifactId>hesperides</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>hesperides-cassify</artifactId>
-  <name>hesperides-cassify</name>
+  <groupId>com.mmmthatsgoodcode</groupId>
+  <artifactId>hesperides-cassify-astyanax</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>hesperides-cassify-astyanax</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencies>
-    <dependency>
-    	<groupId>org.apache.cassandra</groupId>
-    	<artifactId>cassandra-thrift</artifactId>
-    	<version>1.2.4</version>
-    </dependency>
+
+  <dependency>
+  	<groupId>com.netflix.astyanax</groupId>
+  	<artifactId>astyanax</artifactId>
+  	<version>1.56.37</version>
+  </dependency>
   </dependencies>
 </project>

@@ -7,8 +7,10 @@
     <artifactId>hesperides</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>hesperides-cassify</artifactId>
-  <name>hesperides-cassify</name>
+  <groupId>com.mmmthatsgoodcode</groupId>
+  <artifactId>hesperides-cassify-thrift</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>hesperides-cassify-thrift</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
