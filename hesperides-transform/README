@@ -1,0 +1,3 @@
+Transform any Java Object to a simple representation of its Object Graph : a tree of Node objects.
+
+Note that Java types of your Graph are preserved and a no-arg constructor needs to be present on them in order to avoid odd problems due to Objenesis instantiation magic, when transforming them back from their Node representation.
