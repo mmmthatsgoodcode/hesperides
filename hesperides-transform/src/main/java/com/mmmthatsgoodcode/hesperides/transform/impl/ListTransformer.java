@@ -5,8 +5,8 @@ import java.util.List;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.transform.TransformationException;
-import com.mmmthatsgoodcode.hesperides.transform.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.hesperides.core.Transformer;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 public class ListTransformer<T extends List> implements Transformer<T> {

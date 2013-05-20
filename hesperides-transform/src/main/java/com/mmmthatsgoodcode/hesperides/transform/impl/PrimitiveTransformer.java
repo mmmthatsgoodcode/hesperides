@@ -5,8 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.transform.TransformationException;
-import com.mmmthatsgoodcode.hesperides.transform.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.hesperides.core.Transformer;
 
 public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
 

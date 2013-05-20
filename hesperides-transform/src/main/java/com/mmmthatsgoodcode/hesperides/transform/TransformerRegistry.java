@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.mmmthatsgoodcode.hesperides.core.Transformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.AnnotatedObjectTransformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.ByteBufferTransformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.ListTransformer;

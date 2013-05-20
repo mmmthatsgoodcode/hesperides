@@ -19,7 +19,7 @@ import org.junit.Test;
 import com.google.common.io.Files;
 import com.mmmthatsgoodcode.hesperides.annotation.Id;
 import com.mmmthatsgoodcode.hesperides.core.Node;
-import com.mmmthatsgoodcode.hesperides.transform.TransformationException;
+import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 import com.mmmthatsgoodcode.hesperides.transform.impl.AnnotatedObjectTransformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.MapTransformer;

@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.transform.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.Transformer;
 
 public class ByteBufferTransformer implements Transformer<ByteBuffer> {
 

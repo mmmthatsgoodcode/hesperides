@@ -1,4 +1,4 @@
-package com.mmmthatsgoodcode.hesperides.transform;
+package com.mmmthatsgoodcode.hesperides.core;
 
 public class TransformationException extends Exception {
 

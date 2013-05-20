@@ -17,8 +17,8 @@ import com.mmmthatsgoodcode.hesperides.annotation.Ignore;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.transform.TransformationException;
-import com.mmmthatsgoodcode.hesperides.transform.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.hesperides.core.Transformer;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 

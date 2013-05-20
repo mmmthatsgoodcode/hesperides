@@ -10,10 +10,10 @@ import org.apache.commons.lang.StringUtils;
 
 public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
-	private int hint = Hesperides.Hints.OBJECT;
+	private int hint = Hesperides.Hints.NULL;
 	private int nameHint = Hesperides.Hints.STRING;
 
-	private Class<? extends Object> type = NodeImpl.class;
+	private Class<? extends Object> type = null;
 
 	private T value = null;
 	private N name = null;
