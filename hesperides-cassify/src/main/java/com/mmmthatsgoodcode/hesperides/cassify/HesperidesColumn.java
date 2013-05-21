@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.mmmthatsgoodcode.hesperides.core.Hesperides;
+
 public class HesperidesColumn {
 
 	private String key = "NOKEY";
@@ -27,6 +29,11 @@ public class HesperidesColumn {
 		public String toString() {
 			if (this.value != null) return this.value.toString();
 			return "null";
+		}
+		
+		public boolean equals(Object object) {
+			return (this.getClass().isAssignableFrom(object.getClass()) && this.getValue().equals((T) ((AbstractType) object).getValue()));
+			
 		}
 		
 		
@@ -98,24 +105,56 @@ public class HesperidesColumn {
 		
 	}
 	
+	public static class ClassValue extends AbstractType<Class<? extends Object>> {
+		
+		public ClassValue(Class<? extends Object> value) {
+			setValue(value);
+		}
+		
+	}
+	
+	public HesperidesColumn() {
+		setValueTypeHintComponent(Hesperides.Hints.NULL); // set default value type hint
+	}
+	
+	public void setValueTypeHintComponent(int valueTypeHint) {
+		if (this.components.size() > 1)	this.components.set(this.components.size()-1, new IntegerValue(valueTypeHint));
+		else this.components.add(new IntegerValue(valueTypeHint));
+	}
+	
+	public int getValueTypeHintComponent() {
+		return ((HesperidesColumn.IntegerValue) this.components.get(this.components.size()-1)).getValue();
+	}
+	
 	public void addComponent(String value) {
-		this.components.add(new StringValue(value));
+		this.components.add(this.components.size()-1, new StringValue(value));
 	}
 	
 	public void addComponent(Date value) {
-		this.components.add(new DateValue(value));
+		this.components.add(this.components.size()-1, new DateValue(value));
 	}
 
 	public void addComponent(Integer value) {
-		this.components.add(new IntegerValue(value));
+		this.components.add(this.components.size()-1, new IntegerValue(value));
 	}
 	
 	public void addComponent(Float value) {
-		this.components.add(new FloatValue(value));
+		this.components.add(this.components.size()-1, new FloatValue(value));
 	}
 	
 	public void addComponent(Long value) {
-		this.components.add(new LongValue(value));
+		this.components.add(this.components.size()-1, new LongValue(value));
+	}
+	
+	public void addComponent(Class<? extends Object> value) {
+		this.components.add(this.components.size()-1, new ClassValue(value));
+	}
+	
+	/**
+	 * This is a placeholder component
+	 */
+	public void addNullComponent() {
+		this.components.add(this.components.size()-1, new NullValue());
 	}
 	
 	/**
@@ -124,7 +163,9 @@ public class HesperidesColumn {
 	 * @param components
 	 */
 	public void addComponents(Collection<? extends AbstractType> components) {
-		this.components.addAll(components);
+		for (AbstractType component:components) {
+			this.components.add(this.components.size()-1, component);
+		}
 	}
 	
 	public List<AbstractType> getComponents() {
@@ -162,6 +203,10 @@ public class HesperidesColumn {
 	public void setNullValue() {
 		this.value = new NullValue();
 	}
+	
+	public AbstractType getValue() {
+		return this.value;
+	}
 
 	public String getKey() {
 		return key;
@@ -171,10 +216,14 @@ public class HesperidesColumn {
 		this.key = key;
 	}
 	
+	public List<AbstractType> getInheritableComponents() {
+		return this.components.subList(0, this.components.size()-1);
+	}
+	
 	public String toString() {
-		String out = this.key + " | column: ";
+		String out = this.key + " | ";
 		out += StringUtils.join(components.toArray(), " -> ");
-		out += " value: "+this.value.toString();
+		out += " = "+this.value.toString();
 		
 		return out;
 		

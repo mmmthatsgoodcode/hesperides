@@ -6,16 +6,37 @@ import java.util.List;
 import com.mmmthatsgoodcode.hesperides.cassify.HesperidesColumn.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
+import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.mmmthatsgoodcode.hesperides.core.Transformer;
 
 public class HesperidesColumnTransformer implements Transformer<List<HesperidesColumn>> {
-
+	
 	@Override
-	public Node transform(List<HesperidesColumn> object)
+	public Node transform(List<HesperidesColumn> columns) throws TransformationException {
+		return transform(columns, null, null);
+	}
+	
+	public Node transform(List<HesperidesColumn> columns, HesperidesColumn parentColumn, Node parentNode)
 			throws TransformationException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		if (parentColumn == null) { // if there is no parent column, we'll have to find the root in the list of columns and create a node for it
+			
+			parentColumn = rootColumnIn(columns);
+			parentNode = hesperidesColumnToNode(parentColumn);
+			
+		}
+		
+		// ok, we should have a parent node of some kind now.
+		
+		for (HesperidesColumn descendantColumn:directDescendantsOf(parentColumn, columns)) {
+			// create Node for descendant column and attach it to parent node
+			Node descendantNode = hesperidesColumnToNode(descendantColumn); 
+			parentNode.addChild(descendantNode);
+			transform(columns, descendantColumn, descendantNode);
+		}
+		
+		return parentNode;
 	}
 
 	@Override
@@ -54,8 +75,58 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 		
 		/* Add ancestor components
 		--------------------------- */
-		if (previous != null) hesperidesColumn.addComponents(previous.getComponents());
+		if (previous != null) hesperidesColumn.addComponents(previous.getInheritableComponents());
+		
+//		if (previous != null) {
+		
+
+		
+//		}
+		
+		/* Add The actual type if this node represents a Type 
+		------------------------------------------------------ */
+		if (node.getHint() == Hesperides.Hints.OBJECT) {
+		
+			hesperidesColumn.addComponent(node.getType()); // add type
+		
+		/* Create a Cassandra-compatible serialized byte array from node.value
+		----------------------------------------------------------------------- */
+		} else {
+
+			hesperidesColumn.addNullComponent(); // add placeholder for type
 			
+			switch(node.getHint()) {
+			
+				case Hesperides.Hints.NULL:
+					hesperidesColumn.setNullValue();
+				break;
+				case Hesperides.Hints.STRING:
+					hesperidesColumn.setValue((String) node.getValue());
+				break;
+				case Hesperides.Hints.INT:
+					hesperidesColumn.setValue((Integer) node.getValue());
+				break;
+				case Hesperides.Hints.LONG:
+					hesperidesColumn.setValue((Long) node.getValue());
+				break;
+				case Hesperides.Hints.FLOAT:
+					hesperidesColumn.setValue((Float) node.getValue());
+				break;
+				case Hesperides.Hints.BOOLEAN:
+					hesperidesColumn.setValue((Boolean) node.getValue());
+				break;
+				case Hesperides.Hints.BYTES:
+					hesperidesColumn.setValue((byte[]) node.getValue());
+				break;
+				default:
+					throw new TransformationException("HesperidesColumnTransformer does not do serialization on non-primitive types. "+node.getValue().getClass().getSimpleName()+" is such a type. Pass in a byte array instead.");
+			
+			}
+			
+			hesperidesColumn.setValueTypeHintComponent(node.getHint()); // set value type hint component
+		
+		}
+		
 		/* Add name as component to the Column's component list
 		-------------------------------------------------------- */
 		switch(node.getNameHint()) {
@@ -77,37 +148,84 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 		
 		}
 		
-		/* Create a Cassandra-compatible serialized byte array from node.value
-		----------------------------------------------------------------------- */
-		switch(node.getHint()) {
+		return hesperidesColumn;
 		
-			case Hesperides.Hints.NULL:
-				hesperidesColumn.setNullValue();
-			break;
-			case Hesperides.Hints.STRING:
-				hesperidesColumn.setValue((String) node.getValue());
-			break;
+	}
+	
+	public Node hesperidesColumnToNode(HesperidesColumn column) {
+		
+		Node node = new NodeImpl();
+		
+		HesperidesColumn.ClassValue typeComponent = null;
+		if (column.getComponents().get(column.getComponents().size()-2) instanceof HesperidesColumn.ClassValue) typeComponent = (HesperidesColumn.ClassValue) column.getComponents().get(column.getComponents().size()-2);
+		
+		/* Get type from Column's component list
+		----------------------------------------- */
+		if (typeComponent != null) node.setType(typeComponent.getValue());
+		
+		/* Get name from Column's component list
+		----------------------------------------- */
+		HesperidesColumn.AbstractType nameComponent = column.getInheritableComponents().get(column.getInheritableComponents().size()-1);
+		
+		node.setName(Hesperides.Hints.typeToHint(nameComponent.getValue().getClass()), nameComponent.getValue());
+		
+		/* Get value
+		------------- */
+		
+		switch(column.getValueTypeHintComponent()) {
+		
 			case Hesperides.Hints.INT:
-				hesperidesColumn.setValue((Integer) node.getValue());
+				node.setValue(((HesperidesColumn.IntegerValue) column.getValue()).getValue());
 			break;
 			case Hesperides.Hints.LONG:
-				hesperidesColumn.setValue((Long) node.getValue());
+				node.setValue(((HesperidesColumn.LongValue) column.getValue()).getValue());
 			break;
 			case Hesperides.Hints.FLOAT:
-				hesperidesColumn.setValue((Float) node.getValue());
+				node.setValue(((HesperidesColumn.FloatValue) column.getValue()).getValue());
+			break;
+			case Hesperides.Hints.STRING:
+				node.setValue(((HesperidesColumn.StringValue) column.getValue()).getValue());
 			break;
 			case Hesperides.Hints.BOOLEAN:
-				hesperidesColumn.setValue((Boolean) node.getValue());
+				node.setValue(((HesperidesColumn.BooleanValue) column.getValue()).getValue());
 			break;
-			case Hesperides.Hints.BYTES:
-				hesperidesColumn.setValue((byte[]) node.getValue());
+			case Hesperides.Hints.NULL:
+				node.setNullValue();
 			break;
-			default:
-				throw new TransformationException("HesperidesColumnTransformer does not do serialization on non-primitive types. "+node.getValue().getClass().getSimpleName()+" is such a type. Pass in a byte array instead.");
+			// TODO byte[]
 		
 		}
 		
-		return hesperidesColumn;
+		return node;
+	}
+	
+	public List<HesperidesColumn> directDescendantsOf(HesperidesColumn needle, List<HesperidesColumn> haystack) {
+		
+		List<HesperidesColumn> descendants = new ArrayList<HesperidesColumn>();
+		
+		for (HesperidesColumn hay:haystack) {
+			
+			if (
+					hay.getComponents().size() == needle.getInheritableComponents().size()+3 // any direct descendant will have 3 more components than the parents inheritable component
+					&& hay.getInheritableComponents().subList(0, needle.getInheritableComponents().size()).equals(needle.getInheritableComponents()) // the beginning of the hay's inheritable components must match the parents inheritable components
+					) {
+				descendants.add(hay);
+			}
+			
+		}
+		return descendants;
+		
+	}
+	
+	public HesperidesColumn rootColumnIn(List<HesperidesColumn> haystack) {
+		
+		for (HesperidesColumn hay:haystack) {
+			if (hay.getComponents().size() == 3 && hay.getComponents().get(0) instanceof HesperidesColumn.ClassValue) {
+				return hay;
+			}
+		}
+			
+		return null;
 		
 	}
 
