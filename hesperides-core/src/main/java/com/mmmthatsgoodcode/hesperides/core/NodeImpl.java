@@ -10,10 +10,10 @@ import org.apache.commons.lang.StringUtils;
 
 public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
-	private int hint = Hesperides.Hints.NULL;
+	private int hint = Hesperides.Hints.OBJECT;
 	private int nameHint = Hesperides.Hints.STRING;
 
-	private Class<? extends Object> type = null;
+	private Class<? extends Object> type = NodeImpl.class;
 
 	private T value = null;
 	private N name = null;
@@ -64,7 +64,6 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public void setValue(String value) {
-		this.name = name;
 		this.value = (T) value;
 		this.hint = Hesperides.Hints.STRING;
 	}
@@ -72,7 +71,6 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public void setValue(Integer value) {
-		this.name = name;
 		this.value = (T) value;
 		this.hint = Hesperides.Hints.INT;		
 	}
@@ -80,7 +78,6 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public void setValue(Long value) {
-		this.name = name;
 		this.value = (T) value;
 		this.hint = Hesperides.Hints.LONG;		
 	}
@@ -88,7 +85,6 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public void setValue(Float value) {
-		this.name = name;
 		this.value = (T) value;
 		this.hint = Hesperides.Hints.FLOAT;		
 	}
@@ -96,7 +92,6 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public void setValue(Boolean value) {
-		this.name = name;
 		this.value = (T) value;
 		this.hint = Hesperides.Hints.BOOLEAN;
 	}
@@ -104,9 +99,13 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public void setValue(ByteBuffer value) {
-		this.name = name;
 		this.value = (T) value;
 		this.hint = Hesperides.Hints.BYTES;		
+	}
+	
+	public void setNullValue() {
+		this.value = null;
+		this.hint = Hesperides.Hints.OBJECT;
 	}
 
 
@@ -148,6 +147,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		
 		ArrayList<String> out = new ArrayList<String>();
 		
+		out.add("Hint: "+this.hint);
 		out.add("Type: "+this.type.getSimpleName());
 		out.add("Name: "+this.name);
 		out.add("Value: "+this.value);
@@ -158,6 +158,24 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		
 		return StringUtils.join(out, ", ");
 		
+	}
+	
+	public boolean equals(Object object) {
+		
+		if (!Node.class.isAssignableFrom(object.getClass())) return false;
+		NodeImpl other = (NodeImpl) object;
+		
+//		System.out.println(other.getType().equals(this.getType())?"yes":"no");
+//		System.out.println(other.getHint() == this.getHint()?"yes":"no, "+other.getHint()+" != "+this.getHint());
+//		System.out.println(other.getNameHint() == this.getNameHint()?"yes":"no");
+//		System.out.println(other.getChildren().equals(this.getChildren())?"yes":"no");
+//		System.out.println("---");
+		
+		return other.getType().equals(this.getType())
+				&& other.getHint() == this.getHint()
+				&& other.getNameHint() == this.getNameHint()
+				&& other.getName().equals(this.getName())
+				&& other.getChildren().equals(this.getChildren());
 	}
 
 

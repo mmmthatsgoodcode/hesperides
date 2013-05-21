@@ -7,13 +7,14 @@ public class Hesperides {
 	public static class Hints {
 		
 		public final static int NULL = 0;
-		public final static int OBJECT = 1;
-		public final static int INT = 2;
-		public final static int LONG = 3;
-		public final static int FLOAT = 4;
-		public final static int STRING = 5;
-		public final static int BOOLEAN = 6;
-		public final static int BYTES = 7;
+		public final static int CLASS_NAME = 1;
+		public final static int OBJECT = 2;
+		public final static int INT = 3;
+		public final static int LONG = 4;
+		public final static int FLOAT = 5;
+		public final static int STRING = 6;
+		public final static int BOOLEAN = 7;
+		public final static int BYTES = 8;
 		
 		public static int typeToHint(Class<? extends Object> type) {
 			

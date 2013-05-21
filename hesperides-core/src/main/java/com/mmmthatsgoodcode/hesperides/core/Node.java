@@ -12,6 +12,7 @@ public interface Node<N, T extends Object> extends Iterable<Node> {
 	public void setValue(Float value);
 	public void setValue(Boolean value);
 	public void setValue(ByteBuffer value);
+	public void setNullValue();
 
 	public void setName(int hint, N name);
 	public N getName();
