@@ -54,7 +54,6 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 		
 		// add the parent itself
 		HesperidesColumn column = nodeToHesperidesColumn(parent, parentColumn);
-		if (parentColumn == null) column.setKey((String)parent.getName());
 		
 		nodes.add(column);
 		// add each child
@@ -71,11 +70,9 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 		
 		HesperidesColumn hesperidesColumn = new HesperidesColumn();
 		
-		if (previous != null) hesperidesColumn.setKey(previous.getKey());
-		
 		/* Add ancestor components
 		--------------------------- */
-		if (previous != null) hesperidesColumn.addComponents(previous.getInheritableComponents());
+		if (previous != null) hesperidesColumn.addComponents(previous.getComponents());
 		
 //		if (previous != null) {
 		
@@ -123,8 +120,6 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 			
 			}
 			
-			hesperidesColumn.setValueTypeHintComponent(node.getHint()); // set value type hint component
-		
 		}
 		
 		/* Add name as component to the Column's component list
@@ -157,7 +152,7 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 		Node node = new NodeImpl();
 		
 		HesperidesColumn.ClassValue typeComponent = null;
-		if (column.getComponents().get(column.getComponents().size()-2) instanceof HesperidesColumn.ClassValue) typeComponent = (HesperidesColumn.ClassValue) column.getComponents().get(column.getComponents().size()-2);
+		if (column.getComponents().get(column.getComponents().size()-1) instanceof HesperidesColumn.ClassValue) typeComponent = (HesperidesColumn.ClassValue) column.getComponents().get(column.getComponents().size()-1);
 		
 		/* Get type from Column's component list
 		----------------------------------------- */
@@ -165,14 +160,14 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 		
 		/* Get name from Column's component list
 		----------------------------------------- */
-		HesperidesColumn.AbstractType nameComponent = column.getInheritableComponents().get(column.getInheritableComponents().size()-1);
+		HesperidesColumn.AbstractType nameComponent = column.getComponents().get(column.getComponents().size()-1);
 		
 		node.setName(Hesperides.Hints.typeToHint(nameComponent.getValue().getClass()), nameComponent.getValue());
 		
 		/* Get value
 		------------- */
 		
-		switch(column.getValueTypeHintComponent()) {
+		switch(column.getValue().getHint()) {
 		
 			case Hesperides.Hints.INT:
 				node.setValue(((HesperidesColumn.IntegerValue) column.getValue()).getValue());
@@ -206,8 +201,8 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 		for (HesperidesColumn hay:haystack) {
 			
 			if (
-					hay.getComponents().size() == needle.getInheritableComponents().size()+3 // any direct descendant will have 3 more components than the parents inheritable component
-					&& hay.getInheritableComponents().subList(0, needle.getInheritableComponents().size()).equals(needle.getInheritableComponents()) // the beginning of the hay's inheritable components must match the parents inheritable components
+					hay.getComponents().size() == needle.getComponents().size()+2 // any direct descendant will have 2 more components than the parents inheritable component
+					&& hay.getComponents().subList(0, needle.getComponents().size()).equals(needle.getComponents()) // the beginning of the hay's components must match the parents inheritable components
 					) {
 				descendants.add(hay);
 			}
@@ -220,7 +215,7 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 	public HesperidesColumn rootColumnIn(List<HesperidesColumn> haystack) {
 		
 		for (HesperidesColumn hay:haystack) {
-			if (hay.getComponents().size() == 3 && hay.getComponents().get(0) instanceof HesperidesColumn.ClassValue) {
+			if (hay.getComponents().size() == 2 && hay.getComponents().get(0) instanceof HesperidesColumn.ClassValue) {
 				return hay;
 			}
 		}

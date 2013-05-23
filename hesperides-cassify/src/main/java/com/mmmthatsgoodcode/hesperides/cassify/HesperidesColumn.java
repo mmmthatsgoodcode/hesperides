@@ -11,7 +11,6 @@ import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 
 public class HesperidesColumn {
 
-	private String key = "NOKEY";
 	private List<AbstractType> components = new ArrayList<AbstractType>();
 	private AbstractType value = new NullValue();
 	
@@ -30,11 +29,8 @@ public class HesperidesColumn {
 			if (this.value != null) return this.value.toString();
 			return "null";
 		}
-		
-		public boolean equals(Object object) {
-			return (this.getClass().isAssignableFrom(object.getClass()) && this.getValue().equals((T) ((AbstractType) object).getValue()));
-			
-		}
+
+		public abstract int getHint();
 		
 		
 	}
@@ -44,7 +40,21 @@ public class HesperidesColumn {
 		public void setValue(Object value) {
 			
 		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.NULL;
+		}
 		
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof NullValue)) return false;
+			NullValue other = (NullValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 		
 	}
 	
@@ -52,6 +62,20 @@ public class HesperidesColumn {
 
 		public StringValue(String value) {
 			setValue(value);
+		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.STRING;
+		}
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof StringValue)) return false;
+			StringValue other = (StringValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
 		}
 		
 	}
@@ -61,7 +85,20 @@ public class HesperidesColumn {
 		public DateValue(Date value) {
 			setValue(value);
 		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.DATE;
+		}
 			
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof DateValue)) return false;
+			DateValue other = (DateValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 	
 	}
 	
@@ -69,7 +106,21 @@ public class HesperidesColumn {
 
 		public IntegerValue(Integer value) {
 			setValue(value);
-		}		
+		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.INT;
+		}
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof IntegerValue)) return false;
+			IntegerValue other = (IntegerValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 		
 	}
 
@@ -78,6 +129,20 @@ public class HesperidesColumn {
 		public FloatValue(Float value) {
 			setValue(value);
 		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.FLOAT;
+		}
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof FloatValue)) return false;
+			FloatValue other = (FloatValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 		
 	}
 	
@@ -85,7 +150,21 @@ public class HesperidesColumn {
 
 		public LongValue(Long value) {
 			setValue(value);
+		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.LONG;
 		}		
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof LongValue)) return false;
+			LongValue other = (LongValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 		
 	}
 	
@@ -93,7 +172,22 @@ public class HesperidesColumn {
 
 		public BooleanValue(Boolean value) {
 			setValue(value);
-		}		
+		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.BOOLEAN;
+		}	
+		
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof BooleanValue)) return false;
+			BooleanValue other = (BooleanValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 		
 	}
 	
@@ -101,7 +195,21 @@ public class HesperidesColumn {
 
 		public ByteValue(byte[] value) {
 			setValue(value);
+		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.BYTES;
 		}		
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof ByteValue)) return false;
+			ByteValue other = (ByteValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 		
 	}
 	
@@ -110,51 +218,60 @@ public class HesperidesColumn {
 		public ClassValue(Class<? extends Object> value) {
 			setValue(value);
 		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.CLASS;
+		}
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof ClassValue)) return false;
+			ClassValue other = (ClassValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
 		
 	}
 	
 	public HesperidesColumn() {
-		setValueTypeHintComponent(Hesperides.Hints.NULL); // set default value type hint
-	}
-	
-	public void setValueTypeHintComponent(int valueTypeHint) {
-		if (this.components.size() > 1)	this.components.set(this.components.size()-1, new IntegerValue(valueTypeHint));
-		else this.components.add(new IntegerValue(valueTypeHint));
-	}
-	
-	public int getValueTypeHintComponent() {
-		return ((HesperidesColumn.IntegerValue) this.components.get(this.components.size()-1)).getValue();
+//		setValueTypeHintComponent(Hesperides.Hints.NULL); // set default value type hint
 	}
 	
 	public void addComponent(String value) {
-		this.components.add(this.components.size()-1, new StringValue(value));
+		this.components.add(new StringValue(value));
 	}
 	
 	public void addComponent(Date value) {
-		this.components.add(this.components.size()-1, new DateValue(value));
+		this.components.add(new DateValue(value));
 	}
 
 	public void addComponent(Integer value) {
-		this.components.add(this.components.size()-1, new IntegerValue(value));
+		this.components.add(new IntegerValue(value));
 	}
 	
 	public void addComponent(Float value) {
-		this.components.add(this.components.size()-1, new FloatValue(value));
+		this.components.add(new FloatValue(value));
 	}
 	
 	public void addComponent(Long value) {
-		this.components.add(this.components.size()-1, new LongValue(value));
+		this.components.add(new LongValue(value));
+	}
+	
+	public void addComponent(Boolean value) {
+		this.components.add(new BooleanValue(value));
 	}
 	
 	public void addComponent(Class<? extends Object> value) {
-		this.components.add(this.components.size()-1, new ClassValue(value));
+		this.components.add(new ClassValue(value));
 	}
 	
 	/**
 	 * This is a placeholder component
 	 */
 	public void addNullComponent() {
-		this.components.add(this.components.size()-1, new NullValue());
+		this.components.add(new NullValue());
 	}
 	
 	/**
@@ -163,9 +280,7 @@ public class HesperidesColumn {
 	 * @param components
 	 */
 	public void addComponents(Collection<? extends AbstractType> components) {
-		for (AbstractType component:components) {
-			this.components.add(this.components.size()-1, component);
-		}
+		this.components.addAll(components);
 	}
 	
 	public List<AbstractType> getComponents() {
@@ -208,21 +323,19 @@ public class HesperidesColumn {
 		return this.value;
 	}
 
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
-	
-	public List<AbstractType> getInheritableComponents() {
-		return this.components.subList(0, this.components.size()-1);
+	public boolean equals(Object object) {
+		
+		if (!(object instanceof HesperidesColumn)) return false;
+		
+		HesperidesColumn other = (HesperidesColumn) object;
+		
+		return this.getComponents().equals(other.getComponents())
+				&& this.getValue().equals(other.getValue());
+		
 	}
 	
 	public String toString() {
-		String out = this.key + " | ";
-		out += StringUtils.join(components.toArray(), " -> ");
+		String out = StringUtils.join(components.toArray(), " -> ");
 		out += " = "+this.value.toString();
 		
 		return out;
