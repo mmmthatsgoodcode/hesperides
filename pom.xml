@@ -57,5 +57,6 @@
     <module>hesperides-cassify-thrift</module>
     <module>hesperides-cassify-astyanax</module>
     <module>hesperides-cassify-hector</module>
+    <module>hesperides-client</module>
   </modules>
 </project>
