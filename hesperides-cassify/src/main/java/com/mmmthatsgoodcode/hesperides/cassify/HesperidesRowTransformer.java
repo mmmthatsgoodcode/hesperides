@@ -10,11 +10,11 @@ import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.mmmthatsgoodcode.hesperides.core.Transformer;
 
-public class HesperidesColumnTransformer implements Transformer<List<HesperidesColumn>> {
+public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 	
 	@Override
-	public Node transform(List<HesperidesColumn> columns) throws TransformationException {
-		return transform(columns, null, null);
+	public Node transform(HesperidesRow row) throws TransformationException {
+		return transform(row.getColumns(), null, null);
 	}
 	
 	public Node transform(List<HesperidesColumn> columns, HesperidesColumn parentColumn, Node parentNode)
@@ -40,11 +40,14 @@ public class HesperidesColumnTransformer implements Transformer<List<HesperidesC
 	}
 
 	@Override
-	public List<HesperidesColumn> transform(
-			Node<? extends Object, List<HesperidesColumn>> parent)
+	public HesperidesRow transform(
+			Node parent)
 			throws TransformationException {
 		
-		return transform(parent, null);
+		HesperidesRow row = new HesperidesRow((String)parent.getName());
+		row.addColumns(transform(parent, null));
+		
+		return row;
 		
 	}
 	

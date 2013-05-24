@@ -12,10 +12,10 @@ import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 
-public class HesperidesColumnTransformerTest {
+public class HesperidesRowTransformerTest {
 
 	private Node node = null;
-	private HesperidesColumnTransformer transformer = new HesperidesColumnTransformer();
+	private HesperidesRowTransformer transformer = new HesperidesRowTransformer();
 	
 	@Before
 	public void setUp() {
@@ -51,10 +51,10 @@ public class HesperidesColumnTransformerTest {
 	@Test
 	public void testTransform() throws TransformationException {
 		
-		List<HesperidesColumn> columns = this.transformer.transform(this.node);
-		System.out.println(StringUtils.join(columns, "\n"));
+		HesperidesRow row = this.transformer.transform(this.node);
+		System.out.println(row);
 
-		Node node = this.transformer.transform(columns);
+		Node node = this.transformer.transform(row);
 		
 		System.out.println(node);
 		System.out.println(this.node);
