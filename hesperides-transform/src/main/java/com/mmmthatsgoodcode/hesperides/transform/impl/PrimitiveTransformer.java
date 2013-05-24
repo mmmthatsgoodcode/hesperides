@@ -3,6 +3,9 @@ package com.mmmthatsgoodcode.hesperides.transform.impl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
@@ -10,10 +13,20 @@ import com.mmmthatsgoodcode.hesperides.core.Transformer;
 
 public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(PrimitiveTransformer.class);
+	
 	@Override
 	public Node transform(T object) {
 		
+		LOG.trace("Transforming primitive {}", object);
+		
 		Node node = new NodeImpl();
+		
+		if (object == null) {
+			node.setNullValue();
+			return node;
+		}
+		
 		node.setType(object.getClass());
 		
 		if (object instanceof Integer) {
@@ -48,6 +61,7 @@ public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
 	@Override
 	public T transform(Node<? extends Object, T> node) throws TransformationException {
 		
+		if (node.getValue() == null) return null;
 		return (T) node.getValue();
 
 		
