@@ -85,9 +85,9 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		
 		/* Add The actual type if this node represents a Type 
 		------------------------------------------------------ */
-		if (node.getHint() == Hesperides.Hints.OBJECT) {
+		if (node.getValueHint() == Hesperides.Hints.OBJECT) {
 		
-			hesperidesColumn.addComponent(node.getType()); // add type
+			hesperidesColumn.addComponent(node.getRepresentedType()); // add type
 		
 		/* Create a Cassandra-compatible serialized byte array from node.value
 		----------------------------------------------------------------------- */
@@ -95,7 +95,7 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 
 			hesperidesColumn.addNullComponent(); // add placeholder for type
 			
-			switch(node.getHint()) {
+			switch(node.getValueHint()) {
 			
 				case Hesperides.Hints.NULL:
 					hesperidesColumn.setNullValue();
@@ -159,7 +159,7 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		
 		/* Get type from Column's component list
 		----------------------------------------- */
-		if (typeComponent != null) node.setType(typeComponent.getValue());
+		if (typeComponent != null) node.setRepresentedType(typeComponent.getValue());
 		
 		/* Get name from Column's component list
 		----------------------------------------- */

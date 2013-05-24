@@ -56,8 +56,9 @@ public class HesperidesRowTransformerTest {
 
 		Node node = this.transformer.transform(row);
 		
-		System.out.println(node);
 		System.out.println(this.node);
+
+		System.out.println(node);
 		
 		assertTrue(this.node.equals(node));
 

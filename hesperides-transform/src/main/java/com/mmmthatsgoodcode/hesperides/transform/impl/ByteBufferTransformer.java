@@ -13,7 +13,7 @@ public class ByteBufferTransformer implements Transformer<ByteBuffer> {
 		Node byteNode = new NodeImpl();
 		
 		byteNode.setValue((ByteBuffer)object);
-		byteNode.setType(ByteBuffer.class);
+		byteNode.setRepresentedType(ByteBuffer.class);
 		
 		return byteNode;
 	}

@@ -10,10 +10,10 @@ import org.apache.commons.lang.StringUtils;
 
 public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
-	private int hint = Hesperides.Hints.OBJECT;
+	private int valueHint = Hesperides.Hints.OBJECT;
 	private int nameHint = Hesperides.Hints.STRING;
 
-	private Class<? extends Object> type = NodeImpl.class;
+	private Class<? extends Object> representedType = NodeImpl.class;
 
 	private T value = null;
 	private N name = null;
@@ -34,8 +34,8 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 
 	@Override
-	public int getHint() {
-		return this.hint;
+	public int getValueHint() {
+		return this.valueHint;
 	}
 
 	@Override
@@ -65,47 +65,46 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	@Override
 	public void setValue(String value) {
 		this.value = (T) value;
-		this.hint = Hesperides.Hints.STRING;
+		this.valueHint = Hesperides.Hints.STRING;
 	}
 
 
 	@Override
 	public void setValue(Integer value) {
 		this.value = (T) value;
-		this.hint = Hesperides.Hints.INT;		
+		this.valueHint = Hesperides.Hints.INT;		
 	}
 
 
 	@Override
 	public void setValue(Long value) {
 		this.value = (T) value;
-		this.hint = Hesperides.Hints.LONG;		
+		this.valueHint = Hesperides.Hints.LONG;		
 	}
 
 
 	@Override
 	public void setValue(Float value) {
 		this.value = (T) value;
-		this.hint = Hesperides.Hints.FLOAT;		
+		this.valueHint = Hesperides.Hints.FLOAT;		
 	}
 
 
 	@Override
 	public void setValue(Boolean value) {
 		this.value = (T) value;
-		this.hint = Hesperides.Hints.BOOLEAN;
+		this.valueHint = Hesperides.Hints.BOOLEAN;
 	}
 
 
 	@Override
 	public void setValue(ByteBuffer value) {
 		this.value = (T) value;
-		this.hint = Hesperides.Hints.BYTES;		
+		this.valueHint = Hesperides.Hints.BYTES;		
 	}
 	
 	public void setNullValue() {
 		this.value = null;
-		this.hint = Hesperides.Hints.NULL;
 	}
 
 
@@ -126,14 +125,14 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 
 	@Override
-	public void setType(Class type) {
-		this.type = type;
+	public void setRepresentedType(Class type) {
+		this.representedType = type;
 	}
 
 
 	@Override
-	public Class getType() {
-		return this.type;
+	public Class getRepresentedType() {
+		return this.representedType;
 	}
 
 
@@ -147,8 +146,8 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		
 		ArrayList<String> out = new ArrayList<String>();
 		
-		out.add("Hint: "+this.hint);
-		out.add("Type: "+this.type.getSimpleName());
+		out.add("Hint: "+this.valueHint);
+		out.add("Type: "+this.representedType.getSimpleName());
 		out.add("Name: "+this.name);
 		out.add("Value: "+this.value);
 		out.add("Children: ");
@@ -171,8 +170,8 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 //		System.out.println(other.getChildren().equals(this.getChildren())?"yes":"no");
 //		System.out.println("---");
 		
-		return other.getType().equals(this.getType())
-				&& other.getHint() == this.getHint()
+		return other.getRepresentedType().equals(this.getRepresentedType())
+				&& other.getValueHint() == this.getValueHint()
 				&& other.getNameHint() == this.getNameHint()
 				&& other.getName().equals(this.getName())
 				&& other.getChildren().equals(this.getChildren());
