@@ -34,6 +34,12 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 	public Node transform(T map) throws TransformationException {
 		
 		Node mapNode = new NodeImpl();
+		
+		if (map == null) {
+			mapNode.setNullValue();
+			return mapNode;
+		}
+		
 		mapNode.setType(map.getClass());
 
 		Iterator iterator = map.entrySet().iterator();
@@ -57,6 +63,9 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 		T instance = null;
 		
 		try {
+			
+			if (node.getHint() == Hesperides.Hints.NULL) return null;
+			
 			instance = node.getType().newInstance();
 			for (Node child:node) {
 				instance.put(child.getName(), TransformerRegistry.getInstance().get(child.getType()).transform(child));

@@ -22,6 +22,12 @@ public class ListTransformer<T extends List> implements GenericTransformer<T> {
 	@Override
 	public Node transform(T object) throws TransformationException {
 		Node listNode = new NodeImpl();
+		
+		if (object == null) {
+			listNode.setNullValue();
+			return listNode;
+		}
+		
 		listNode.setType(object.getClass());
 		
 		for(Object child:((T) object)) {
@@ -38,6 +44,9 @@ public class ListTransformer<T extends List> implements GenericTransformer<T> {
 		
 		T instance = null;
 		try {
+			
+			if (node.getHint() == Hesperides.Hints.NULL) return null;
+			
 			instance = node.getType().newInstance();
 			
 			for (Node child:node) {
