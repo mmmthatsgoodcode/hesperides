@@ -40,7 +40,7 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 			return mapNode;
 		}
 		
-		mapNode.setType(map.getClass());
+		mapNode.setRepresentedType(map.getClass());
 
 		Iterator iterator = map.entrySet().iterator();
 		while (iterator.hasNext()) {
@@ -49,7 +49,7 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).transform(entry.getValue()) ;
 
 			childNode.setName( Hesperides.Hints.typeToHint(getKeyGenericType()), entry.getKey() );
-			childNode.setType(getValueGenericType());
+			childNode.setRepresentedType(getValueGenericType());
 			
 			mapNode.addChild(childNode);
 		}
@@ -64,11 +64,11 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 		
 		try {
 			
-			if (node.getHint() == Hesperides.Hints.NULL) return null;
+			if (node.getValueHint() == Hesperides.Hints.NULL) return null;
 			
-			instance = node.getType().newInstance();
+			instance = node.getRepresentedType().newInstance();
 			for (Node child:node) {
-				instance.put(child.getName(), TransformerRegistry.getInstance().get(child.getType()).transform(child));
+				instance.put(child.getName(), TransformerRegistry.getInstance().get(child.getRepresentedType()).transform(child));
 			}
 			
 		} catch (InstantiationException | IllegalAccessException e) {
