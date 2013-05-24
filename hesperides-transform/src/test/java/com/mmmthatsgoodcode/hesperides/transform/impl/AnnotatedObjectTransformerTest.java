@@ -29,6 +29,10 @@ public class AnnotatedObjectTransformerTest {
 	private ComplexObject co;
 	private AnnotatedObjectTransformer<ComplexObject> transformer = new AnnotatedObjectTransformer<ComplexObject>();
 	
+	public final static class SimpleObject {
+		private String name = "Sss";
+	}
+	
 	public final static class ComplexObject {
 
 		@Id public String name;
@@ -37,6 +41,7 @@ public class AnnotatedObjectTransformerTest {
 		public ByteBuffer lolcat;
 		public ArrayList<ComplexObject> someMoreComplexObject = new ArrayList<ComplexObject>();
 		public HashMap<String, Integer> someScores = new HashMap<String, Integer>();
+		public HashMap<SimpleObject, Integer> objectKeyedMap = new HashMap<SimpleObject, Integer>();
 		public ComplexObject() {
 			
 		}
@@ -52,6 +57,7 @@ public class AnnotatedObjectTransformerTest {
 			
 			if (someScores != null) this.someScores = someScores;
 			if (someMoreComplexObjects != null) this.someMoreComplexObject = someMoreComplexObjects;
+			this.objectKeyedMap.put(new SimpleObject(), 1);
 		}
 		
 		public boolean equals(Object object) {
@@ -119,12 +125,9 @@ public class AnnotatedObjectTransformerTest {
 	
 	@Test
 	public void testSerializeComplexObject() throws TransformationException, NoSuchFieldException, SecurityException {
-	
-		MapTransformer<HashMap> scoresTransformer = new MapTransformer<HashMap>();
-		scoresTransformer.setKeyGenericType(String.class);
-		scoresTransformer.setValueGenericType(Integer.class);
 		
-		TransformerRegistry.getInstance().register(scoresTransformer, ComplexObject.class.getField("someScores"));
+		TransformerRegistry.getInstance().register(String.class, Integer.class, ComplexObject.class.getField("someScores"));
+		TransformerRegistry.getInstance().register(SimpleObject.class, Integer.class, ComplexObject.class.getField("objectKeyedMap"));
 		
 		ListTransformer<ArrayList> childObjectsListTransformer = new ListTransformer<ArrayList>();
 		childObjectsListTransformer.setValueGenericType(ComplexObject.class);

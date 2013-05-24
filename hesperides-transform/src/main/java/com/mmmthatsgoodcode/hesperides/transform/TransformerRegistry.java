@@ -22,7 +22,7 @@ public class TransformerRegistry {
 	private TransformerRegistry() {
 
 		register(new ListTransformer<ArrayList>(), ArrayList.class);
-//		register(new MapSerializer<HashMap>(), HashMap.class);
+		register(new MapTransformer<HashMap>(), HashMap.class);
 		register(ByteBuffer.class, new ByteBufferTransformer());
 		register(new PrimitiveTransformer<Integer>(), Integer.TYPE, Integer.class);
 		register(new PrimitiveTransformer<Float>(), Float.TYPE, Float.class);
@@ -58,6 +58,26 @@ public class TransformerRegistry {
 		for (Field field:fields) {
 			register(field, serializer);
 		}
+	}
+	
+	public void register(Class genericValueType, Field... fields) {
+
+		ListTransformer transformer = new ListTransformer();
+		transformer.setValueGenericType(genericValueType);
+
+		register(transformer, fields);
+		
+	}
+	
+	public void register(Class genericKeyType, Class genericValueType, Field... fields) {
+
+		MapTransformer mapTransformer = new MapTransformer();
+		mapTransformer.setKeyGenericType(genericKeyType);
+		mapTransformer.setValueGenericType(genericValueType);
+
+		register(mapTransformer, fields);
+				
+		
 	}
 
 	public Transformer get(Class<? extends Object> type) {
