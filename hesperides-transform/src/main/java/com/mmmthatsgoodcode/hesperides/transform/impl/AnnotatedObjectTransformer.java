@@ -47,7 +47,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 			node.setNullValue();
 			return node;
 		}
-		node.setType(object.getClass());
+		node.setRepresentedType(object.getClass());
 
 		for (Field field:getAllFields(object.getClass())) {
 			try {
@@ -90,9 +90,9 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 		
 		T instance = null;
 			try {
-				if (node.getHint() == Hesperides.Hints.NULL) return null;
+				if (node.getValueHint() == Hesperides.Hints.NULL) return null;
 				
-				Class type = node.getType();
+				Class type = node.getRepresentedType();
 				LOG.trace("Trasforming Node to an instance of {}", type);
 				// see if there is a constructor marked with @HConstructor
 				
@@ -112,7 +112,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 				
 				// start setting fields
 				for(Node fieldNode:node) {
-					Class fieldNodeType = fieldNode.getType();
+					Class fieldNodeType = fieldNode.getRepresentedType();
 					
 					try {
 						Field field = type.getField((String) fieldNode.getName());
