@@ -1,4 +1,4 @@
-*This project is not in a usable state yet. See the wiki and github issues at https://github.com/pgn84/hesperides for details*
+*This project is not in a usable state yet. See the wiki and github issues at https://github.com/mmmthatsgoodcode/hesperides for details*
 
 Cultivate a Garden in Cassandra. Anything from a couple bushes to a forest.
 
@@ -16,6 +16,6 @@ hesperides-examples-thrift - a small app that persists and reads objects Objects
 hesperides-examples-astyanax - a small app that persists and reads objects Objects to/from a Cassandra wide row, via Astyanax
 hesperides-examples-hector - a small app that persists and reads objects Objects to/from a Cassandra wide row, via Hector
 
-See the wiki at https://github.com/pgn84/hesperides/wiki and unit tests for details
+See the wiki at https://github.com/mmmthatsgoodcode/hesperides/wiki and unit tests for details
 
 An Example module with the supported Cassandra client libraries is also in the works.
