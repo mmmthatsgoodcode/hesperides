@@ -20,6 +20,7 @@ import com.google.common.io.Files;
 import com.mmmthatsgoodcode.hesperides.annotation.Id;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.hesperides.transform.RegisteredSerialzierNotGenericException;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 import com.mmmthatsgoodcode.hesperides.transform.impl.AnnotatedObjectTransformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.MapTransformer;
@@ -124,15 +125,12 @@ public class AnnotatedObjectTransformerTest {
 	}
 	
 	@Test
-	public void testSerializeComplexObject() throws TransformationException, NoSuchFieldException, SecurityException {
+	public void testSerializeComplexObject() throws TransformationException, NoSuchFieldException, SecurityException, RegisteredSerialzierNotGenericException {
 		
-		TransformerRegistry.getInstance().register(String.class, Integer.class, ComplexObject.class.getField("someScores"));
-		TransformerRegistry.getInstance().register(SimpleObject.class, Integer.class, ComplexObject.class.getField("objectKeyedMap"));
-		
-		ListTransformer<ArrayList> childObjectsListTransformer = new ListTransformer<ArrayList>();
-		childObjectsListTransformer.setValueGenericType(ComplexObject.class);
+		TransformerRegistry.getInstance().register(new Class[]{String.class, Integer.class}, ComplexObject.class.getField("someScores"));
+		TransformerRegistry.getInstance().register(new Class[]{SimpleObject.class, Integer.class}, ComplexObject.class.getField("objectKeyedMap"));
 	
-		TransformerRegistry.getInstance().register(childObjectsListTransformer, ComplexObject.class.getField("someMoreComplexObject"));
+		TransformerRegistry.getInstance().register(new Class[]{ComplexObject.class}, ComplexObject.class.getField("someMoreComplexObject"));
 	
 		Node serializedCo = transformer.transform(co);
 

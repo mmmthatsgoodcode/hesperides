@@ -1,11 +1,14 @@
 package com.mmmthatsgoodcode.hesperides.transform.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.mmmthatsgoodcode.hesperides.core.GenericTransformer;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
@@ -13,24 +16,19 @@ import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.mmmthatsgoodcode.hesperides.core.Transformer;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
-public class MapTransformer<T extends Map> implements Transformer<T> {
+public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 
+	private List<Class> genericTypes = new ArrayList<Class>();
+	
 	private Class<? extends Object> keyType = Object.class, valueType = Object.class;
 	
-	public void setKeyGenericType(Class keyType) {
-		this.keyType = keyType;
-	}
 	
 	public Class<? extends Object> getKeyGenericType() {
-		return this.keyType;
-	}
-	
-	public void setValueGenericType(Class valueType) {
-		this.valueType = valueType;
+		return this.genericTypes.get(0);
 	}
 	
 	public Class<? extends Object> getValueGenericType() {
-		return this.valueType;
+		return this.genericTypes.get(1);
 	}	
 	
 	public Node transform(T map) throws TransformationException {
@@ -71,6 +69,16 @@ public class MapTransformer<T extends Map> implements Transformer<T> {
 		
 		return instance;
 		
+	}
+
+	@Override
+	public List<Class> getGenericTypes() {
+		return genericTypes;
+	}
+
+	@Override
+	public void addGenericType(Class clazz) {
+		genericTypes.add(clazz);
 	}
 	
 }

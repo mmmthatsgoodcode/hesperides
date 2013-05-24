@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.mmmthatsgoodcode.hesperides.core.GenericTransformer;
 import com.mmmthatsgoodcode.hesperides.core.Transformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.AnnotatedObjectTransformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.ByteBufferTransformer;
@@ -19,6 +20,9 @@ public class TransformerRegistry {
 	private ConcurrentHashMap<Class<? extends Object>, Transformer> serializers = new ConcurrentHashMap<Class<? extends Object>, Transformer>();
 	private ConcurrentHashMap<Field, Transformer> fieldSpecificSerializers = new ConcurrentHashMap<Field, Transformer>();
 	
+	/**
+	 * Create the TransformerRegistry with some default transformers
+	 */
 	private TransformerRegistry() {
 
 		register(new ListTransformer<ArrayList>(), ArrayList.class);
@@ -40,10 +44,16 @@ public class TransformerRegistry {
 		return SerializerRegistryHolder.INSTANCE;
 	}
 
+	
 	public void register(Class<? extends Object> type, Transformer serializer) {
 		this.serializers.put(type, serializer);
 	}
 	
+	/**
+	 * Register a Transformer specifically for a field. This is to reduce the overhead in having to create custom Transformers for types with generic-type fields
+	 * @param field Field for which the provided Transformer will be
+	 * @param serializer
+	 */
 	public void register(Field field, Transformer serializer) {
 		this.fieldSpecificSerializers.put(field, serializer);
 	}
@@ -60,25 +70,27 @@ public class TransformerRegistry {
 		}
 	}
 	
-	public void register(Class genericValueType, Field... fields) {
-
-		ListTransformer transformer = new ListTransformer();
-		transformer.setValueGenericType(genericValueType);
-
-		register(transformer, fields);
+	public void register(Class[] genericTypes, Field... fields) throws RegisteredSerialzierNotGenericException {
+		
+		for (Field field:fields) {
+			
+			GenericTransformer baseTransformer = getFirstGenericTransformer(field);
+			try {
+				GenericTransformer transformer = baseTransformer.getClass().newInstance();
+				for (Class genericType:genericTypes) {
+					transformer.addGenericType(genericType);
+				}
+				
+				register(transformer, field);
+			} catch (InstantiationException | IllegalAccessException e) {
+				// could not instantiate transformer ?
+			}
+			
+			
+		}
 		
 	}
 	
-	public void register(Class genericKeyType, Class genericValueType, Field... fields) {
-
-		MapTransformer mapTransformer = new MapTransformer();
-		mapTransformer.setKeyGenericType(genericKeyType);
-		mapTransformer.setValueGenericType(genericValueType);
-
-		register(mapTransformer, fields);
-				
-		
-	}
 
 	public Transformer get(Class<? extends Object> type) {
 		if (this.serializers.containsKey(type)) {
@@ -89,13 +101,23 @@ public class TransformerRegistry {
 	}
 	
 	public Transformer get(Field field) {
-		Transformer serializer = null;
+		Transformer transformer = null;
 		if (this.fieldSpecificSerializers.containsKey(field)) {
-			serializer = this.fieldSpecificSerializers.get(field);
+			transformer = this.fieldSpecificSerializers.get(field);
 		} else {
-			serializer = get(field.getType());
+			transformer = get(field.getType());
 		}
-		return serializer;
+		return transformer;
+	}
+	
+	public GenericTransformer getFirstGenericTransformer(Field field) throws RegisteredSerialzierNotGenericException {
+		Transformer transformer = null;
+		if (this.fieldSpecificSerializers.containsKey(field)) transformer = this.fieldSpecificSerializers.get(field);
+		else transformer = get(field.getType());
+		
+		if (!GenericTransformer.class.isAssignableFrom(transformer.getClass())) throw new RegisteredSerialzierNotGenericException();
+		return (GenericTransformer) transformer;
+		
 	}
 
 }

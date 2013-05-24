@@ -1,7 +1,9 @@
 package com.mmmthatsgoodcode.hesperides.transform.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.mmmthatsgoodcode.hesperides.core.GenericTransformer;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
@@ -9,16 +11,12 @@ import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.mmmthatsgoodcode.hesperides.core.Transformer;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
-public class ListTransformer<T extends List> implements Transformer<T> {
+public class ListTransformer<T extends List> implements GenericTransformer<T> {
 
-	private Class<? extends Object> valueType = Object.class;	
-	
-	public void setValueGenericType(Class valueType) {
-		this.valueType = valueType;
-	}
-	
+	private List<Class> genericTypes = new ArrayList<Class>();
+
 	public Class<? extends Object> getValueGenericType() {
-		return this.valueType;
+		return this.genericTypes.get(0);
 	}		
 	
 	@Override
@@ -53,6 +51,17 @@ public class ListTransformer<T extends List> implements Transformer<T> {
 		
 		return instance;
 		
+	}
+
+	@Override
+	public List<Class> getGenericTypes() {
+		// TODO Auto-generated method stub
+		return this.genericTypes;
+	}
+
+	@Override
+	public void addGenericType(Class clazz) {
+		this.genericTypes.add(clazz);
 	}
 
 }
