@@ -20,6 +20,7 @@ public class ByteBufferTransformer implements Transformer<ByteBuffer> {
 
 	@Override
 	public ByteBuffer transform(Node node) {
+		
 		return (ByteBuffer) node.getValue();
 	}
 

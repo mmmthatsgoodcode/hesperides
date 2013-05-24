@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.mmmthatsgoodcode.hesperides.core.GenericTransformer;
@@ -25,8 +27,8 @@ public class TransformerRegistry {
 	 */
 	private TransformerRegistry() {
 
-		register(new ListTransformer<ArrayList>(), ArrayList.class);
-		register(new MapTransformer<HashMap>(), HashMap.class);
+		register(new ListTransformer(), List.class);
+		register(new MapTransformer(), Map.class);
 		register(ByteBuffer.class, new ByteBufferTransformer());
 		register(new PrimitiveTransformer<Integer>(), Integer.TYPE, Integer.class);
 		register(new PrimitiveTransformer<Float>(), Float.TYPE, Float.class);
@@ -70,7 +72,7 @@ public class TransformerRegistry {
 		}
 	}
 	
-	public void register(Class[] genericTypes, Field... fields) throws RegisteredSerialzierNotGenericException {
+	public void register(Class[] genericTypes, Field... fields) throws RegisteredTransformerNotGenericException {
 		
 		for (Field field:fields) {
 			
@@ -110,12 +112,12 @@ public class TransformerRegistry {
 		return transformer;
 	}
 	
-	public GenericTransformer getFirstGenericTransformer(Field field) throws RegisteredSerialzierNotGenericException {
+	public GenericTransformer getFirstGenericTransformer(Field field) throws RegisteredTransformerNotGenericException {
 		Transformer transformer = null;
 		if (this.fieldSpecificSerializers.containsKey(field)) transformer = this.fieldSpecificSerializers.get(field);
 		else transformer = get(field.getType());
 		
-		if (!GenericTransformer.class.isAssignableFrom(transformer.getClass())) throw new RegisteredSerialzierNotGenericException();
+		if (!GenericTransformer.class.isAssignableFrom(transformer.getClass())) throw new RegisteredTransformerNotGenericException("Could not find a registered GenericTransformer for Field "+field+" or type "+field.getType());
 		return (GenericTransformer) transformer;
 		
 	}

@@ -2,13 +2,17 @@ package com.mmmthatsgoodcode.hesperides.transform.impl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ClassUtils;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.reflectasm.ConstructorAccess;
 import com.esotericsoftware.reflectasm.FieldAccess;
@@ -31,14 +35,23 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
  */
 public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedObjectTransformer.class);
+	
 	public Node transform(T object) throws TransformationException {
 						
+		LOG.trace("Transforming object {} to Node", object);
+		
 		Node node = new NodeImpl<String, T>();
+		
+		if (object == null) {
+			node.setNullValue();
+			return node;
+		}
 		node.setType(object.getClass());
 
-		for (Field field:object.getClass().getDeclaredFields()) {
+		for (Field field:getAllFields(object.getClass())) {
 			try {
-//				System.out.println(field.getType().getSimpleName());
+				LOG.trace("Looking at field {} with value {}", field.getName(), field.get(object));
 				field.setAccessible(true);
 
 				// see if this is an @Ignore 'd field
@@ -49,6 +62,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 					
 					// see if this is an @Id field
 					if (field.getAnnotation(Id.class) != null) {
+						LOG.trace("Field {} is an @Id field", field.getName());
 						int idFieldTypeHint = Hesperides.Hints.typeToHint(field.getType());
 						if (idFieldTypeHint == Hesperides.Hints.STRING) node.setName(idFieldTypeHint, field.get(object));
 						else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
@@ -58,6 +72,8 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 					childNode.setName(Hesperides.Hints.STRING, field.getName());
 					node.addChild(childNode);
 				
+				} else {
+					LOG.trace("Field {} is an @Ignored field, skipping.", field.getName());
 				}
 
 			
@@ -74,8 +90,10 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 		
 		T instance = null;
 			try {
+				if (node.getHint() == Hesperides.Hints.NULL) return null;
+				
 				Class type = node.getType();
-
+				LOG.trace("Trasforming Node to an instance of {}", type);
 				// see if there is a constructor marked with @HConstructor
 				
 				// otherwise, fall back to using the no-arg constructor and use reflection to set fields
@@ -117,6 +135,19 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 		
 		
 		return instance;
+		
+	}
+	
+	private List<Field> getAllFields(Class clazz) {
+		
+		List<Field> fields = new ArrayList<Field>();
+		
+		fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+		
+		Class superClass = clazz.getSuperclass();
+		if (superClass != null) fields.addAll(getAllFields(superClass));
+		
+		return fields;
 		
 	}
 

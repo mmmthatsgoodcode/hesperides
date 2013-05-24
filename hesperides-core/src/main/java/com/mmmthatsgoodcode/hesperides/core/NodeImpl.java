@@ -105,7 +105,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	
 	public void setNullValue() {
 		this.value = null;
-		this.hint = Hesperides.Hints.OBJECT;
+		this.hint = Hesperides.Hints.NULL;
 	}
 
 
