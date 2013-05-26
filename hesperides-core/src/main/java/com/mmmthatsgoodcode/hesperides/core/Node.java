@@ -17,12 +17,12 @@ public interface Node<N, T extends Object> extends Iterable<Node> {
 	public void setName(int hint, N name);
 	public N getName();
 	
-	public int getHint();
+	public int getValueHint();
 	
 	public int getNameHint();
 
-	public void setType(Class<T> type);
-	public Class<T> getType();
+	public void setRepresentedType(Class<T> type);
+	public Class<T> getRepresentedType();
 	
 	public Node addChild(Node child);
 	public void addChildren(Iterable<Node> children);

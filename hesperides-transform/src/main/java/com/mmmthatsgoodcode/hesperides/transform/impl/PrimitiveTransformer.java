@@ -27,7 +27,7 @@ public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
 			return node;
 		}
 		
-		node.setType(object.getClass());
+		node.setRepresentedType(object.getClass());
 		
 		if (object instanceof Integer) {
 			node.setValue((Integer) object);
