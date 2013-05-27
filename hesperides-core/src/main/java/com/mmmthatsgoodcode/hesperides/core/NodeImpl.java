@@ -43,6 +43,18 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		this.children.add(child);
 		return child;
 	}
+	
+	@Override
+	public void removeChild(Object name) {
+		
+		for(Iterator<Node> iterator = children.iterator(); iterator.hasNext(); ) {
+			
+			Node child = iterator.next();
+			if (child.getName().equals(name)) iterator.remove();
+			
+		}
+		
+	}
 
 	@Override
 	public void addChildren(Iterable<Node> children) {
@@ -54,6 +66,19 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	@Override
 	public List<Node> getChildren() {
 		return children;
+	}
+	
+	@Override
+	public Node getChild(Object name) {
+		
+		for(Node child:getChildren()) {
+			
+			if (child.getName().equals(name)) return child;
+			
+		}
+		
+		return null;
+		
 	}
 
 	@Override

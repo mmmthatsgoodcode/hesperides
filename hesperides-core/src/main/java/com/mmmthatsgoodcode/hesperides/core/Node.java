@@ -25,7 +25,11 @@ public interface Node<N, T extends Object> extends Iterable<Node> {
 	public Class<T> getRepresentedType();
 	
 	public Node addChild(Node child);
+	public void removeChild(Object name);
+	
 	public void addChildren(Iterable<Node> children);
+	
 	public List<Node> getChildren();
+	public Node getChild(Object name);
 	
 }
