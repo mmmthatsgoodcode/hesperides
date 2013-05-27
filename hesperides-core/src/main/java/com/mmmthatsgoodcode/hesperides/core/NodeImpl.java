@@ -144,18 +144,28 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	public String toString() {
 		
+		return toString(0);
+		
+	}
+	
+	public String toString(int depth) {
+		
 		ArrayList<String> out = new ArrayList<String>();
 		
 		out.add("Hint: "+this.valueHint);
 		out.add("Type: "+this.representedType.getSimpleName());
 		out.add("Name: "+this.name);
 		out.add("Value: "+this.value);
-		out.add("Children: ");
-		for (Node child:children) {
-			out.add(child.toString());
+		
+		
+		
+		String outString = (depth>0?StringUtils.repeat("--", depth)+"| ":"")+StringUtils.join(out, ", ")+"\n";
+		depth++;
+		for (Node child:getChildren()) {
+			outString += ((NodeImpl) child).toString(depth);
 		}
 		
-		return StringUtils.join(out, ", ");
+		return outString;
 		
 	}
 	
