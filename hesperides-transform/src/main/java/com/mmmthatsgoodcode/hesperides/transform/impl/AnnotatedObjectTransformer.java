@@ -84,7 +84,8 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						try {
 							actualField = object.getClass().getField(field);
 							fields.remove( actualField ); // remove this field from fields
-
+							if (actualField.getAnnotation(Ignore.class) != null) continue; // looks like the matching field is @Ignored
+							
 						} catch (NoSuchFieldException e) {
 							LOG.debug("Field {} is private or does not exist on {}", field, object.getClass().getSimpleName());
 						}
@@ -111,20 +112,23 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 			for (Iterator<Field> iterator = fields.iterator(); iterator.hasNext(); ) {
 				Field field = iterator.next();
 				
-				try {
-					Method getter = object.getClass().getMethod("get"+StringUtils.capitalize(field.getName()), (Class<?>[])null);
-					iterator.remove();
+				if (field.getAnnotation(Ignore.class) == null) {
 					
-					Node childNode = TransformerRegistry.getInstance().get(field).transform( getter.invoke(object, (Object[])null) );
-					childNode.setName(Hesperides.Hints.STRING, field.getName());
-					node.addChild(childNode);
-					
-				} catch (NoSuchMethodException e) {
-					// nope
-					
-				} catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					// could not invoke getter
-					throw new TransformationException("Could not invoke getter", e);
+					try {
+						Method getter = object.getClass().getMethod("get"+StringUtils.capitalize(field.getName()), (Class<?>[])null);
+						iterator.remove();
+						
+						Node childNode = TransformerRegistry.getInstance().get(field).transform( getter.invoke(object, (Object[])null) );
+						childNode.setName(Hesperides.Hints.STRING, field.getName());
+						node.addChild(childNode);
+						
+					} catch (NoSuchMethodException e) {
+						// nope
+						
+					} catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						// could not invoke getter
+						throw new TransformationException("Could not invoke getter", e);
+					}
 				}
 				
 			}
