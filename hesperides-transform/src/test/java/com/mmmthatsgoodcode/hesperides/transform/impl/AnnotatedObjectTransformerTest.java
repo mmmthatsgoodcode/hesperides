@@ -54,11 +54,9 @@ public class AnnotatedObjectTransformerTest {
 	
 		Node serializedCo = transformer.transform(complexPublicFieldsType);
 
-		System.out.println(complexPublicFieldsType);
 		
 		ComplexPublicFieldsType deserializedCo = transformer.transform(serializedCo);
 		
-		System.out.println(deserializedCo);
 
 		assertTrue(deserializedCo.equals(complexPublicFieldsType));
 		

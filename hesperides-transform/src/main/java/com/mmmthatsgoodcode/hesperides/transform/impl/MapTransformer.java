@@ -8,6 +8,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mmmthatsgoodcode.hesperides.core.GenericTransformer;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
@@ -18,6 +22,7 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 
+	private static final Logger LOG = LoggerFactory.getLogger(MapTransformer.class);
 	private List<Class> genericTypes = new ArrayList<Class>();
 	
 	private Class<? extends Object> keyType = Object.class, valueType = Object.class;
@@ -32,6 +37,8 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 	}	
 	
 	public Node transform(T map) throws TransformationException {
+		
+		LOG.trace("Transforming map {},<{}> to Node", map.getClass(), StringUtils.join(this.genericTypes, ", "));
 		
 		Node mapNode = new NodeImpl();
 		
