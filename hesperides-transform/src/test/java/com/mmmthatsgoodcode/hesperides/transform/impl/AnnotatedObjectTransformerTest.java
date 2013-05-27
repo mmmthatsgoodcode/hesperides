@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.io.Files;
+import com.mmmthatsgoodcode.hesperides.ComplexHBeanAnnotatedType;
 import com.mmmthatsgoodcode.hesperides.ComplexPublicFieldsType;
 import com.mmmthatsgoodcode.hesperides.ComplexType;
 import com.mmmthatsgoodcode.hesperides.annotation.Id;
@@ -30,7 +31,8 @@ import com.mmmthatsgoodcode.hesperides.transform.impl.MapTransformer;
 public class AnnotatedObjectTransformerTest {
 
 	private ComplexPublicFieldsType complexPublicFieldsType;
-	
+	private ComplexHBeanAnnotatedType complexHBeanAnnotatedType;
+
 	
 	@Before
 	public void setUp() throws IOException {
@@ -38,7 +40,9 @@ public class AnnotatedObjectTransformerTest {
 		complexPublicFieldsType = new ComplexPublicFieldsType();
 		complexPublicFieldsType.generateFields();
 		
-		System.out.println(complexPublicFieldsType.stringField);
+		complexHBeanAnnotatedType = new ComplexHBeanAnnotatedType();
+		complexHBeanAnnotatedType.generateFields();
+		
 	}
 	
 	@Test
@@ -53,12 +57,35 @@ public class AnnotatedObjectTransformerTest {
 		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexPublicFieldsType.class.getField("objectList"));
 	
 		Node serializedCo = transformer.transform(complexPublicFieldsType);
-
+		System.out.println(serializedCo);
 		
 		ComplexPublicFieldsType deserializedCo = transformer.transform(serializedCo);
 		
 
 		assertTrue(deserializedCo.equals(complexPublicFieldsType));
+		
+	}
+	
+	@Test
+	public void testTransformStrategy1() throws NoSuchFieldException, SecurityException, RegisteredTransformerNotGenericException, TransformationException {
+		
+		AnnotatedObjectTransformer<ComplexHBeanAnnotatedType> transformer = new AnnotatedObjectTransformer<ComplexHBeanAnnotatedType>();
+
+		TransformerRegistry.getInstance().register(new Class[]{Integer.class, String.class}, ComplexHBeanAnnotatedType.class.getField("integerKeyedMap"));
+		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class, Integer.class}, ComplexHBeanAnnotatedType.class.getField("objectKeyedMap"));
+
+		TransformerRegistry.getInstance().register(new Class[]{Integer.class}, ComplexHBeanAnnotatedType.class.getField("integerList"));
+		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexHBeanAnnotatedType.class.getField("objectList"));
+	
+		Node serializedCo = transformer.transform(complexHBeanAnnotatedType);
+		
+		ComplexHBeanAnnotatedType deserializedCo = transformer.transform(serializedCo);
+		
+		System.out.println(serializedCo);
+		System.out.println(deserializedCo);
+
+
+		assertTrue(deserializedCo.equals(complexHBeanAnnotatedType));		
 		
 	}
 }
