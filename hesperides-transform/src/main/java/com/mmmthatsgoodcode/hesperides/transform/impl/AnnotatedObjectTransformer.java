@@ -27,11 +27,17 @@ import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 
 /**
- * A serializer that takes the com.mmmthatsgoodcode.hesperides.annotation Annotations in to account when serializing Objects:
- * Note that you'll want to have no-arg constructors on Classes for serialization with this. Otherwise it will do some evil things with Objenesis that might break badly.
+ * A transformer that may take the com.mmmthatsgoodcode.hesperides.annotation Annotations in to account when transforming Objects to Nodes
+ * 
+ * It uses a combination of these 4 strategies to a) extract as much state from your Objects as possible b) instantiate your Objects
+ * 1) Types annotated with @HBean will be reflected on to invoke their getXXX setXXX methods to extract and restore a persisted Object's state
+ * 2) When there is an @HConstructor annotated constructor, @HConstructorField(name=fieldName) annotations on its arguments will be used to create your object. Since this does not help with extracting object state, it may ( should ) be used in combination with @HBean to provide access to non-public or any field that is on the constructors argumen list. Otherwise, the object's public fields will be persisted only ( via reflection ) and any field on the argument list of the @HConstructor that was not public at the time of transformation will be null
+ * 3) A no-arg constructor and getting/setting public fields via reflection
+ * 4) Failing all the above, Objenesis to instantiate without a no-arg constructor and getting/setting public fields
+ * 
  * @author andras
  *
- * @param <T>
+ * @param <T> Type of the Object being transformed to a Node
  */
 public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 
@@ -39,7 +45,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 	
 	public Node transform(T object) throws TransformationException {
 						
-		LOG.trace("Transforming object {} to Node", object);
+		LOG.trace("Transforming object {} to Node", object.getClass());
 		
 		Node node = new NodeImpl<String, T>();
 		

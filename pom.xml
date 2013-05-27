@@ -51,6 +51,19 @@
 		</dependency>
 	</dependencies>
 
+	<distributionManagement>
+		<repository>
+			<id>deployment</id>
+			<name>External</name>
+			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>deployment</id>
+			<name>External</name>
+			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<build>
 		<pluginManagement>
 			<plugins>

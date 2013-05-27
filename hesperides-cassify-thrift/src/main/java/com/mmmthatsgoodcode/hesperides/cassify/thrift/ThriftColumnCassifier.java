@@ -18,23 +18,23 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.CharSet;
 
+import com.mmmthatsgoodcode.hesperides.core.Hesperides;
+import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier;
 import com.mmmthatsgoodcode.hesperides.cassify.HesperidesColumn;
 import com.mmmthatsgoodcode.hesperides.cassify.HesperidesColumn.AbstractType;
 import com.mmmthatsgoodcode.hesperides.cassify.HesperidesRow;
-import com.mmmthatsgoodcode.hesperides.core.Hesperides;
-import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 
 public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column> {
 	
 	@Override
-	public HesperidesRow cassify(Entry<String, List<Column>> row)
+	public HesperidesRow cassify(Entry<String, List<Column>> object)
 			throws TransformationException {
 		
-		LOG.debug("Processing {} columms for row {}", row.getValue().size(), row.getKey());
+		LOG.debug("Processing {} columms for row {}", object.getValue().size(), object.getKey());
 
-		HesperidesRow hesperidesRow = new HesperidesRow(row.getKey());
-		for(Column column:row.getValue()) {
+		HesperidesRow hesperidesRow = new HesperidesRow(object.getKey());
+		for(Column column:object.getValue()) {
 			
 			HesperidesColumn hesperidesColumn = new HesperidesColumn();
 			
@@ -137,17 +137,17 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 		return hesperidesRow;
 		
 	}
-
+	
 	@Override
-	public Entry<String, List<Column>> cassify(HesperidesRow hesperidesRow)
+	public Entry<String, List<Column>> cassify(HesperidesRow row)
 			throws TransformationException {
 
 		/* Row key
 		 * -------- */
 
-		SimpleEntry<String, List<Column>> result = new SimpleEntry<String, List<Column>>(hesperidesRow.getKey(), new ArrayList<Column>());
+		SimpleEntry<String, List<Column>> result = new SimpleEntry<String, List<Column>>(row.getKey(), new ArrayList<Column>());
 
-		for(HesperidesColumn hesperidesColumn:hesperidesRow.getColumns()) {
+		for(HesperidesColumn hesperidesColumn:row.getColumns()) {
 			// create Column
 			Column column = new Column();
 			
