@@ -43,6 +43,18 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		this.children.add(child);
 		return child;
 	}
+	
+	@Override
+	public void removeChild(Object name) {
+		
+		for(Iterator<Node> iterator = children.iterator(); iterator.hasNext(); ) {
+			
+			Node child = iterator.next();
+			if (child.getName().equals(name)) iterator.remove();
+			
+		}
+		
+	}
 
 	@Override
 	public void addChildren(Iterable<Node> children) {
@@ -54,6 +66,19 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	@Override
 	public List<Node> getChildren() {
 		return children;
+	}
+	
+	@Override
+	public Node getChild(Object name) {
+		
+		for(Node child:getChildren()) {
+			
+			if (child.getName().equals(name)) return child;
+			
+		}
+		
+		return null;
+		
 	}
 
 	@Override
@@ -144,18 +169,28 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	public String toString() {
 		
+		return toString(0);
+		
+	}
+	
+	public String toString(int depth) {
+		
 		ArrayList<String> out = new ArrayList<String>();
 		
 		out.add("Hint: "+this.valueHint);
 		out.add("Type: "+this.representedType.getSimpleName());
 		out.add("Name: "+this.name);
 		out.add("Value: "+this.value);
-		out.add("Children: ");
-		for (Node child:children) {
-			out.add(child.toString());
+		
+		
+		
+		String outString = (depth>0?StringUtils.repeat("--", depth)+"| ":"")+StringUtils.join(out, ", ")+"\n";
+		depth++;
+		for (Node child:getChildren()) {
+			outString += ((NodeImpl) child).toString(depth);
 		}
 		
-		return StringUtils.join(out, ", ");
+		return outString;
 		
 	}
 	

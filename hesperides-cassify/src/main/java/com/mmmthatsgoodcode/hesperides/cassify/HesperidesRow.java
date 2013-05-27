@@ -37,7 +37,7 @@ public class HesperidesRow {
 	}
 	
 	public String toString() {
-		return this.getKey()+" | "+StringUtils.join(columns, "\n");
+		return "Row key: "+this.getKey()+", ("+columns.size()+") Columns:\n"+StringUtils.join(columns, "\n");
 	}
 	
 	public boolean equals(Object object) {
