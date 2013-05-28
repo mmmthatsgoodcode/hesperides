@@ -1,13 +1,17 @@
 package com.mmmthatsgoodcode.hesperides.transform.impl;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,6 +26,8 @@ import com.esotericsoftware.reflectasm.FieldAccess;
 import com.mmmthatsgoodcode.hesperides.annotation.HBean;
 import com.mmmthatsgoodcode.hesperides.annotation.HBeanGetter;
 import com.mmmthatsgoodcode.hesperides.annotation.HBeanSetter;
+import com.mmmthatsgoodcode.hesperides.annotation.HConstructor;
+import com.mmmthatsgoodcode.hesperides.annotation.HConstructorField;
 import com.mmmthatsgoodcode.hesperides.annotation.Id;
 import com.mmmthatsgoodcode.hesperides.annotation.Ignore;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
@@ -187,24 +193,95 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 				if (node.getValueHint() == Hesperides.Hints.NULL) return null;
 				
 				Class type = node.getRepresentedType();
+				List<Node> totalChildren = new ArrayList<Node>(node.getChildren()); // keep a copy of this list we can alter throughout this process without hurting the passed in node
+
 				LOG.trace("Trasforming Node to an instance of {}", type);
 				
 				if (type.isPrimitive()) type = ClassUtils.primitiveToWrapper(type); // convert a primitive to its Class
+
 
 				/* Create instance of represented type
 				--------------------------------------- */
 				
 				// see if there is a constructor marked with @HConstructor
-				if (false) {
-					
-				} else {
 				
-					// fall back to using the no-arg constructor and use reflection to set fields
+				for (Constructor constructor:type.getConstructors()) {
 					
+					if (constructor.getAnnotation(HConstructor.class) != null) {
+						// collect parameter types and values in a type=>value map
+						List<Map<Class, Object>> values = new ArrayList<Map<Class, Object>>();
+						
+						for (Class parameterType:constructor.getParameterTypes()) {
+							HashMap<Class, Object> value = new HashMap<Class, Object>(); value.put(parameterType, null);
+							values.add(value);
+						}
+						
+						// it is guaranteed that constructor.getParameterAnnotations().length == constructor.getParameterTypes().length
+						Iterator<Map<Class, Object>> types = values.iterator();
+						for (Annotation[] annotationsOnField:constructor.getParameterAnnotations()) {
+							Map<Class, Object> value = types.next(); 
+							
+							for (Annotation annotation:annotationsOnField) {
+								if (annotation.annotationType().equals(HConstructorField.class)) {
+									LOG.debug("Found {} on @HConstructor annotated constructors' parameter list", annotation);
+									HConstructorField fieldAnnotation = (HConstructorField) annotation;
+									Class parameterType = ((Class[])((Set<Class>)value.keySet()).toArray(new Class[]{}))[0];
+									// there should be a child node with a string id of value.
+									Node fieldNode = node.getChild(fieldAnnotation.field());
+									if (fieldNode != null) {
+										
+										if (fieldNode.getRepresentedType().equals(parameterType)) {
+											
+											Field actualField = null;
+											try {
+												actualField = type.getField((String) fieldNode.getName());
+											} catch (NoSuchFieldException e) {
+												LOG.debug("Field {} is private or does not exist on {}", fieldNode.getName(), type.getSimpleName());
+											}
+
+											// update value
+											if (actualField != null) value.put(parameterType, TransformerRegistry.getInstance().get(actualField).transform(fieldNode));
+											else value.put(parameterType, TransformerRegistry.getInstance().get(fieldNode.getRepresentedType()).transform(fieldNode));
+											
+											totalChildren.remove(fieldNode); // remove this child node from the list of node fields we still need to process
+											
+										} else {
+											throw new TransformationException(annotation+" on constructor "+constructor+" was expecting a field of type "+parameterType+" but matching field node represents "+fieldNode.getRepresentedType());
+										}
+										
+									} else {
+										// value will stay null, and the field node will stay in totalChildren
+										LOG.debug("Constructor {} is expecting field {} but no such node was found", constructor, fieldAnnotation.field());
+									}
+									
+									// we should now have a list of values we can invoke the constructor with
+									try {
+										instance = (T) constructor.newInstance(value.values().toArray());
+										LOG.debug("Instantiated {} with @HConstructor {}!", type, constructor);
+									} catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
+										throw new TransformationException("Failed to invoke @HConstructor "+constructor, e);
+										
+									}
+									
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+				if (instance == null) {
+				
+					// fall back to using the no-arg constructor
+					LOG.debug("Attempting to find no-arg constructor on {}", type);
 					try {
 						ConstructorAccess<T> constructor = ConstructorAccess.get(type);
 						instance = constructor.newInstance();
 					} catch(RuntimeException e) {
+						LOG.warn("No no-arg constructor on {}, trying to create instance with Objenesis", type);
 						// ReflectASM failed to instantiate, lets try with skipping the constructor
 						Objenesis objenesis = new ObjenesisStd();
 						ObjectInstantiator instantiator = objenesis.getInstantiatorOf(type);
@@ -213,12 +290,9 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 					
 				}
 					
-				/* Start settings Fields
+				/* Start restoring Fields
 				------------------------- */
 				
-				
-				
-				List<Node> totalChildren = new ArrayList<Node>(node.getChildren());
 				// see if the type is @HBean annotated
 				
 				if (type.getAnnotation(HBean.class) != null) {
@@ -274,7 +348,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						
 					}					
 					
-					LOG.trace("Looking for set(FieldName) methods..");
+					LOG.trace("Looking for set(FieldName) methods for {} remaining fields..", totalChildren.size());
 					
 					// try to find setters for the remaining fields
 					for(Iterator<Node> iterator = totalChildren.iterator(); iterator.hasNext(); ) {
@@ -297,25 +371,27 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 							if (actualField!=null) setter.invoke(instance, TransformerRegistry.getInstance().get(actualField).transform(fieldNode));
 							else setter.invoke(instance, TransformerRegistry.getInstance().get(fieldNode.getRepresentedType()).transform(fieldNode));
 								
+							LOG.debug("Used setter {} to set field {}", setter, fieldNode.getName());
 							iterator.remove();
 						} catch (NoSuchMethodException e) {
 							// nope, no setter
-							LOG.debug("No method {}, with {} parameter",setterName, fieldNode.getRepresentedType());
+							LOG.debug("No setter {}, with {} parameter",setterName, fieldNode.getRepresentedType());
 						} catch (SecurityException | IllegalArgumentException | InvocationTargetException e) {
 							throw new TransformationException("Could not invoke setter", e);
 						}
 						
 					}
 					
-					if (totalChildren.size() > 0) LOG.debug("{} fields were not accessible via setters", node.getChildren().size());
+					if (totalChildren.size() > 0) LOG.debug("{} fields were not accessible via setters", totalChildren.size());
 					
 				}
 				
 				// use reflection to set remaining fields
-					
+				LOG.debug("Trying to set {} fields through reflection", totalChildren.size());	
+				
 				for(Node fieldNode:totalChildren) {
 					Class fieldNodeType = fieldNode.getRepresentedType();
-					LOG.trace("Trying to set {}", fieldNode);
+					LOG.trace("Trying to set {}", fieldNode.getName());
 
 					try {
 						Field field = type.getField((String) fieldNode.getName());
