@@ -103,6 +103,7 @@ public class AnnotatedObjectTransformerTest {
 
 		ComplexHConstructorAnnotatedType deserializedCo = transformer.transform(serializedCo);
 		
+		
 		assertTrue(deserializedCo.equals(complexHConstructorAnnotatedType));		
 		
 	}
