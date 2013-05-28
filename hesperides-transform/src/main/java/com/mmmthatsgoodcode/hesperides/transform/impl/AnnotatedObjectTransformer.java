@@ -253,21 +253,36 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 										// value will stay null, and the field node will stay in totalChildren
 										LOG.debug("Constructor {} is expecting field {} but no such node was found", constructor, fieldAnnotation.field());
 									}
-									
-									// we should now have a list of values we can invoke the constructor with
-									try {
-										instance = (T) constructor.newInstance(value.values().toArray());
-										LOG.debug("Instantiated {} with @HConstructor {}!", type, constructor);
-									} catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
-										throw new TransformationException("Failed to invoke @HConstructor "+constructor, e);
-										
-									}
+
 									
 								}
 								
 							}
 							
 						}
+						
+						
+						// we should now have a list of values we can invoke the constructor with
+						LOG.debug("Collected {} @HConstructor arguments {}", values.size(), values);
+						
+						// extract actual values
+						List<Object> parameters = new ArrayList<Object>();
+						for (Map<Class, Object> value:values) {
+							parameters.add(value.values().toArray()[0]);
+						}
+						
+						LOG.debug("Invoking @HConstructor with {} parameters", parameters);
+						try {
+							instance = (T) constructor.newInstance(parameters.toArray());
+							LOG.debug("Instantiated {} with @HConstructor {}!", type, constructor);
+							break;
+						} catch (InstantiationException | IllegalArgumentException | InvocationTargetException e) {
+							throw new TransformationException("Failed to invoke @HConstructor "+constructor, e);
+							
+						}
+						
+						
+						
 						
 					}
 					
@@ -401,9 +416,9 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						field.set(instance, TransformerRegistry.getInstance().get(field).transform(fieldNode));
 						
 					} catch (SecurityException e) {
-						throw new TransformationException("SecurityException caught while trying to set field "+fieldNode.getName()+" accessible on "+type.getSimpleName(), e);
+						LOG.debug("Caught SecurityException while trying to set field {} accessible on {}", fieldNode.getName(), type);
 					} catch (NoSuchFieldException e) {
-						throw new TransformationException("Field "+fieldNode.getName()+" does not exist on "+type.getSimpleName());
+						LOG.debug("Field {} inaccessible on {}", fieldNode.getName(), type);
 					}
 					
 				}
