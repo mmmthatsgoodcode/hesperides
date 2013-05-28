@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.google.common.io.Files;
 import com.mmmthatsgoodcode.hesperides.ComplexHBeanAnnotatedType;
+import com.mmmthatsgoodcode.hesperides.ComplexHConstructorAnnotatedType;
 import com.mmmthatsgoodcode.hesperides.ComplexPublicFieldsType;
 import com.mmmthatsgoodcode.hesperides.ComplexType;
 import com.mmmthatsgoodcode.hesperides.annotation.Id;
@@ -32,7 +33,7 @@ public class AnnotatedObjectTransformerTest {
 
 	private ComplexPublicFieldsType complexPublicFieldsType;
 	private ComplexHBeanAnnotatedType complexHBeanAnnotatedType;
-
+	private ComplexHConstructorAnnotatedType complexHConstructorAnnotatedType;
 	
 	@Before
 	public void setUp() throws IOException {
@@ -42,6 +43,10 @@ public class AnnotatedObjectTransformerTest {
 		
 		complexHBeanAnnotatedType = new ComplexHBeanAnnotatedType();
 		complexHBeanAnnotatedType.generateFields();
+		
+		complexHConstructorAnnotatedType = new ComplexHConstructorAnnotatedType();
+		complexHConstructorAnnotatedType.generateFields();
+		
 		
 	}
 	
@@ -57,10 +62,8 @@ public class AnnotatedObjectTransformerTest {
 		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexPublicFieldsType.class.getField("objectList"));
 	
 		Node serializedCo = transformer.transform(complexPublicFieldsType);
-		System.out.println(serializedCo);
 		
 		ComplexPublicFieldsType deserializedCo = transformer.transform(serializedCo);
-		
 
 		assertTrue(deserializedCo.equals(complexPublicFieldsType));
 		
@@ -81,11 +84,27 @@ public class AnnotatedObjectTransformerTest {
 		
 		ComplexHBeanAnnotatedType deserializedCo = transformer.transform(serializedCo);
 		
-		System.out.println(serializedCo);
-		System.out.println(deserializedCo);
-
-
 		assertTrue(deserializedCo.equals(complexHBeanAnnotatedType));		
 		
 	}
+	
+	@Test
+	public void testHConstructorInstantiationStrategy() throws NoSuchFieldException, SecurityException, RegisteredTransformerNotGenericException, TransformationException {
+		
+		AnnotatedObjectTransformer<ComplexHConstructorAnnotatedType> transformer = new AnnotatedObjectTransformer<ComplexHConstructorAnnotatedType>();
+
+		TransformerRegistry.getInstance().register(new Class[]{Integer.class, String.class}, ComplexHConstructorAnnotatedType.class.getField("integerKeyedMap"));
+		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class, Integer.class}, ComplexHConstructorAnnotatedType.class.getField("objectKeyedMap"));
+
+		TransformerRegistry.getInstance().register(new Class[]{Integer.class}, ComplexHConstructorAnnotatedType.class.getField("integerList"));
+		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexHConstructorAnnotatedType.class.getField("objectList"));
+		
+		Node serializedCo = transformer.transform(complexHConstructorAnnotatedType);
+
+		ComplexHConstructorAnnotatedType deserializedCo = transformer.transform(serializedCo);
+		
+		assertTrue(deserializedCo.equals(complexHConstructorAnnotatedType));		
+		
+	}
+	
 }
