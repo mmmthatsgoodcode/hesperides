@@ -1,6 +1,10 @@
 package com.mmmthatsgoodcode.hesperides;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.mmmthatsgoodcode.hesperides.annotation.HBean;
 import com.mmmthatsgoodcode.hesperides.annotation.HBeanGetter;
@@ -30,7 +34,18 @@ public class ComplexHBeanAnnotatedType extends ComplexType {
 	public void setSecretAnswer(Integer secretAnswer) {
 		this.secretAnswer = secretAnswer;
 	}	
+	
+	@Override
+	public String toString() {
 		
+		List<String> out = new ArrayList<String>();
+		
+		out.add("answer => "+whatIsTheMeaningOfLifeTheUniverseAndEverything());
+		out.add("secretAnswer => "+getSecretAnswer());
+
+		return StringUtils.join(out, ", \n")+"\n"+super.toString();
+		
+	}
 	
 	@Override
 	public boolean equals(Object object) {
