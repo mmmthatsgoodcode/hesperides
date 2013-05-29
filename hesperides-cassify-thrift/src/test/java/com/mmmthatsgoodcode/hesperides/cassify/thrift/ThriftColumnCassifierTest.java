@@ -32,12 +32,12 @@ public class ThriftColumnCassifierTest {
 		HesperidesColumn strValueColumn = new HesperidesColumn();
 		
 		strValueColumn = new HesperidesColumn();
-		strValueColumn.addComponent(new Date());
-		strValueColumn.addComponent(3.14f);
-		strValueColumn.addComponent(123);
-		strValueColumn.addComponent(9999999999999999l);
-		strValueColumn.addComponent("foo! bar!");
-		strValueColumn.addNullComponent();
+		strValueColumn.addNameComponent(new Date());
+		strValueColumn.addNameComponent(3.14f);
+		strValueColumn.addNameComponent(123);
+		strValueColumn.addNameComponent(9999999999999999l);
+		strValueColumn.addNameComponent("foo! bar!");
+		strValueColumn.addNullNameComponent();
 		strValueColumn.setValue("String value and stuff");
 		
 		strRow.addColumn(strValueColumn);
@@ -48,7 +48,7 @@ public class ThriftColumnCassifierTest {
 		HesperidesColumn intValueColumn = new HesperidesColumn();
 		
 		intValueColumn = new HesperidesColumn();
-		intValueColumn.addComponent(123);
+		intValueColumn.addNameComponent(123);
 		intValueColumn.setValue(456);
 		
 		intRow.addColumn(intValueColumn);
@@ -56,7 +56,7 @@ public class ThriftColumnCassifierTest {
 		HesperidesColumn longValueColumn = new HesperidesColumn();
 		
 		longValueColumn = new HesperidesColumn();
-		longValueColumn.addComponent(123);
+		longValueColumn.addNameComponent(123);
 		longValueColumn.setValue(456l);
 		
 		intRow.addColumn(longValueColumn);
@@ -64,7 +64,7 @@ public class ThriftColumnCassifierTest {
 		HesperidesColumn floatValueColumn = new HesperidesColumn();
 		
 		floatValueColumn = new HesperidesColumn();
-		floatValueColumn.addComponent(123);
+		floatValueColumn.addNameComponent(123);
 		floatValueColumn.setValue(456f);
 		
 		intRow.addColumn(floatValueColumn);
@@ -72,7 +72,7 @@ public class ThriftColumnCassifierTest {
 		HesperidesColumn booleanValueColumn = new HesperidesColumn();
 		
 		booleanValueColumn = new HesperidesColumn();
-		booleanValueColumn.addComponent(123);
+		booleanValueColumn.addNameComponent(123);
 		booleanValueColumn.setValue(true);
 		
 		intRow.addColumn(booleanValueColumn);
