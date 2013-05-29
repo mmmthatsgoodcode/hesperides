@@ -75,7 +75,7 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		
 		/* Add ancestor components
 		--------------------------- */
-		if (previous != null) hesperidesColumn.addComponents(previous.getComponents());
+		if (previous != null) hesperidesColumn.addNameComponents(previous.getNameComponents());
 		
 //		if (previous != null) {
 		
@@ -87,13 +87,13 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		------------------------------------------------------ */
 		if (node.getValueHint() == Hesperides.Hints.OBJECT) {
 		
-			hesperidesColumn.addComponent(node.getRepresentedType()); // add type
+			hesperidesColumn.addNameComponent(node.getRepresentedType()); // add type
 		
 		/* Create a Cassandra-compatible serialized byte array from node.value
 		----------------------------------------------------------------------- */
 		} else {
 
-			hesperidesColumn.addNullComponent(); // add placeholder for type
+			hesperidesColumn.addNullNameComponent(); // add placeholder for type
 			
 			switch(node.getValueHint()) {
 			
@@ -130,16 +130,16 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		switch(node.getNameHint()) {
 		
 			case Hesperides.Hints.STRING:
-				hesperidesColumn.addComponent((String) node.getName());
+				hesperidesColumn.addNameComponent((String) node.getName());
 			break;
 			case Hesperides.Hints.INT:
-				hesperidesColumn.addComponent((Integer) node.getName());
+				hesperidesColumn.addNameComponent((Integer) node.getName());
 			break;
 			case Hesperides.Hints.LONG:
-				hesperidesColumn.addComponent((Long) node.getName());
+				hesperidesColumn.addNameComponent((Long) node.getName());
 			break;
 			case Hesperides.Hints.FLOAT:
-				hesperidesColumn.addComponent((Float) node.getName());
+				hesperidesColumn.addNameComponent((Float) node.getName());
 			break;
 			default:
 				throw new TransformationException("HesperidesColumnTransformer does not support node name of type "+node.getName().getClass().getSimpleName());
@@ -155,7 +155,7 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		Node node = new NodeImpl();
 		
 		HesperidesColumn.ClassValue typeComponent = null;
-		if (column.getComponents().get(column.getComponents().size()-1) instanceof HesperidesColumn.ClassValue) typeComponent = (HesperidesColumn.ClassValue) column.getComponents().get(column.getComponents().size()-1);
+		if (column.getNameComponents().get(column.getNameComponents().size()-1) instanceof HesperidesColumn.ClassValue) typeComponent = (HesperidesColumn.ClassValue) column.getNameComponents().get(column.getNameComponents().size()-1);
 		
 		/* Get type from Column's component list
 		----------------------------------------- */
@@ -163,7 +163,7 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		
 		/* Get name from Column's component list
 		----------------------------------------- */
-		HesperidesColumn.AbstractType nameComponent = column.getComponents().get(column.getComponents().size()-1);
+		HesperidesColumn.AbstractType nameComponent = column.getNameComponents().get(column.getNameComponents().size()-1);
 		
 		node.setName(Hesperides.Hints.typeToHint(nameComponent.getValue().getClass()), nameComponent.getValue());
 		
@@ -204,8 +204,8 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 		for (HesperidesColumn hay:haystack) {
 			
 			if (
-					hay.getComponents().size() == needle.getComponents().size()+2 // any direct descendant will have 2 more components than the parents inheritable component
-					&& hay.getComponents().subList(0, needle.getComponents().size()).equals(needle.getComponents()) // the beginning of the hay's components must match the parents inheritable components
+					hay.getNameComponents().size() == needle.getNameComponents().size()+2 // any direct descendant will have 2 more components than the parents inheritable component
+					&& hay.getNameComponents().subList(0, needle.getNameComponents().size()).equals(needle.getNameComponents()) // the beginning of the hay's components must match the parents inheritable components
 					) {
 				descendants.add(hay);
 			}
@@ -218,7 +218,7 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 	public HesperidesColumn rootColumnIn(List<HesperidesColumn> haystack) {
 		
 		for (HesperidesColumn hay:haystack) {
-			if (hay.getComponents().size() == 2 && hay.getComponents().get(0) instanceof HesperidesColumn.ClassValue) {
+			if (hay.getNameComponents().size() == 2 && hay.getNameComponents().get(0) instanceof HesperidesColumn.ClassValue) {
 				return hay;
 			}
 		}
