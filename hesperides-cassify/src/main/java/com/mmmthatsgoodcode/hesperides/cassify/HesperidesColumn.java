@@ -11,7 +11,7 @@ import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 
 public class HesperidesColumn {
 
-	private List<AbstractType> components = new ArrayList<AbstractType>();
+	private List<AbstractType> nameComponents = new ArrayList<AbstractType>();
 	private AbstractType value = new NullValue();
 	
 	public abstract static class AbstractType<T> {
@@ -239,39 +239,39 @@ public class HesperidesColumn {
 //		setValueTypeHintComponent(Hesperides.Hints.NULL); // set default value type hint
 	}
 	
-	public void addComponent(String value) {
-		this.components.add(new StringValue(value));
+	public void addNameComponent(String value) {
+		this.nameComponents.add(new StringValue(value));
 	}
 	
-	public void addComponent(Date value) {
-		this.components.add(new DateValue(value));
+	public void addNameComponent(Date value) {
+		this.nameComponents.add(new DateValue(value));
 	}
 
-	public void addComponent(Integer value) {
-		this.components.add(new IntegerValue(value));
+	public void addNameComponent(Integer value) {
+		this.nameComponents.add(new IntegerValue(value));
 	}
 	
-	public void addComponent(Float value) {
-		this.components.add(new FloatValue(value));
+	public void addNameComponent(Float value) {
+		this.nameComponents.add(new FloatValue(value));
 	}
 	
-	public void addComponent(Long value) {
-		this.components.add(new LongValue(value));
+	public void addNameComponent(Long value) {
+		this.nameComponents.add(new LongValue(value));
 	}
 	
-	public void addComponent(Boolean value) {
-		this.components.add(new BooleanValue(value));
+	public void addNameComponent(Boolean value) {
+		this.nameComponents.add(new BooleanValue(value));
 	}
 	
-	public void addComponent(Class<? extends Object> value) {
-		this.components.add(new ClassValue(value));
+	public void addNameComponent(Class<? extends Object> value) {
+		this.nameComponents.add(new ClassValue(value));
 	}
 	
 	/**
 	 * This is a placeholder component
 	 */
-	public void addNullComponent() {
-		this.components.add(new NullValue());
+	public void addNullNameComponent() {
+		this.nameComponents.add(new NullValue());
 	}
 	
 	/**
@@ -279,12 +279,12 @@ public class HesperidesColumn {
 	 * I.e. it does not enforce types to match one of the above setters' argument types
 	 * @param components
 	 */
-	public void addComponents(Collection<? extends AbstractType> components) {
-		this.components.addAll(components);
+	public void addNameComponents(Collection<? extends AbstractType> components) {
+		this.nameComponents.addAll(components);
 	}
 	
-	public List<AbstractType> getComponents() {
-		return this.components;
+	public List<AbstractType> getNameComponents() {
+		return this.nameComponents;
 	}
 
 	public void setValue(String value) {
@@ -329,13 +329,13 @@ public class HesperidesColumn {
 		
 		HesperidesColumn other = (HesperidesColumn) object;
 		
-		return this.getComponents().equals(other.getComponents())
+		return this.getNameComponents().equals(other.getNameComponents())
 				&& this.getValue().equals(other.getValue());
 		
 	}
 	
 	public String toString() {
-		String out = StringUtils.join(components.toArray(), " -> ");
+		String out = StringUtils.join(nameComponents.toArray(), " -> ");
 		out += " = "+this.value.toString();
 		
 		return out;

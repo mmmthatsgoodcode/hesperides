@@ -58,25 +58,25 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 			
 				switch(getHesperidesHint(alias)) {
 					case Hesperides.Hints.STRING:
-						hesperidesColumn.addComponent(new String(componentValue.array(), Charset.forName("UTF-8")));
+						hesperidesColumn.addNameComponent(new String(componentValue.array(), Charset.forName("UTF-8")));
 					break;
 					case Hesperides.Hints.FLOAT:
-						hesperidesColumn.addComponent(componentValue.asFloatBuffer().get());
+						hesperidesColumn.addNameComponent(componentValue.asFloatBuffer().get());
 					break;
 					case Hesperides.Hints.LONG:
-						hesperidesColumn.addComponent(componentValue.asLongBuffer().get());
+						hesperidesColumn.addNameComponent(componentValue.asLongBuffer().get());
 					break;
 					case Hesperides.Hints.DATE:
-						hesperidesColumn.addComponent(new Date(componentValue.asLongBuffer().get()));
+						hesperidesColumn.addNameComponent(new Date(componentValue.asLongBuffer().get()));
 					break;
 					case Hesperides.Hints.NULL:
-						hesperidesColumn.addNullComponent();
+						hesperidesColumn.addNullNameComponent();
 					break;
 					case Hesperides.Hints.BOOLEAN:
-						hesperidesColumn.addComponent(componentValue.get() == (byte)1?true:false);
+						hesperidesColumn.addNameComponent(componentValue.get() == (byte)1?true:false);
 					break;
 					case Hesperides.Hints.INT:
-						hesperidesColumn.addComponent(componentValue.asIntBuffer().get());
+						hesperidesColumn.addNameComponent(componentValue.asIntBuffer().get());
 					break;
 					default:
 						throw new TransformationException("Could not map alias "+alias+" to a Hesperides.Hint, check configuration");
@@ -89,14 +89,14 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 
 			}
 			
-			LOG.debug("Processed {} total components in column name", hesperidesColumn.getComponents().size());
+			LOG.debug("Processed {} total components in column name", hesperidesColumn.getNameComponents().size());
 			
 			
 			/* Column value
 			 * ------------- */
 			
 			// last component should be the type hint
-			int valueHint = ((HesperidesColumn.IntegerValue) hesperidesColumn.getComponents().get(hesperidesColumn.getComponents().size()-1)).getValue();
+			int valueHint = ((HesperidesColumn.IntegerValue) hesperidesColumn.getNameComponents().get(hesperidesColumn.getNameComponents().size()-1)).getValue();
 			LOG.debug("Processing value of hint {}", valueHint);
 			
 			switch(valueHint) {
@@ -160,10 +160,10 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 			 * - end of component byte: 0
 			 * A total max size of 64KB must be enforced on column name */
 			
-			hesperidesColumn.addComponent(hesperidesColumn.getValue().getHint()); // value hint component
+			hesperidesColumn.addNameComponent(hesperidesColumn.getValue().getHint()); // value hint component
 			
 			ByteArrayOutputStream columnNameBytes = new ByteArrayOutputStream();
-			for(AbstractType component:hesperidesColumn.getComponents()) {
+			for(AbstractType component:hesperidesColumn.getNameComponents()) {
 				
 				ByteBuffer prefix = ByteBuffer.wrap(new byte[4]);
 				byte aliasFlag = 0;	aliasFlag = (byte) (aliasFlag | (1 << 0));
