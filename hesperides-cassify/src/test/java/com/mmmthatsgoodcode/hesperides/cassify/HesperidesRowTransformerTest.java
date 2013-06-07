@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
