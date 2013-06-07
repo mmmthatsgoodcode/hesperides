@@ -1,4 +1,4 @@
-package com.mmmthatsgoodcode.hesperides.cassify;
+package com.mmmthatsgoodcode.hesperides.cassify.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
