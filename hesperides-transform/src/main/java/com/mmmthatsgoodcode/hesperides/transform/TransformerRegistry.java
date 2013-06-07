@@ -21,6 +21,7 @@ public class TransformerRegistry {
 	public static final Transformer DEFAULT_SERIALIZER = new AnnotatedObjectTransformer();
 	private ConcurrentHashMap<Class<? extends Object>, Transformer> serializers = new ConcurrentHashMap<Class<? extends Object>, Transformer>();
 	private ConcurrentHashMap<Field, Transformer> fieldSpecificSerializers = new ConcurrentHashMap<Field, Transformer>();
+	private ConcurrentHashMap<String, Transformer> fieldNameSpecificSerializers = new ConcurrentHashMap<String, Transformer>();
 	
 	/**
 	 * Create the TransformerRegistry with some default transformers
@@ -60,6 +61,10 @@ public class TransformerRegistry {
 		this.fieldSpecificSerializers.put(field, serializer);
 	}
 	
+	public void register(String fieldName, Transformer serializer) {
+		this.fieldNameSpecificSerializers.put(fieldName, serializer);
+	}
+	
 	public void register(Transformer serializer, Class<? extends Object>... classes) {
 		for (Class<? extends Object> type:classes) {
 			register(type, serializer);
@@ -69,6 +74,12 @@ public class TransformerRegistry {
 	public void register(Transformer serializer, Field... fields) {
 		for (Field field:fields) {
 			register(field, serializer);
+		}
+	}
+	
+	public void register(Transformer serializer, String... fieldNames) {
+		for (String fieldName:fieldNames) {
+			register(fieldName, serializer);
 		}
 	}
 	
