@@ -2,6 +2,7 @@ package com.mmmthatsgoodcode.hesperides.core;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -10,6 +11,9 @@ import org.apache.commons.lang.StringUtils;
 
 public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
+	private Date created = new Date();
+	private int ttl = 0;
+	
 	private int valueHint = Hesperides.Hints.OBJECT;
 	private int nameHint = Hesperides.Hints.STRING;
 
@@ -91,6 +95,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	public void setValue(String value) {
 		this.value = (T) value;
 		this.valueHint = Hesperides.Hints.STRING;
+		this.representedType = String.class;
 	}
 
 
@@ -98,6 +103,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	public void setValue(Integer value) {
 		this.value = (T) value;
 		this.valueHint = Hesperides.Hints.INT;		
+		this.representedType = Integer.class;
 	}
 
 
@@ -105,6 +111,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	public void setValue(Long value) {
 		this.value = (T) value;
 		this.valueHint = Hesperides.Hints.LONG;		
+		this.representedType = Long.class;
 	}
 
 
@@ -112,6 +119,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	public void setValue(Float value) {
 		this.value = (T) value;
 		this.valueHint = Hesperides.Hints.FLOAT;		
+		this.representedType = Float.class;
 	}
 
 
@@ -119,13 +127,15 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	public void setValue(Boolean value) {
 		this.value = (T) value;
 		this.valueHint = Hesperides.Hints.BOOLEAN;
+		this.representedType = Boolean.class;
 	}
 
 
 	@Override
 	public void setValue(ByteBuffer value) {
 		this.value = (T) value;
-		this.valueHint = Hesperides.Hints.BYTES;		
+		this.valueHint = Hesperides.Hints.BYTES;	
+		this.representedType = ByteBuffer.class;
 	}
 	
 	public void setNullValue() {
@@ -199,8 +209,8 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		if (!Node.class.isAssignableFrom(object.getClass())) return false;
 		NodeImpl other = (NodeImpl) object;
 		
-//		System.out.println(other.getType().equals(this.getType())?"yes":"no");
-//		System.out.println(other.getHint() == this.getHint()?"yes":"no, "+other.getHint()+" != "+this.getHint());
+//		System.out.println(other.getRepresentedType().equals(this.getRepresentedType())?"yes":"no");
+//		System.out.println(other.getValueHint() == this.getValueHint()?"yes":"no, "+other.getValueHint()+" != "+this.getValueHint());
 //		System.out.println(other.getNameHint() == this.getNameHint()?"yes":"no");
 //		System.out.println(other.getChildren().equals(this.getChildren())?"yes":"no");
 //		System.out.println("---");
@@ -210,6 +220,26 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 				&& other.getNameHint() == this.getNameHint()
 				&& other.getName().equals(this.getName())
 				&& other.getChildren().equals(this.getChildren());
+	}
+
+	@Override
+	public int getTtl() {
+		return this.ttl;
+	}
+
+	@Override
+	public void setTtl(int ttl) {
+		this.ttl = ttl;
+	}
+
+	@Override
+	public Date getCreated() {
+		return this.created;
+	}
+
+	@Override
+	public void setCreated(Date created) {
+		this.created = created;
 	}
 
 
