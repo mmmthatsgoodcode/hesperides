@@ -2,12 +2,13 @@ package com.mmmthatsgoodcode.hesperides.cassify;
 
 import java.util.Map;
 
-public interface ConfigurableCassifier {
+import com.google.common.collect.BiMap;
 
-	public Map<Integer, Character> getCassandraTypeAliases();
-	public Character getCassandraTypeAlias(int hint);
-	public Integer getHesperidesHint(Character alias);
+public interface ConfigurableCassifier {
+	
+	public BiMap<String, Character> getCassandraTypeAliases();
 	public String getColumnFamilyName();
 	public String getKeyspaceName();
+	public String dynamicCompositeTypeDescriptor();
 	
 }

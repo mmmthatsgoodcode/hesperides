@@ -1,28 +1,26 @@
-package com.mmmthatsgoodcode.hesperides.cassify.thrift;
-
-import static org.junit.Assert.*;
+package com.mmmthatsgoodcode.hesperides.cassify.astyanax;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.mmmthatsgoodcode.hesperides.cassify.astyanax.AstyanaxCassifier.HesperidesDynamicComposite;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.netflix.astyanax.model.Column;
+import com.netflix.astyanax.model.DynamicComposite;
 
-public class ThriftColumnCassifierTest {
+public class AstyanaxCassifierTest {
 
-	ThriftColumnCassifier cassifier = new ThriftColumnCassifier();
-	
+	private AstyanaxCassifier cassifier = new AstyanaxCassifier();
 	List<HesperidesRow> rows = new ArrayList<HesperidesRow>();
-	
+
 	@Before
 	public void setUp() {
 		
@@ -48,6 +46,7 @@ public class ThriftColumnCassifierTest {
 		HesperidesColumn intValueColumn = new HesperidesColumn();
 		
 		intValueColumn = new HesperidesColumn();
+		intValueColumn.addNameComponent(Integer.class.getName());
 		intValueColumn.addNameComponent(123);
 		intValueColumn.setValue(456);
 		
@@ -77,25 +76,26 @@ public class ThriftColumnCassifierTest {
 		
 		intRow.addColumn(booleanValueColumn);
 		
-		
 	}
 	
 	@Test
 	public void testCassify() throws TransformationException {
 		
-		for (HesperidesRow row:rows) {
+		for(HesperidesRow row:this.rows) {
 
-			Entry<String, List<Column>> thriftRow = cassifier.cassify(row);
-			HesperidesRow deserializedRow = cassifier.cassify(thriftRow);
+			Entry<String, List<Column<HesperidesDynamicComposite>>> astyanaxRow = cassifier.cassify(row);
+			System.out.println(astyanaxRow);
 
-			System.out.print(deserializedRow+"\n");
-			System.out.println(row);
 			
-			assertTrue(row.equals(deserializedRow));			
+			HesperidesRow transformedRow = cassifier.cassify(astyanaxRow.getValue(), astyanaxRow.getKey());
+			
+			System.out.println(row);
+			System.out.println(transformedRow);
+			
 			
 		}
 		
-
+		
 		
 	}
 	

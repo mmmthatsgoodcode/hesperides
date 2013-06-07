@@ -1,18 +1,24 @@
-package com.mmmthatsgoodcode.hesperides.cassify;
+package com.mmmthatsgoodcode.hesperides.cassify.model;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.commons.lang.StringUtils;
 
+import com.mmmthatsgoodcode.hesperides.core.AbstractSerializer;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
+import com.mmmthatsgoodcode.hesperides.core.Serializer;
 
 public class HesperidesColumn {
 
 	private List<AbstractType> nameComponents = new ArrayList<AbstractType>();
 	private AbstractType value = new NullValue();
+	private Date created = new Date();
+	private int ttl = 0;
 	
 	public abstract static class AbstractType<T> {
 		
@@ -29,9 +35,30 @@ public class HesperidesColumn {
 			if (this.value != null) return this.value.toString();
 			return "null";
 		}
+		
+		public Serializer<T> getSerializer() {	
+			return AbstractSerializer.infer(getValue());
+			
+		}
 
 		public abstract int getHint();
 		
+		public static final AbstractType infer(Object object) throws IllegalArgumentException {
+						
+			if (object == null) return new NullValue();
+			if (String.class.isAssignableFrom(object.getClass())) return new StringValue((String) object);
+			if (Integer.class.isAssignableFrom(object.getClass())) return new IntegerValue((Integer) object);
+			if (Float.class.isAssignableFrom(object.getClass())) return new FloatValue((Float) object);
+			if (Long.class.isAssignableFrom(object.getClass())) return new LongValue((Long) object);
+			if (String.class.isAssignableFrom(object.getClass())) return new StringValue((String) object);
+			if (Boolean.class.isAssignableFrom(object.getClass())) return new BooleanValue((Boolean) object);
+			if (ByteBuffer.class.isAssignableFrom(object.getClass())) return new ByteValue((ByteBuffer) object);
+
+			if (Date.class.isAssignableFrom(object.getClass())) return new DateValue((Date) object);
+
+			throw new IllegalArgumentException();
+			
+		}
 		
 	}
 
@@ -47,6 +74,7 @@ public class HesperidesColumn {
 		}
 		
 		
+		
 		public boolean equals(Object object) {
 			
 			if (!(object instanceof NullValue)) return false;
@@ -55,6 +83,7 @@ public class HesperidesColumn {
 			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
 			
 		}
+
 		
 	}
 	
@@ -77,6 +106,7 @@ public class HesperidesColumn {
 			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
 			
 		}
+
 		
 	}
 	
@@ -99,6 +129,7 @@ public class HesperidesColumn {
 			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
 			
 		}
+
 	
 	}
 	
@@ -121,6 +152,7 @@ public class HesperidesColumn {
 			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
 			
 		}
+
 		
 	}
 
@@ -143,7 +175,7 @@ public class HesperidesColumn {
 			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
 			
 		}
-		
+
 	}
 	
 	public static class LongValue extends AbstractType<Long> {
@@ -165,6 +197,7 @@ public class HesperidesColumn {
 			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
 			
 		}
+
 		
 	}
 	
@@ -188,11 +221,16 @@ public class HesperidesColumn {
 			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
 			
 		}
+
 		
 	}
 	
 	public static class ByteValue extends AbstractType<byte[]> {
 
+		public ByteValue(ByteBuffer value) {
+			setValue(value.array());
+		}
+		
 		public ByteValue(byte[] value) {
 			setValue(value);
 		}
@@ -213,30 +251,8 @@ public class HesperidesColumn {
 		
 	}
 	
-	public static class ClassValue extends AbstractType<Class<? extends Object>> {
-		
-		public ClassValue(Class<? extends Object> value) {
-			setValue(value);
-		}
-
-		@Override
-		public int getHint() {
-			return Hesperides.Hints.CLASS;
-		}
-		
-		public boolean equals(Object object) {
-			
-			if (!(object instanceof ClassValue)) return false;
-			ClassValue other = (ClassValue) object;
-			
-			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
-			
-		}
-		
-	}
-	
 	public HesperidesColumn() {
-//		setValueTypeHintComponent(Hesperides.Hints.NULL); // set default value type hint
+
 	}
 	
 	public void addNameComponent(String value) {
@@ -263,8 +279,8 @@ public class HesperidesColumn {
 		this.nameComponents.add(new BooleanValue(value));
 	}
 	
-	public void addNameComponent(Class<? extends Object> value) {
-		this.nameComponents.add(new ClassValue(value));
+	public void addNameComponent(AbstractType component) {
+		this.nameComponents.add(component);
 	}
 	
 	/**
@@ -322,6 +338,23 @@ public class HesperidesColumn {
 	public AbstractType getValue() {
 		return this.value;
 	}
+	
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+	
+	public Date getCreated() {
+		return this.created;
+	}
+	
+	public void setTtl(int ttl) {
+		this.ttl = ttl;
+	}
+	
+	public int getTtl() {
+		return this.ttl;
+	}
+
 
 	public boolean equals(Object object) {
 		
