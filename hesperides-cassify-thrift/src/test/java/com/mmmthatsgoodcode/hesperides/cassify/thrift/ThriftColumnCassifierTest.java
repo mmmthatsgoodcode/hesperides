@@ -13,8 +13,8 @@ import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.mmmthatsgoodcode.hesperides.cassify.HesperidesColumn;
-import com.mmmthatsgoodcode.hesperides.cassify.HesperidesRow;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 
 public class ThriftColumnCassifierTest {

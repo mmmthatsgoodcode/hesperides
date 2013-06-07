@@ -21,11 +21,12 @@ import org.apache.commons.lang.CharSet;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier;
-import com.mmmthatsgoodcode.hesperides.cassify.HesperidesColumn;
-import com.mmmthatsgoodcode.hesperides.cassify.HesperidesColumn.AbstractType;
-import com.mmmthatsgoodcode.hesperides.cassify.HesperidesRow;
+import com.mmmthatsgoodcode.hesperides.cassify.Cassifier;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.AbstractType;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 
-public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column> {
+public class ThriftColumnCassifier extends AbstractConfigurableCassifier implements Cassifier<Column> {
 	
 	@Override
 	public HesperidesRow cassify(Entry<String, List<Column>> object)
@@ -56,7 +57,7 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 				nameBytes.get(componentValue.array());
 				nameBytes.position(nameBytes.position()+1); // dont care about the end-of-component byte
 			
-				switch(getHesperidesHint(alias)) {
+				switch(HINT_TO_CASSANDRA_TYPE.get( getCassandraTypeAliases().inverse().get(alias) )) {
 					case Hesperides.Hints.STRING:
 						hesperidesColumn.addNameComponent(new String(componentValue.array(), Charset.forName("UTF-8")));
 					break;
@@ -167,7 +168,7 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 				
 				ByteBuffer prefix = ByteBuffer.wrap(new byte[4]);
 				byte aliasFlag = 0;	aliasFlag = (byte) (aliasFlag | (1 << 0));
-				Character aliasChar = getCassandraTypeAlias( component.getHint() );
+				Character aliasChar = getCassandraTypeAliases().get( HINT_TO_CASSANDRA_TYPE.inverse().get( component.getHint() ) );
 				if (aliasChar == null) throw new TransformationException("Could not get alias for type "+Hesperides.Hints.typeToHint(component.getValue().getClass()));
 				byte aliasByte = (byte) aliasChar.charValue();
 				
