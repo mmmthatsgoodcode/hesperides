@@ -1,14 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mmmthatsgoodcode</groupId>
+	<groupId>com.mmmthatsgoodcode.hesperides</groupId>
 	<artifactId>hesperides</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<version>0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
 	<name>hesperides</name>
 	<url>http://maven.apache.org</url>
+
+	<repositories>
+		<repository>
+			<id>release</id>
+			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<id>snapshot</id>
+			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<id>central</id>
+			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/central/</url>
+		</repository>
+	</repositories>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,15 +34,35 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.netflix.astyanax</groupId>
-			<artifactId>astyanax</artifactId>
-			<version>1.56.25</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+			<optional>false</optional>
 		</dependency>
 	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>mmmthatsgoodcode</id>
+			<name>MMMThatsGoodCode</name>
+			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>mmmthatsgoodcode</id>
+			<name>MMMThatsGoodCode</name>
+			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<build>
 		<pluginManagement>
@@ -34,7 +70,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.0</version>
+					<version>3.1</version>
 					<configuration>
 						<source>1.7</source>
 						<target>1.7</target>
@@ -43,5 +79,13 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-	
+	<modules>
+		<module>hesperides-transform</module>
+		<module>hesperides-cassify</module>
+		<module>hesperides-core</module>
+		<module>hesperides-cassify-thrift</module>
+		<module>hesperides-cassify-astyanax</module>
+		<module>hesperides-cassify-hector</module>
+		<module>hesperides-client</module>
+	</modules>
 </project>
