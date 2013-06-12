@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.reflectasm.ConstructorAccess;
 import com.esotericsoftware.reflectasm.FieldAccess;
+import com.esotericsoftware.reflectasm.MethodAccess;
 import com.mmmthatsgoodcode.hesperides.annotation.HBean;
 import com.mmmthatsgoodcode.hesperides.annotation.HBeanGetter;
 import com.mmmthatsgoodcode.hesperides.annotation.HBeanSetter;
@@ -59,7 +60,9 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 	public Node transform(T object) throws TransformationException {
 						
 		LOG.trace("Transforming object {} to Node", object==null?null:object.getClass());
-		
+		MethodAccess methodAccess = MethodAccess.get(object.getClass());
+		FieldAccess fieldAccess = FieldAccess.get(object.getClass());
+				
 		Node node = new NodeImpl<String, T>();
 		
 		if (object == null) {
@@ -102,7 +105,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 								else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 							}
 							
-							Object fieldValue =  method.invoke(object, (Object[])null);
+							Object fieldValue =  methodAccess.invoke(object, method.getName());
 							childNode = TransformerRegistry.getInstance().get(hField.toField()).transform(fieldValue);
 							childNode.setTtl(hField.getTtl());
 							
@@ -111,7 +114,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						}
 						
 						if (hField == null) {
-							Object fieldValue =  method.invoke(object, (Object[])null);
+							Object fieldValue =  methodAccess.invoke(object, method.getName());
 							childNode = TransformerRegistry.getInstance().get(fieldValue.getClass()).transform(fieldValue);
 						}
 						

@@ -9,7 +9,6 @@
 		<version>0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>hesperides-cassify-astyanax</artifactId>
-	<version>1.0-SNAPSHOT</version>
 	<name>hesperides-cassify-astyanax</name>
 	<url>http://maven.apache.org</url>
 	<properties>
