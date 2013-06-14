@@ -2,22 +2,28 @@ package com.mmmthatsgoodcode.hesperides.cassify;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.mmmthatsgoodcode.hesperides.ComplexRow;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.utils.other.RiggedRand.ParticipantDistributionException;
 
 public class HesperidesRowTransformerTest {
 
 	private Node node = null;
 	private HesperidesRowTransformer transformer = new HesperidesRowTransformer();
-	
+	private static final Logger LOG = LoggerFactory.getLogger(HesperidesRowTransformerTest.class);
+
 	@Before
 	public void setUp() {
 		
@@ -57,13 +63,25 @@ public class HesperidesRowTransformerTest {
 
 		Node node = this.transformer.transform(row);
 		
-		System.out.println(this.node);
-
-		System.out.println(node);
-		
 		assertTrue(this.node.equals(node));
 
 		
 	}
+	
+	@Test
+	public void testVolume() throws ParticipantDistributionException, TransformationException {
+		
+		List<Node> nodes = new ArrayList<Node>();
+		
+		Long start = System.nanoTime();
+		LOG.debug("Transforming {} Nodes to rows", nodes.size());
+
+		
+		Float time = new Float((System.nanoTime() - start)/1000000);
+		LOG.debug("Done in {}ms or {}ms/object", time, time/nodes.size());
+
+		
+	}
+	
 	
 }

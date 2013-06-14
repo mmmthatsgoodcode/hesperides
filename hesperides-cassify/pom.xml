@@ -26,6 +26,11 @@
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>com.mmmthatsgoodcode.utils</groupId>
+			<artifactId>mmmthatsgoodcode-utils</artifactId>
+			<version>0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
