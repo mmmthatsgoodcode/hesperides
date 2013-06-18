@@ -15,6 +15,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.Files;
 import com.mmmthatsgoodcode.hesperides.ComplexHBeanAnnotatedType;
@@ -34,6 +36,8 @@ public class AnnotatedObjectTransformerTest {
 	private ComplexPublicFieldsType complexPublicFieldsType;
 	private ComplexHBeanAnnotatedType complexHBeanAnnotatedType;
 	private ComplexHConstructorAnnotatedType complexHConstructorAnnotatedType;
+	
+	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedObjectTransformerTest.class);
 	
 	@Before
 	public void setUp() throws IOException {
@@ -105,6 +109,46 @@ public class AnnotatedObjectTransformerTest {
 		
 		
 		assertTrue(deserializedCo.equals(complexHConstructorAnnotatedType));		
+		
+	}
+	
+	@Test
+	public void testVolume() throws TransformationException, NoSuchFieldException, SecurityException, RegisteredTransformerNotGenericException {
+		
+		List<ComplexType> objects = new ArrayList<ComplexType>();
+		List<Node> nodes = new ArrayList<Node>();
+		AnnotatedObjectTransformer transformer = new AnnotatedObjectTransformer();
+		
+		TransformerRegistry.getInstance().register(new Class[]{Integer.class, String.class}, ComplexHConstructorAnnotatedType.class.getField("integerKeyedMap"));
+		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class, Integer.class}, ComplexHConstructorAnnotatedType.class.getField("objectKeyedMap"));
+
+		TransformerRegistry.getInstance().register(new Class[]{Integer.class}, ComplexHConstructorAnnotatedType.class.getField("integerList"));
+		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexHConstructorAnnotatedType.class.getField("objectList"));
+
+		
+		LOG.debug("Generating 1000 objects");
+		for(int i = 1; i < 1000; i++) {
+						
+		
+			objects.add(new ComplexHConstructorAnnotatedType().generateFields());
+			
+		}
+		LOG.debug("Done");
+		
+		LOG.debug("Transforming {} objects to Node", objects.size());
+		
+		Long start = System.nanoTime();
+		for(ComplexType object:objects) {
+			
+			nodes.add(transformer.transform(object));
+			
+		}
+		Float time = new Float((System.nanoTime() - start)/1000000);
+		
+		LOG.debug("Done in {}ms or {}ms/object", time, time/objects.size());
+		
+		
+		
 		
 	}
 	

@@ -7,9 +7,8 @@
     <artifactId>hesperides</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
-  <groupId>com.mmmthatsgoodcode</groupId>
+  <groupId>com.mmmthatsgoodcode.hesperides</groupId>
   <artifactId>hesperides-client</artifactId>
-  <version>0.1-SNAPSHOT</version>
   <name>hesperides-client</name>
   <url>http://maven.apache.org</url>
   <properties>
