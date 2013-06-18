@@ -94,9 +94,9 @@ public class AstyanaxCassifierTest {
 			
 			
 		}
-		
-		
-		
+			
 	}
+	
+	
 	
 }
