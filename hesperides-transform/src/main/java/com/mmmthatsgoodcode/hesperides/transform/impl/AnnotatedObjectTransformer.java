@@ -140,14 +140,14 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						Method getter = object.getClass().getMethod("get"+StringUtils.capitalize(field.getName()), (Class<?>[])null);
 						iterator.remove();
 						
-						Node childNode = TransformerRegistry.getInstance().get(field).transform( getter.invoke(object, (Object[])null) );
+						Node childNode = TransformerRegistry.getInstance().get(field).transform( methodAccess.invoke(object, getter.getName() ) );
 						childNode.setName(Hesperides.Hints.STRING, field.getName());
 						node.addChild(childNode);
 						
 					} catch (NoSuchMethodException e) {
 						// nope
 						
-					} catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					} catch (SecurityException | IllegalArgumentException e) {
 						// could not invoke getter
 						throw new TransformationException("Could not invoke getter", e);
 					}
@@ -166,7 +166,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 			HesperidesField hField = new HesperidesField(field);
 			
 			try {
-				LOG.trace("Looking at field {} with value {}", field.getName(), field.get(object));
+				LOG.trace("Looking at field {}", field.getName());
 				field.setAccessible(true);
 
 				// see if this is an @Ignore 'd field
@@ -179,11 +179,11 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 					if (hField.isNodeId()) {
 						LOG.trace("Field {} is an @Id field", field.getName());
 						int idFieldTypeHint = Hesperides.Hints.typeToHint(field.getType());
-						if (idFieldTypeHint == Hesperides.Hints.STRING) node.setName(idFieldTypeHint, field.get(object));
+						if (idFieldTypeHint == Hesperides.Hints.STRING) node.setName(idFieldTypeHint, fieldAccess.get(object, field.getName()));
 						else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 					}
 
-					childNode = TransformerRegistry.getInstance().get(field).transform(field.get(object));				
+					childNode = TransformerRegistry.getInstance().get(field).transform(fieldAccess.get(object, field.getName()));				
 					childNode.setName(Hesperides.Hints.STRING, field.getName());
 					node.addChild(childNode);
 				
@@ -192,7 +192,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 				}
 
 			
-			} catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			} catch (SecurityException | IllegalArgumentException e) {
 				// could not access field
 				LOG.debug("Caught exception while reflecting on field {} : {}", field, e);
 			}
