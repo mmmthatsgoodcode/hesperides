@@ -67,7 +67,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 				.put(CassandraTypes.BytesType, 'c')
 				.put(CassandraTypes.AsciiType, 'a')
 				.put(CassandraTypes.DateType, 'd')
-				.put(CassandraTypes.EmptyType, 'n')
+//				.put(CassandraTypes.EmptyType, 'n')
 				.build();
 		
 		public static ImmutableBiMap<String, Character> getCassandraTypeAliases() {

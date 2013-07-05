@@ -67,11 +67,13 @@ public class AstyanaxCassifierTest {
 		floatValueColumn.setValue(456f);
 		
 		intRow.addColumn(floatValueColumn);
+
 		
 		HesperidesColumn booleanValueColumn = new HesperidesColumn();
 		
 		booleanValueColumn = new HesperidesColumn();
-		booleanValueColumn.addNameComponent(123);
+		booleanValueColumn.addNullNameComponent();
+		booleanValueColumn.addNameComponent(3.14f);
 		booleanValueColumn.setValue(true);
 		
 		intRow.addColumn(booleanValueColumn);
