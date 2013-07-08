@@ -67,7 +67,6 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 				.put(CassandraTypes.BytesType, 'c')
 				.put(CassandraTypes.AsciiType, 'a')
 				.put(CassandraTypes.DateType, 'd')
-//				.put(CassandraTypes.EmptyType, 'n')
 				.build();
 		
 		public static ImmutableBiMap<String, Character> getCassandraTypeAliases() {
@@ -89,21 +88,24 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 	    public HesperidesDynamicComposite() {
 	        super();
-	        updateAliases();
+	        updateMappings();
 	    }
 
 	    public HesperidesDynamicComposite(Object... o) {
 	        super(true, o);
-	        updateAliases();
+	        updateMappings();
 	    }
 
 	    public HesperidesDynamicComposite(List<?> l) {
 	        super(true, l);
-	        updateAliases();
+	        updateMappings();
 	    }
 	    
-	    public void updateAliases() {
+	    public void updateMappings() {
 	    
+	    	// extend serializer to comparator mapping with bytes array..not sure why this isnt on the default in AbstractComposite
+	    	setSerializerToComparatorMapping(new ImmutableBiMap.Builder<Class<? extends Serializer>, String>().putAll(DEFAULT_SERIALIZER_TO_COMPARATOR_MAPPING).put(BytesArraySerializer.class, BytesArraySerializer.get().getComparatorType().getTypeName()).build());
+	    	
 	    	setAliasesToComparatorMapping(new ImmutableBiMap.Builder<Byte, String>()
 	    	        .put((byte) ((char) getCassandraTypeAliases().get(CassandraTypes.AsciiType)), ComparatorType.ASCIITYPE.getTypeName())
 	    	        .put((byte) ((char) getCassandraTypeAliases().get(CassandraTypes.BytesType)), ComparatorType.BYTESTYPE.getTypeName())
@@ -117,6 +119,8 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 	    	        .put((byte) ((char) getCassandraTypeAliases().get(CassandraTypes.UUIDType)), ComparatorType.UUIDTYPE.getTypeName()).build());
 
 	    }
+	    
+
 		
 	}
 	
@@ -217,9 +221,11 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 		HesperidesRow hesperidesRow = new HesperidesRow(id);
 		
-		for (Column<HesperidesDynamicComposite> column:opResult.getResult()) {
-			hesperidesRow.addColumn(cassify(column));
-			
+		if (opResult != null && opResult.getResult() != null) {
+			for (Column<HesperidesDynamicComposite> column:opResult.getResult()) {
+				hesperidesRow.addColumn(cassify(column));
+				
+			}
 		}
 		
 		return hesperidesRow;
