@@ -175,6 +175,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 		public AstyanaxColumn(HesperidesDynamicComposite name, Object value, Date created, int ttl) {
 			super(name);
+//			System.out.println("Incoming date "+created.getTime());
 			this.value = value;
 			this.created = created;
 			this.ttl = ttl;
@@ -187,7 +188,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 
 		@Override
 		public long getTimestamp() {
-			return 0;
+			return created.getTime();
 		}
 
 		@Override
@@ -286,6 +287,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 		}
 			
+		hesperidesColumn.setCreated(new Date(column.getTimestamp()));
 								
 		return hesperidesColumn;
 		
@@ -312,6 +314,9 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 
 			// encode value
 			com.mmmthatsgoodcode.hesperides.core.Serializer valueSerializer = hesperidesColumn.getValue().getSerializer();
+			
+			// set timestamp
+			mutation.setTimestamp(hesperidesColumn.getCreated().getTime());
 			
 			// add to mutation
 			mutation.putColumn( cassify( nameComponents ), valueSerializer.toByteBuffer( hesperidesColumn.getValue().getValue() ).array(), BytesArraySerializer.get(), hesperidesColumn.getTtl());			

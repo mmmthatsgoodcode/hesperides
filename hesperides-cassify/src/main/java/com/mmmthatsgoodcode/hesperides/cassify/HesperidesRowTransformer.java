@@ -163,6 +163,8 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 //		// add value hint
 //		hesperidesColumn.addNameComponent( node.getValueHint() );
 		
+		hesperidesColumn.setCreated(node.getCreated());
+		
 		return hesperidesColumn;
 		
 	}
@@ -217,6 +219,8 @@ public class HesperidesRowTransformer implements Transformer<HesperidesRow> {
 			// TODO byte[]
 		
 		}
+		
+		node.setCreated(column.getCreated());
 		
 		return node;
 	}

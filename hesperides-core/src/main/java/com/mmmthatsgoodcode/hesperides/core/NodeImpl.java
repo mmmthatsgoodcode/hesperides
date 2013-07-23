@@ -194,7 +194,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		
 		
 		
-		String outString = (depth>0?StringUtils.repeat("--", depth)+"| ":"")+StringUtils.join(out, ", ")+"\n";
+		String outString = (depth>0?StringUtils.repeat("--", depth)+"| ":"")+"(@"+getCreated().getTime()+")"+StringUtils.join(out, ", ")+"\n";
 		depth++;
 		for (Node child:getChildren()) {
 			outString += ((NodeImpl) child).toString(depth);
@@ -219,6 +219,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 				&& other.getValueHint() == this.getValueHint()
 				&& other.getNameHint() == this.getNameHint()
 				&& other.getName().equals(this.getName())
+				&& other.getCreated().equals(this.getCreated())
 				&& other.getChildren().equals(this.getChildren());
 	}
 

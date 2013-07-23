@@ -1,5 +1,7 @@
 package com.mmmthatsgoodcode.hesperides.cassify.astyanax;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +39,6 @@ public class AstyanaxCassifierTest {
 		strValueColumn.addNameComponent("foo! bar!");
 		strValueColumn.addNullNameComponent();
 		strValueColumn.setValue("String value and stuff");
-		
 		strRow.addColumn(strValueColumn);
 		
 		HesperidesRow intRow = new HesperidesRow("intRow");
@@ -86,13 +87,16 @@ public class AstyanaxCassifierTest {
 		for(HesperidesRow row:this.rows) {
 
 			Entry<String, List<Column<HesperidesDynamicComposite>>> astyanaxRow = cassifier.cassify(row);
-			System.out.println(astyanaxRow);
+//			System.out.println(astyanaxRow);
 
 			
 			HesperidesRow transformedRow = cassifier.cassify(astyanaxRow.getValue(), astyanaxRow.getKey());
 			
-			System.out.println(row);
-			System.out.println(transformedRow);
+//			System.out.println(row);
+//			System.out.println(transformedRow);
+			
+			assertTrue(row.equals(transformedRow));
+
 			
 			
 		}
