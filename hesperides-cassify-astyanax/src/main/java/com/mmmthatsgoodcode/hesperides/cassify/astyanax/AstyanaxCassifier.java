@@ -89,21 +89,24 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 	    public HesperidesDynamicComposite() {
 	        super();
-	        updateAliases();
+	        updateMappings();
 	    }
 
 	    public HesperidesDynamicComposite(Object... o) {
 	        super(true, o);
-	        updateAliases();
+	        updateMappings();
 	    }
 
 	    public HesperidesDynamicComposite(List<?> l) {
 	        super(true, l);
-	        updateAliases();
+	        updateMappings();
 	    }
 	    
-	    public void updateAliases() {
+	    public void updateMappings() {
 	    
+	    	// extend serializer to comparator mapping with bytes array..not sure why this isnt on the default in AbstractComposite
+	    	setSerializerToComparatorMapping(new ImmutableBiMap.Builder<Class<? extends Serializer>, String>().putAll(DEFAULT_SERIALIZER_TO_COMPARATOR_MAPPING).put(BytesArraySerializer.class, BytesArraySerializer.get().getComparatorType().getTypeName()).build());
+	    	
 	    	setAliasesToComparatorMapping(new ImmutableBiMap.Builder<Byte, String>()
 	    	        .put((byte) ((char) getCassandraTypeAliases().get(CassandraTypes.AsciiType)), ComparatorType.ASCIITYPE.getTypeName())
 	    	        .put((byte) ((char) getCassandraTypeAliases().get(CassandraTypes.BytesType)), ComparatorType.BYTESTYPE.getTypeName())
@@ -117,6 +120,8 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 	    	        .put((byte) ((char) getCassandraTypeAliases().get(CassandraTypes.UUIDType)), ComparatorType.UUIDTYPE.getTypeName()).build());
 
 	    }
+	    
+
 		
 	}
 	
@@ -171,6 +176,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 		public AstyanaxColumn(HesperidesDynamicComposite name, Object value, Date created, int ttl) {
 			super(name);
+//			System.out.println("Incoming date "+created.getTime());
 			this.value = value;
 			this.created = created;
 			this.ttl = ttl;
@@ -183,7 +189,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 
 		@Override
 		public long getTimestamp() {
-			return 0;
+			return created.getTime();
 		}
 
 		@Override
@@ -217,9 +223,11 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 		HesperidesRow hesperidesRow = new HesperidesRow(id);
 		
-		for (Column<HesperidesDynamicComposite> column:opResult.getResult()) {
-			hesperidesRow.addColumn(cassify(column));
-			
+		if (opResult != null && opResult.getResult() != null) {
+			for (Column<HesperidesDynamicComposite> column:opResult.getResult()) {
+				hesperidesRow.addColumn(cassify(column));
+				
+			}
 		}
 		
 		return hesperidesRow;
@@ -280,6 +288,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 		
 		}
 			
+		hesperidesColumn.setCreated(new Date(column.getTimestamp()));
 								
 		return hesperidesColumn;
 		
@@ -306,6 +315,9 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier {
 
 			// encode value
 			com.mmmthatsgoodcode.hesperides.core.Serializer valueSerializer = hesperidesColumn.getValue().getSerializer();
+			
+			// set timestamp
+			mutation.setTimestamp(hesperidesColumn.getCreated().getTime());
 			
 			// add to mutation
 			mutation.putColumn( cassify( nameComponents ), valueSerializer.toByteBuffer( hesperidesColumn.getValue().getValue() ).array(), BytesArraySerializer.get(), hesperidesColumn.getTtl());			

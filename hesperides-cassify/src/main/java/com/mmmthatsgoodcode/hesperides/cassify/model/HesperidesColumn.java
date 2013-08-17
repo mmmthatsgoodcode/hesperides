@@ -363,12 +363,12 @@ public class HesperidesColumn {
 		HesperidesColumn other = (HesperidesColumn) object;
 		
 		return this.getNameComponents().equals(other.getNameComponents())
-				&& this.getValue().equals(other.getValue());
+				&& this.getValue().equals(other.getValue()) && this.getCreated().equals(other.getCreated());
 		
 	}
 	
 	public String toString() {
-		String out = StringUtils.join(nameComponents.toArray(), " -> ");
+		String out = "(@ "+getCreated().getTime()+") "+StringUtils.join(nameComponents.toArray(), " -> ");
 		out += " = "+this.value.toString();
 		
 		return out;
