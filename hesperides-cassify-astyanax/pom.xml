@@ -25,7 +25,7 @@
 			<artifactId>hesperides-core</artifactId>
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>com.netflix.astyanax</groupId>
 			<artifactId>astyanax</artifactId>
 			<version>1.56.37</version>
@@ -35,6 +35,21 @@
 					<groupId>org.apache.commons</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency> -->
+		<dependency>
+			<groupId>com.netflix.astyanax</groupId>
+			<artifactId>astyanax-core</artifactId>
+			<version>1.56.42</version>
+		</dependency>
+		<dependency>
+			<groupId>com.netflix.astyanax</groupId>
+			<artifactId>astyanax-cassandra</artifactId>
+			<version>1.56.42</version>
+		</dependency>
+		<dependency>
+			<groupId>com.netflix.astyanax</groupId>
+			<artifactId>astyanax-thrift</artifactId>
+			<version>1.56.42</version>
 		</dependency>
 	</dependencies>
 </project>
