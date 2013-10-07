@@ -9,12 +9,22 @@ import org.apache.commons.lang.StringUtils;
 import com.mmmthatsgoodcode.hesperides.annotation.HBean;
 import com.mmmthatsgoodcode.hesperides.annotation.HBeanGetter;
 import com.mmmthatsgoodcode.hesperides.annotation.HBeanSetter;
+import com.mmmthatsgoodcode.hesperides.annotation.HField;
 
 @HBean
 public class ComplexHBeanAnnotatedType extends ComplexType {
 
 	private int answer;
 	private int secretAnswer;
+	@HField(indexed=true, ttl = 0) private String secondaryId;
+	
+	public String getSecondaryId() {
+		return secondaryId;
+	}
+	
+	public void setSecondaryId(String secondaryId) {
+		this.secondaryId = secondaryId;
+	}
 	
 	@HBeanGetter(field="answer")
 	public int whatIsTheMeaningOfLifeTheUniverseAndEverything() {
@@ -59,6 +69,7 @@ public class ComplexHBeanAnnotatedType extends ComplexType {
 				&& super.equals(object);
 		
 	}
+	
 	@Override
 	public ComplexType generateFields() {
 		Random rand = new Random();

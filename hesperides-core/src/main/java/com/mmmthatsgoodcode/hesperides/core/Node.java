@@ -12,6 +12,9 @@ public interface Node<N, T extends Object> extends Iterable<Node> {
 	public Date getCreated();
 	public void setCreated(Date created);
 	
+	public void setIndexed(boolean indexed);
+	public boolean isIndexed();
+	
 	public void setName(int hint, N name);
 	public N getName();
 	public int getNameHint();

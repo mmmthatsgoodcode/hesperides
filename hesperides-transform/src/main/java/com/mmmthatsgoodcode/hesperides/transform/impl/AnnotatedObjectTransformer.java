@@ -105,6 +105,8 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 								else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 							}
 							
+							if (hField.isIndexed()) node.setIndexed(true); 
+							
 							Object fieldValue =  methodAccess.invoke(object, method.getName());
 							childNode = TransformerRegistry.getInstance().get(hField.toField()).transform(fieldValue);
 							childNode.setTtl(hField.getTtl());

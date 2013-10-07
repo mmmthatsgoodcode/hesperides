@@ -14,6 +14,8 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	private Date created = new Date();
 	private int ttl = 0;
 	
+	private boolean indexed = false;
+	
 	private int valueHint = Hesperides.Hints.OBJECT;
 	private int nameHint = Hesperides.Hints.STRING;
 
@@ -29,6 +31,21 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	
 	public NodeImpl(N name) {
 		setName(name);
+	}
+	
+	public NodeImpl(N name, boolean indexed) {
+		this(name);
+		setIndexed(indexed);
+	}
+	
+	@Override
+	public void setIndexed(boolean indexed) {
+		this.indexed = indexed;
+	}
+	
+	@Override
+	public boolean isIndexed() {
+		return this.indexed;
 	}
 	
 	@Override
@@ -190,6 +207,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 		out.add("Hint: "+this.valueHint);
 		out.add("Type: "+this.representedType.getSimpleName());
 		out.add("Name: "+this.name);
+		if (this.isIndexed()) out.add("indexed");
 		out.add("Value: "+this.value);
 		
 		

@@ -32,6 +32,9 @@ public class HesperidesRowTransformerTest {
 		NodeImpl<String, String> strNode = new NodeImpl<String, String>("Foo");
 		strNode.setValue("BAR!");
 		
+		NodeImpl<String, Integer> indexedNode = new NodeImpl<String, Integer>("AwesomeIndex", true);
+		indexedNode.setValue(123);
+		
 		NodeImpl<String, NodeImpl> containerNode = new NodeImpl<String, NodeImpl>("Container");
 		
 			NodeImpl<String, String> strNodeInContainerNode = new NodeImpl<String, String>("IsThis");
@@ -51,6 +54,7 @@ public class HesperidesRowTransformerTest {
 
 			
 		this.node.addChild(strNode);
+		this.node.addChild(indexedNode);
 		this.node.addChild(containerNode);
 		
 	}
@@ -62,6 +66,8 @@ public class HesperidesRowTransformerTest {
 		System.out.println(row);
 
 		Node node = this.transformer.transform(row);
+		
+		System.out.println(node);
 		
 		assertTrue(this.node.equals(node));
 
