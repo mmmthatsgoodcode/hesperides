@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 
 
-public abstract class AbstractConfigurableCassifier implements ConfigurableCassifier {
+public abstract class AbstractConfigurableCassifier<T> implements ConfigurableCassifier, Cassifier<T> {
 	
 	public static class CassandraTypes { // aka comparators
 		

@@ -2,8 +2,10 @@ package com.mmmthatsgoodcode.hesperides.cassify.astyanax;
 
 import static org.junit.Assert.*;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -11,12 +13,12 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.mmmthatsgoodcode.hesperides.cassify.astyanax.AstyanaxCassifier.HesperidesDynamicComposite;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.DynamicComposite;
+import java.util.AbstractMap.SimpleEntry;
 
 public class AstyanaxCassifierTest {
 
@@ -89,8 +91,8 @@ public class AstyanaxCassifierTest {
 			Entry<String, List<Column<HesperidesDynamicComposite>>> astyanaxRow = cassifier.cassify(row);
 //			System.out.println(astyanaxRow);
 
-			
-			HesperidesRow transformedRow = cassifier.cassify(astyanaxRow.getValue(), astyanaxRow.getKey());
+			// astyanaxRow.getValue(), astyanaxRow.getKey()
+			HesperidesRow transformedRow = cassifier.cassify(new SimpleEntry<String, List<Column<HesperidesDynamicComposite>>>(astyanaxRow.getKey(), astyanaxRow.getValue()));
 			
 //			System.out.println(row);
 //			System.out.println(transformedRow);

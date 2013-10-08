@@ -62,6 +62,16 @@ public class HesperidesColumn {
 		
 	}
 
+	public static class WildcardValue extends NullValue {
+
+		
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.WILDCARD;
+		}
+		
+	}
+	
 	public static class NullValue extends AbstractType {
 
 		public void setValue(Object value) {

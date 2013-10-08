@@ -55,7 +55,7 @@ public class ComplexRow extends HesperidesRow {
 		
 		List<ComplexRow> rows = new ArrayList<ComplexRow>();
 		
-		for(int i=1; i < howMany; i++) {
+		for(int i=1; i <= howMany; i++) {
 			
 			rows.add( new ComplexRow(UUID.randomUUID().toString()).generateColumns() );
 			

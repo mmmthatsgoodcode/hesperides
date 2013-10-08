@@ -42,17 +42,9 @@
 			<artifactId>hesperides-core</artifactId>
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
-<!-- 		<dependency>
-			<groupId>com.netflix.astyanax</groupId>
-			<artifactId>astyanax</artifactId>
-			<version>1.56.42</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-lang</artifactId>
-					<groupId>org.apache.commons</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency> -->
+		<!-- <dependency> <groupId>com.netflix.astyanax</groupId> <artifactId>astyanax</artifactId> 
+			<version>1.56.42</version> <exclusions> <exclusion> <artifactId>commons-lang</artifactId> 
+			<groupId>org.apache.commons</groupId> </exclusion> </exclusions> </dependency> -->
 		<dependency>
 			<groupId>com.netflix.astyanax</groupId>
 			<artifactId>astyanax-core</artifactId>
@@ -67,6 +59,13 @@
 			<groupId>com.netflix.astyanax</groupId>
 			<artifactId>astyanax-thrift</artifactId>
 			<version>1.56.42</version>
+		</dependency>
+		<dependency>
+			<groupId>com.mmmthatsgoodcode.hesperides</groupId>
+			<artifactId>hesperides-cassify</artifactId>
+			<version>0.1-SNAPSHOT</version>
+			<type>test-jar</type>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

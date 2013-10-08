@@ -22,7 +22,12 @@
 		</repository>
 		<repository>
 			<id>central</id>
-			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/central/</url>
+			<name>Central Repository</name>
+			<url>http://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 

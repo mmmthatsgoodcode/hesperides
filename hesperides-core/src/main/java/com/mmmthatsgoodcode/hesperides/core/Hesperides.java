@@ -30,6 +30,8 @@ public class Hesperides {
 		public final static int BOOLEAN = 12;
 		public final static int BYTES = 13;
 		
+		public final static int WILDCARD = 100;
+		
 		public final static ImmutableBiMap<Class<? extends Object>, Integer> TYPE_TO_HINT = new ImmutableBiMap.Builder<Class<? extends Object>, Integer>()
 				.put(Integer.class, INT)
 				.put(Short.class, SHORT)
