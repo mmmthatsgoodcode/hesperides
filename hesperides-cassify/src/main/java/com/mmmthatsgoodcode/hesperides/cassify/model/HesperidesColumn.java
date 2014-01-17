@@ -18,6 +18,7 @@ public class HesperidesColumn {
 	private List<AbstractType> nameComponents = new ArrayList<AbstractType>();
 	private AbstractType value = new NullValue();
 	private Date created = new Date();
+	private boolean indexed = false;
 	private int ttl = 0;
 	
 	public abstract static class AbstractType<T> {
@@ -211,6 +212,29 @@ public class HesperidesColumn {
 		
 	}
 	
+	public static class ShortValue extends AbstractType<Short> {
+
+		public ShortValue(Short value) {
+			setValue(value);
+		}
+
+		@Override
+		public int getHint() {
+			return Hesperides.Hints.LONG;
+		}		
+		
+		public boolean equals(Object object) {
+			
+			if (!(object instanceof ShortValue)) return false;
+			ShortValue other = (ShortValue) object;
+			
+			return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+			
+		}
+
+		
+	}
+	
 	public static class BooleanValue extends AbstractType<Boolean> {
 
 		public BooleanValue(Boolean value) {
@@ -265,107 +289,121 @@ public class HesperidesColumn {
 
 	}
 	
-	public void addNameComponent(String value) {
-		this.nameComponents.add(new StringValue(value));
-	}
-	
-	public void addNameComponent(Date value) {
-		this.nameComponents.add(new DateValue(value));
+	public HesperidesColumn addNameComponent(String value) {
+		return addNameComponent(new StringValue(value));
 	}
 
-	public void addNameComponent(Integer value) {
-		this.nameComponents.add(new IntegerValue(value));
+
+	public HesperidesColumn addNameComponent(Integer value) {
+	    return addNameComponent(new IntegerValue(value));
 	}
 	
-	public void addNameComponent(Float value) {
-		this.nameComponents.add(new FloatValue(value));
+	public HesperidesColumn addNameComponent(Float value) {
+	    return addNameComponent(new FloatValue(value));
 	}
 	
-	public void addNameComponent(Long value) {
-		this.nameComponents.add(new LongValue(value));
+	public HesperidesColumn addNameComponent(Long value) {
+	    return addNameComponent(new LongValue(value));
 	}
 	
-	public void addNameComponent(Boolean value) {
-		this.nameComponents.add(new BooleanValue(value));
+	public HesperidesColumn addNameComponent(Boolean value) {
+	    return addNameComponent(new BooleanValue(value));
 	}
 	
-	public void addNameComponent(AbstractType component) {
-		this.nameComponents.add(component);
+	public HesperidesColumn addNameComponent(AbstractType component) {
+	    nameComponents.add(component);
+	    return this;
 	}
-	
-	/**
-	 * This is a placeholder component
-	 */
-	public void addNullNameComponent() {
-		this.nameComponents.add(new NullValue());
-	}
-	
 	/**
 	 * This assumes that the incoming components are off a valid HesperidesColumn
 	 * I.e. it does not enforce types to match one of the above setters' argument types
 	 * @param components
 	 */
-	public void addNameComponents(Collection<? extends AbstractType> components) {
+	public HesperidesColumn addNameComponents(Collection<? extends AbstractType> components) {
 		this.nameComponents.addAll(components);
+		return this;
 	}
 	
 	public List<AbstractType> getNameComponents() {
 		return this.nameComponents;
 	}
 
-	public void setValue(String value) {
+	public HesperidesColumn setValue(String value) {
 		this.value = new StringValue(value);
+		return this;
 	}
 	
-	public void setValue(Date value) {
+	public HesperidesColumn setValue(Date value) {
 		this.value = new DateValue(value);
+		return this;
 	}
 
-	public void setValue(Integer value) {
+	public HesperidesColumn setValue(Integer value) {
 		this.value = new IntegerValue(value);
+		return this;
 	}
 	
-	public void setValue(Float value) {
+	public HesperidesColumn setValue(Float value) {
 		this.value = new FloatValue(value);
+		return this;
 	}
 	
-	public void setValue(Long value) {
+	public HesperidesColumn setValue(Long value) {
 		this.value = new LongValue(value);
+		return this;
 	}
 	
-	public void setValue(Boolean value) {
+	public HesperidesColumn setValue(Short value) {
+		this.value = new ShortValue(value);
+		return this;
+	}
+	
+	public HesperidesColumn setValue(Boolean value) {
 		this.value = new BooleanValue(value);
+		return this;
 	}
 	
-	public void setValue(byte[] value) {
+	public HesperidesColumn setValue(byte[] value) {
 		this.value = new ByteValue(value);
+		return this;
 	}
 	
-	public void setNullValue() {
+	public HesperidesColumn setNullValue() {
 		this.value = new NullValue();
+		return this;
 	}
 	
 	public AbstractType getValue() {
 		return this.value;
 	}
 	
-	public void setCreated(Date created) {
+	public HesperidesColumn setCreated(Date created) {
 		this.created = created;
+		return this;
 	}
 	
 	public Date getCreated() {
 		return this.created;
 	}
 	
-	public void setTtl(int ttl) {
+	public HesperidesColumn setTtl(int ttl) {
 		this.ttl = ttl;
+		return this;
 	}
 	
 	public int getTtl() {
 		return this.ttl;
 	}
 
+	public boolean isIndexed() {
+	    return indexed;
+	}
 
+	public HesperidesColumn setIndexed(boolean indexed) {
+	    this.indexed = indexed;
+		return this;
+	}
+	
 	public boolean equals(Object object) {
 		
 		if (!(object instanceof HesperidesColumn)) return false;
@@ -373,17 +411,18 @@ public class HesperidesColumn {
 		HesperidesColumn other = (HesperidesColumn) object;
 		
 		return this.getNameComponents().equals(other.getNameComponents())
-				&& this.getValue().equals(other.getValue()) && this.getCreated().equals(other.getCreated());
+				&& this.getValue().equals(other.getValue()) && this.getCreated().equals(other.getCreated()) && this.isIndexed() == other.isIndexed();
 		
 	}
 	
 	public String toString() {
-		String out = "(@ "+getCreated().getTime()+") "+StringUtils.join(nameComponents.toArray(), " -> ");
+		String out = (isIndexed()?"i ":"")+"(@ "+getCreated().getTime()+") "+StringUtils.join(nameComponents.toArray(), " -> ");
 		out += " = "+this.value.toString();
 		
 		return out;
 		
 	}
+
 
 	
 }

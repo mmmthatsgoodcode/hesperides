@@ -26,23 +26,21 @@ public class ThriftColumnCassifierTest {
 	@Before
 	public void setUp() {
 		
-		HesperidesRow strRow = new HesperidesRow("strRow");
+		HesperidesRow strRow = new HesperidesRow("strRow".getBytes());
 		rows.add(strRow);
 		
 		HesperidesColumn strValueColumn = new HesperidesColumn();
 		
 		strValueColumn = new HesperidesColumn();
-		strValueColumn.addNameComponent(new Date());
 		strValueColumn.addNameComponent(3.14f);
 		strValueColumn.addNameComponent(123);
 		strValueColumn.addNameComponent(9999999999999999l);
 		strValueColumn.addNameComponent("foo! bar!");
-		strValueColumn.addNullNameComponent();
 		strValueColumn.setValue("String value and stuff");
 		
 		strRow.addColumn(strValueColumn);
 		
-		HesperidesRow intRow = new HesperidesRow("intRow");
+		HesperidesRow intRow = new HesperidesRow("intRow".getBytes());
 		rows.add(intRow);
 		
 		HesperidesColumn intValueColumn = new HesperidesColumn();
@@ -50,6 +48,7 @@ public class ThriftColumnCassifierTest {
 		intValueColumn = new HesperidesColumn();
 		intValueColumn.addNameComponent(123);
 		intValueColumn.setValue(456);
+		intValueColumn.setIndexed(true);
 		
 		intRow.addColumn(intValueColumn);
 
@@ -85,7 +84,7 @@ public class ThriftColumnCassifierTest {
 		
 		for (HesperidesRow row:rows) {
 
-			Entry<String, List<Column>> thriftRow = cassifier.cassify(row);
+			Entry<byte[], List<Column>> thriftRow = cassifier.cassify(row);
 			HesperidesRow deserializedRow = cassifier.cassify(thriftRow);
 
 			System.out.print(deserializedRow+"\n");

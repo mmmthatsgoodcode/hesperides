@@ -22,21 +22,21 @@ public abstract class AbstractConfigurableCassifier<T> implements ConfigurableCa
 	public static class CassandraTypes { // aka comparators
 		
 		
-		public static final String AsciiType = "AsciiType";
-		public static final String BooleanType = "BooleanType";
-		public static final String BytesType = "BytesType";
-		public static final String DateType = "DateType";
-		public static final String DecimalType = "DecimalType";
-		public static final String DoubleType = "DoubleType";		
-		public static final String EmptyType = "EmptyType";
-		public static final String FloatType = "FloatType";
-		public static final String Int32Type = "Int32Type";
-		public static final String IntegerType = "IntegerType";
-		public static final String LexicalUUIDType = "LexicalUUIDType";
-		public static final String LongType = "LongType";
-		public static final String TimeUUIDType = "TimeUUIDType";
-		public static final String UUIDType = "UUIDType";
-		public static final String UTF8Type = "UTF8Type";
+		public static final String AsciiType = "org.apache.cassandra.db.marshal.AsciiType";
+		public static final String BooleanType = "org.apache.cassandra.db.marshal.BooleanType";
+		public static final String BytesType = "org.apache.cassandra.db.marshal.BytesType";
+		public static final String DateType = "org.apache.cassandra.db.marshal.DateType";
+		public static final String DecimalType = "org.apache.cassandra.db.marshal.DecimalType";
+		public static final String DoubleType = "org.apache.cassandra.db.marshal.DoubleType";		
+		public static final String EmptyType = "org.apache.cassandra.db.marshal.EmptyType";
+		public static final String FloatType = "org.apache.cassandra.db.marshal.FloatType";
+		public static final String Int32Type = "org.apache.cassandra.db.marshal.Int32Type";
+		public static final String IntegerType = "org.apache.cassandra.db.marshal.IntegerType";
+		public static final String LexicalUUIDType = "org.apache.cassandra.db.marshal.LexicalUUIDType";
+		public static final String LongType = "org.apache.cassandra.db.marshal.LongType";
+		public static final String TimeUUIDType = "org.apache.cassandra.db.marshal.TimeUUIDType";
+		public static final String UUIDType = "org.apache.cassandra.db.marshal.UUIDType";
+		public static final String UTF8Type = "org.apache.cassandra.db.marshal.UTF8Type";
 
 	}
 	
@@ -61,6 +61,7 @@ public abstract class AbstractConfigurableCassifier<T> implements ConfigurableCa
 			.put(CassandraTypes.Int32Type, 'h')
 			.put(CassandraTypes.FloatType, 'f')
 			.put(CassandraTypes.LongType, 'l')
+//			.put(CassandraTypes.LongType, 'l')
 			.put(CassandraTypes.BooleanType, 'b')
 			.put(CassandraTypes.LexicalUUIDType, 'e')
 			.put(CassandraTypes.TimeUUIDType, 't')

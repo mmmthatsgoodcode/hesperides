@@ -24,12 +24,13 @@ import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier;
 import com.mmmthatsgoodcode.hesperides.cassify.Cassifier;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.AbstractType;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.BooleanValue;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 
-public class ThriftColumnCassifier extends AbstractConfigurableCassifier implements Cassifier<Column> {
+public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column> {
 	
 	@Override
-	public HesperidesRow cassify(Entry<String, List<Column>> object)
+	public HesperidesRow cassify(Entry<byte[], List<Column>> object)
 			throws TransformationException {
 		
 		LOG.debug("Processing {} columms for row {}", object.getValue().size(), object.getKey());
@@ -67,12 +68,6 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 					case Hesperides.Hints.LONG:
 						hesperidesColumn.addNameComponent(componentValue.asLongBuffer().get());
 					break;
-					case Hesperides.Hints.DATE:
-						hesperidesColumn.addNameComponent(new Date(componentValue.asLongBuffer().get()));
-					break;
-					case Hesperides.Hints.NULL:
-						hesperidesColumn.addNullNameComponent();
-					break;
 					case Hesperides.Hints.BOOLEAN:
 						hesperidesColumn.addNameComponent(componentValue.get() == (byte)1?true:false);
 					break;
@@ -89,6 +84,22 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 				componentNumber++;
 
 			}
+			
+			// pop the last boolean name component off the list of name components and call setIndexed() on the column with it.
+			AbstractType lastNameComponent = hesperidesColumn.getNameComponents().get(hesperidesColumn.getNameComponents().size()-1);
+			if (lastNameComponent instanceof BooleanValue) {
+			    
+			    hesperidesColumn.getNameComponents().remove(lastNameComponent);
+			    BooleanValue lastBooleanNameComponent = (BooleanValue) lastNameComponent;
+			    hesperidesColumn.setIndexed(lastBooleanNameComponent.getValue());
+			    
+			} else {
+			    
+			    // last name component wasnt a boolean.. 
+			    LOG.warn("Last name component for row {} wasn't a Boolean..", object.getKey());
+			    
+			}
+			
 			
 			LOG.debug("Processed {} total components in column name", hesperidesColumn.getNameComponents().size());
 			
@@ -111,6 +122,9 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 			case Hesperides.Hints.LONG:
 				hesperidesColumn.setValue(column.value.asLongBuffer().get());
 			break;
+			case Hesperides.Hints.SHORT:
+				hesperidesColumn.setValue(column.value.asShortBuffer().get());
+			break;
 			case Hesperides.Hints.DATE:
 				hesperidesColumn.setValue(new Date(column.value.asLongBuffer().get()));
 			break;
@@ -131,6 +145,8 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 				
 			}
 			
+			hesperidesColumn.setCreated(new Date(column.timestamp));
+			
 			hesperidesRow.addColumn(hesperidesColumn);
 		
 		}
@@ -140,13 +156,13 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 	}
 	
 	@Override
-	public Entry<String, List<Column>> cassify(HesperidesRow row)
+	public Entry<byte[], List<Column>> cassify(HesperidesRow row)
 			throws TransformationException {
 
 		/* Row key
 		 * -------- */
 
-		SimpleEntry<String, List<Column>> result = new SimpleEntry<String, List<Column>>(row.getKey(), new ArrayList<Column>());
+		SimpleEntry<byte[], List<Column>> result = new SimpleEntry<byte[], List<Column>>(row.getKey(), new ArrayList<Column>());
 
 		for(HesperidesColumn hesperidesColumn:row.getColumns()) {
 			// create Column
@@ -164,7 +180,12 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 			hesperidesColumn.addNameComponent(hesperidesColumn.getValue().getHint()); // value hint component
 			
 			ByteArrayOutputStream columnNameBytes = new ByteArrayOutputStream();
-			for(AbstractType component:hesperidesColumn.getNameComponents()) {
+			
+			List<AbstractType> components = new ArrayList<AbstractType>(hesperidesColumn.getNameComponents());
+			// add value of isIndexed() as a boolean name component
+			components.add(new BooleanValue(hesperidesColumn.isIndexed()));
+			
+			for(AbstractType component:components) {
 				
 				ByteBuffer prefix = ByteBuffer.wrap(new byte[4]);
 				byte aliasFlag = 0;	aliasFlag = (byte) (aliasFlag | (1 << 0));
@@ -177,6 +198,7 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 				else if (component instanceof HesperidesColumn.BooleanValue) componentValue = new byte[]{(byte) ((Boolean)component.getValue()?1:0)};
 				else if (component instanceof HesperidesColumn.LongValue) componentValue = ByteBufferUtil.bytes((long)component.getValue()).array();
 				else if (component instanceof HesperidesColumn.FloatValue) componentValue = ByteBufferUtil.bytes((float)component.getValue()).array();
+				else if (component instanceof HesperidesColumn.ShortValue) componentValue = ByteBufferUtil.bytes((short)component.getValue()).array();
 				else if (component instanceof HesperidesColumn.IntegerValue) componentValue = ByteBufferUtil.bytes((int)component.getValue()).array();
 				else if (component instanceof HesperidesColumn.DateValue) componentValue = ByteBufferUtil.bytes(((Date)component.getValue()).getTime()).array();
 				else if (component instanceof HesperidesColumn.NullValue) componentValue = new byte[]{(byte) 0};
@@ -198,6 +220,8 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 				
 			}
 			
+			
+			
 			column.name = ByteBuffer.wrap(columnNameBytes.toByteArray());
 			
 			/* Column value
@@ -215,6 +239,9 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 				break;
 				case Hesperides.Hints.LONG:
 					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.LongValue) hesperidesColumn.getValue() ).getValue());
+				break;
+				case Hesperides.Hints.SHORT:
+					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.ShortValue) hesperidesColumn.getValue() ).getValue());
 				break;
 				case Hesperides.Hints.DATE:
 					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.DateValue) hesperidesColumn.getValue() ).getValue().getTime() );
@@ -235,6 +262,8 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier impleme
 					throw new TransformationException("Could not serialize column value of type(hint) "+hesperidesColumn.getValue().getHint());			
 				
 			}
+			
+			column.setTimestamp(hesperidesColumn.getCreated().getTime());
 			
 			result.getValue().add(column);
 		
