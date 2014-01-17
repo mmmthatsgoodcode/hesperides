@@ -1,8 +1,11 @@
 package com.mmmthatsgoodcode.hesperides.core;
 
 import java.nio.ByteBuffer;
+import java.sql.Date;
 
 import com.mmmthatsgoodcode.hesperides.core.serializer.BooleanSerializer;
+import com.mmmthatsgoodcode.hesperides.core.serializer.ByteArraySerializer;
+import com.mmmthatsgoodcode.hesperides.core.serializer.ByteBufferSerializer;
 import com.mmmthatsgoodcode.hesperides.core.serializer.FloatSerializer;
 import com.mmmthatsgoodcode.hesperides.core.serializer.IntegerSerializer;
 import com.mmmthatsgoodcode.hesperides.core.serializer.LongSerializer;
@@ -16,6 +19,8 @@ public abstract class AbstractSerializer<T> implements Serializer<T> {
 		
 		Serializer serializer = null;
 		if (object == null) serializer = new NullSerializer();
+		else if (object instanceof byte[]) serializer = new ByteArraySerializer();
+		else if (ByteBuffer.class.isAssignableFrom(object.getClass())) serializer = new ByteBufferSerializer();
 		else if (Boolean.class.isAssignableFrom(object.getClass())) serializer = new BooleanSerializer();
 		else if (Integer.class.isAssignableFrom(object.getClass())) serializer = new IntegerSerializer();
 		else if (Long.class.isAssignableFrom(object.getClass())) serializer = new LongSerializer();

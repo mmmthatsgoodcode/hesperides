@@ -2,9 +2,12 @@ package com.mmmthatsgoodcode.hesperides.core;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +26,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	private T value = null;
 	private N name = null;
-	private ArrayList<Node> children = new ArrayList<Node>();
+	private Map<Object, Node> children = new HashMap<Object, Node>();
 	
 	public NodeImpl() {
 		
@@ -61,14 +64,14 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public Node addChild(Node child) {
-		this.children.add(child);
+		this.children.put(child.getName(), child);
 		return child;
 	}
 	
 	@Override
 	public void removeChild(Object name) {
 		
-		for(Iterator<Node> iterator = children.iterator(); iterator.hasNext(); ) {
+		for(Iterator<Node> iterator = children.values().iterator(); iterator.hasNext(); ) {
 			
 			Node child = iterator.next();
 			if (child.getName().equals(name)) iterator.remove();
@@ -80,13 +83,13 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 	@Override
 	public void addChildren(Iterable<Node> children) {
 		for(Node child:children) {
-			this.children.add(child);
+			this.children.put(child.getName(), child);
 		}
 	}	
 	
 	@Override
-	public List<Node> getChildren() {
-		return children;
+	public Collection<Node> getChildren() {
+		return children.values();
 	}
 	
 	@Override
@@ -104,7 +107,7 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 
 	@Override
 	public Iterator<Node> iterator() {
-		return this.children.iterator();
+		return this.children.values().iterator();
 	}
 
 
@@ -233,12 +236,18 @@ public class NodeImpl<N, T extends Object> implements Node<N, T> {
 //		System.out.println(other.getChildren().equals(this.getChildren())?"yes":"no");
 //		System.out.println("---");
 		
-		return other.getRepresentedType().equals(this.getRepresentedType())
-				&& other.getValueHint() == this.getValueHint()
-				&& other.getNameHint() == this.getNameHint()
-				&& other.getName().equals(this.getName())
-				&& other.getCreated().equals(this.getCreated())
-				&& other.getChildren().equals(this.getChildren());
+		if (other.getRepresentedType().equals(this.getRepresentedType()) == false
+		|| other.getValueHint() != this.getValueHint()
+		|| other.getNameHint() != this.getNameHint()
+		|| other.getName().equals(this.getName()) == false
+		|| other.getCreated().equals(this.getCreated()) == false) return false;
+		
+		if (getChildren().size() != other.getChildren().size()) return false;
+		for (Node child:getChildren()) {
+		    if (other.getChildren().contains(child) == false) return false;
+		}
+		
+		return true;
 	}
 
 	@Override

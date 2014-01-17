@@ -28,22 +28,20 @@ public class AstyanaxCassifierTest {
 	@Before
 	public void setUp() {
 		
-		HesperidesRow strRow = new HesperidesRow("strRow");
+		HesperidesRow strRow = new HesperidesRow("strRow".getBytes());
 		rows.add(strRow);
 		
 		HesperidesColumn strValueColumn = new HesperidesColumn();
 		
 		strValueColumn = new HesperidesColumn();
-		strValueColumn.addNameComponent(new Date());
 		strValueColumn.addNameComponent(3.14f);
 		strValueColumn.addNameComponent(123);
 		strValueColumn.addNameComponent(9999999999999999l);
 		strValueColumn.addNameComponent("foo! bar!");
-		strValueColumn.addNullNameComponent();
 		strValueColumn.setValue("String value and stuff");
 		strRow.addColumn(strValueColumn);
 		
-		HesperidesRow intRow = new HesperidesRow("intRow");
+		HesperidesRow intRow = new HesperidesRow("intRow".getBytes());
 		rows.add(intRow);
 		
 		HesperidesColumn intValueColumn = new HesperidesColumn();
@@ -75,7 +73,6 @@ public class AstyanaxCassifierTest {
 		HesperidesColumn booleanValueColumn = new HesperidesColumn();
 		
 		booleanValueColumn = new HesperidesColumn();
-		booleanValueColumn.addNullNameComponent();
 		booleanValueColumn.addNameComponent(3.14f);
 		booleanValueColumn.setValue(true);
 		
@@ -88,11 +85,11 @@ public class AstyanaxCassifierTest {
 		
 		for(HesperidesRow row:this.rows) {
 
-			Entry<String, List<Column<HesperidesDynamicComposite>>> astyanaxRow = cassifier.cassify(row);
+			Entry<byte[], List<Column<HesperidesDynamicComposite>>> astyanaxRow = cassifier.cassify(row);
 //			System.out.println(astyanaxRow);
 
 			// astyanaxRow.getValue(), astyanaxRow.getKey()
-			HesperidesRow transformedRow = cassifier.cassify(new SimpleEntry<String, List<Column<HesperidesDynamicComposite>>>(astyanaxRow.getKey(), astyanaxRow.getValue()));
+			HesperidesRow transformedRow = cassifier.cassify(new SimpleEntry<byte[], List<Column<HesperidesDynamicComposite>>>(astyanaxRow.getKey(), astyanaxRow.getValue()));
 			
 //			System.out.println(row);
 //			System.out.println(transformedRow);

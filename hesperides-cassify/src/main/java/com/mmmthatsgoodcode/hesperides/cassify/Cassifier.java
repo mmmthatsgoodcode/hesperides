@@ -9,7 +9,7 @@ import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 
 public interface Cassifier<T> {
 
-	public HesperidesRow cassify(Entry<String, List<T>> object) throws TransformationException;
-	public Entry<String, List<T>> cassify(HesperidesRow row) throws TransformationException;
+	public HesperidesRow cassify(Entry<byte[], List<T>> object) throws TransformationException;
+	public Entry<byte[], List<T>> cassify(HesperidesRow row) throws TransformationException;
 	
 }

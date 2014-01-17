@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier;
 import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier.CassandraTypes;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.BooleanValue;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.IntegerValue;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.AbstractType;
@@ -70,7 +71,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 
 		@Override
 		public ByteBuffer getRawName() {
-			return DynamicCompositeSerializer.get().toByteBuffer(getName());
+			return HesperidesDynamicCompositeSerializer.get().toByteBuffer(getName());
 		}
 
 		@Override
@@ -104,7 +105,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 	/* Astyanax -> Hesperides
 	--------------------------- */
 
-	public HesperidesRow cassify(OperationResult<ColumnList<HesperidesDynamicComposite>> opResult, String id)
+	public HesperidesRow cassify(OperationResult<ColumnList<HesperidesDynamicComposite>> opResult, byte[] id)
 			throws TransformationException {
 		
 		HesperidesRow hesperidesRow = new HesperidesRow(id);
@@ -120,7 +121,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		
 	}
 	
-	public HesperidesRow cassify(Entry<String, List<Column<HesperidesDynamicComposite>>> columns) {
+	public HesperidesRow cassify(Entry<byte[], List<Column<HesperidesDynamicComposite>>> columns) {
 		
 		HesperidesRow hesperidesRow = new HesperidesRow(columns.getKey());
 
@@ -143,6 +144,20 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 			
 		}
 		
+		// pop the last boolean name component off the list of name components and call setIndexed() on the column with it.
+        	AbstractType lastNameComponent = hesperidesColumn.getNameComponents().get(hesperidesColumn.getNameComponents().size() - 1);
+        	if (lastNameComponent instanceof BooleanValue) {
+        
+        	    BooleanValue lastBooleanNameComponent = (BooleanValue) hesperidesColumn.getNameComponents().remove(hesperidesColumn.getNameComponents().size() - 1);
+        	    hesperidesColumn.setIndexed(lastBooleanNameComponent.getValue());
+        	} else {
+        
+        	    // last name component wasnt a boolean..
+        	    LOG.warn("Last name component for column {} wasn't a Boolean..", column.getName());
+        
+        	}
+		
+        	
 		// re-build value from value hint in last name component
 		IntegerValue valueTypeHint = (IntegerValue) hesperidesColumn.getNameComponents().remove(hesperidesColumn.getNameComponents().size()-1);		
 		
@@ -168,11 +183,13 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 				hesperidesColumn.setValue((String) Hesperides.Hints.hintToSerializer(valueTypeHint.getValue()).fromByteBuffer( ByteBuffer.wrap( column.getValue(BytesArraySerializer.get()))));
 			break;
 			case Hesperides.Hints.BYTES:
-				
+			    
 			break;
 			
 		
 		}
+		
+
 			
 		hesperidesColumn.setCreated(new Date(column.getTimestamp()));
 								
@@ -197,8 +214,11 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 			
 			// append value hint
 			Integer valueHint = Hesperides.Hints.typeToHint( hesperidesColumn.getValue().getValue()==null?null:hesperidesColumn.getValue().getValue().getClass() );
-			nameComponents.add(new IntegerValue(valueHint));
-
+			nameComponents.add(new HesperidesColumn.IntegerValue(valueHint));
+			
+			// append isIndexed
+			nameComponents.add(new HesperidesColumn.BooleanValue(hesperidesColumn.isIndexed()));
+			
 			// encode value
 			com.mmmthatsgoodcode.hesperides.core.Serializer valueSerializer = hesperidesColumn.getValue().getSerializer();
 			
@@ -207,18 +227,18 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 			
 			// add to mutation
 			mutation.putColumn( cassify( nameComponents ), valueSerializer.toByteBuffer( hesperidesColumn.getValue().getValue() ).array(), BytesArraySerializer.get(), hesperidesColumn.getTtl());			
-
+			
 		}
 		
 	}
 
-	public Entry<String, List<Column<HesperidesDynamicComposite>>> cassify(HesperidesRow row)
+	public Entry<byte[], List<Column<HesperidesDynamicComposite>>> cassify(HesperidesRow row)
 			throws TransformationException {
 		
-		Entry<String, List<Column<HesperidesDynamicComposite>>> rowKeyAndColumns = new SimpleEntry<String, List<Column<HesperidesDynamicComposite>>>(row.getKey(), new ArrayList<Column<HesperidesDynamicComposite>>());
+		Entry<byte[], List<Column<HesperidesDynamicComposite>>> rowKeyAndColumns = new SimpleEntry<byte[], List<Column<HesperidesDynamicComposite>>>(row.getKey(), new ArrayList<Column<HesperidesDynamicComposite>>());
 		
 		for (HesperidesColumn hesperidesColumn:row.getColumns()) {
-			
+		    
 			rowKeyAndColumns.getValue().add( cassify(hesperidesColumn) );
 			
 		}
@@ -236,9 +256,11 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		Integer valueHint = Hesperides.Hints.typeToHint( hesperidesColumn.getValue().getValue()==null?null:hesperidesColumn.getValue().getValue().getClass() );
 		nameComponents.add(new IntegerValue(valueHint));
 		
+		// append isIndexed
+		nameComponents.add(new HesperidesColumn.BooleanValue(hesperidesColumn.isIndexed()));
+
 		// encode value
 		com.mmmthatsgoodcode.hesperides.core.Serializer valueSerializer = hesperidesColumn.getValue().getSerializer();
-		
 		
 		return new AstyanaxColumn(cassify( nameComponents ), valueSerializer.toByteBuffer( hesperidesColumn.getValue().getValue() ).array(), hesperidesColumn.getCreated(), hesperidesColumn.getTtl());	
 		
@@ -249,7 +271,12 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		HesperidesDynamicComposite name = new HesperidesDynamicComposite();
 		
 		for (AbstractType component:nameComponents) {
-			name.addComponent(component.getValue(), SerializerTypeInferer.getSerializer(component.getValue()));
+//		    	System.out.println(component.getValue()+" - "+SerializerTypeInferer.getSerializer(component.getValue()).getComparatorType());
+			Serializer serializer = SerializerTypeInferer.getSerializer(component.getValue());
+
+//		    	name.getComparatorsByPosition().add(serializer.getComparatorType().getTypeName());
+//			name.getSerializersByPosition().add(serializer);
+		    	name.addComponent(component.getValue(), serializer, serializer.getComparatorType().getTypeName() );
 			
 		}
 		

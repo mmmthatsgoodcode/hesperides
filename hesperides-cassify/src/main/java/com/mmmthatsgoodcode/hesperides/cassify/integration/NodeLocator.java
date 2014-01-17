@@ -14,6 +14,7 @@ public class NodeLocator {
 		
 		return this;
 	}
+	
 	public List<AbstractType> components() {
 		return components;
 	}

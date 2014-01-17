@@ -1,5 +1,6 @@
 package com.mmmthatsgoodcode.hesperides.core;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +40,7 @@ public interface Node<N, T extends Object> extends Iterable<Node> {
 	
 	public void addChildren(Iterable<Node> children);
 	
-	public List<Node> getChildren();
+	public Collection<Node> getChildren();
 	public Node getChild(Object name);
 	
 	public boolean equals(Object object);
