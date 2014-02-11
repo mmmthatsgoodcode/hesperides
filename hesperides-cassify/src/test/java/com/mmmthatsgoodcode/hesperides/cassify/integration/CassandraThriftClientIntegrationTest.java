@@ -80,6 +80,8 @@ public abstract class CassandraThriftClientIntegrationTest {
 	    
 	   List<HesperidesRow> retrievedRows = integration.retrieve("ComplexRow", new NodeLocator().n(new HesperidesColumn.StringValue("awesome and indexed column")).n(new HesperidesColumn.IntegerValue(456)), "indexFuckyeeeeah", 0);
 	       
+	   System.out.println(retrievedRows);
+	   
 	   assertTrue(retrievedRows.contains(row));
 	    
 

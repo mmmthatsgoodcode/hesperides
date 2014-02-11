@@ -57,7 +57,7 @@ public class HesperidesDynamicCompositeSerializer extends AbstractSerializer<Hes
         throw new IllegalStateException("DynamicComposite columns can't be paginated this way.");
     }
     
-    public DynamicCompositeRangeBuilder buildRange(final Map<Class<? extends Serializer>, Character> serializerToAliasMapping) {
+    public DynamicCompositeRangeBuilder buildRange(final Map<String, Byte> comparatorToAliasMapping) {
         return new DynamicCompositeRangeBuilder() {
             private int position = 0;
 
@@ -82,11 +82,11 @@ public class HesperidesDynamicCompositeSerializer extends AbstractSerializer<Hes
 
                 // Write the data: <alias><length><data><equality>
                 byte aliasFlag = -1;
-//                System.out.println("--- "+aliasFlag+", "+serializerToAliasMapping.get(serializer.getClass()).charValue()+", "+cb.remaining());
+//                System.out.println("--- "+aliasFlag+", "+comparatorToAliasMapping.get( serializer.getComparatorType().getTypeName())+", "+cb.remaining());
 
-		    out.write(aliasFlag);
+                out.write(aliasFlag);
 
-                out.write((byte) serializerToAliasMapping.get(serializer.getClass()).charValue());
+                out.write((byte)  comparatorToAliasMapping.get( serializer.getComparatorType().getTypeName() ));
                 out.writeShort((short) cb.remaining());
                 out.write(cb.slice());
                 out.write(equality.toByte());

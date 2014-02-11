@@ -152,7 +152,7 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
         		
                 // look in indexCache CF
 		DynamicCompositeRangeBuilder indexCacheRangeBuilder = HesperidesDynamicCompositeSerializer.get()
-			.buildRange(HesperidesDynamicComposite.serializerToAliasMapping())
+			.buildRange(HesperidesDynamicComposite.DEFAULT_ALIAS_TO_COMPARATOR_MAPPING.inverse() )
 //			.withPrefix(indexValue)
 			.beginsWith(indexValue);
 //			.lessThanEquals(indexValue);
