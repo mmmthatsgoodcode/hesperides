@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class HesperidesRow {
 
@@ -63,6 +65,17 @@ public class HesperidesRow {
 		}
 		
 		return true;
+		
+	}
+	
+	/**
+	 * Gets differing rows
+	 * @return
+	 */
+	public Collection<HesperidesColumn> diff(HesperidesRow other) {
+	    
+	    return CollectionUtils.subtract(getColumns(), other.getColumns());
+	    
 	}
 	
 }
