@@ -58,13 +58,13 @@ public abstract class CassandraThriftClientIntegrationTest {
 	}
 	
 	@Test
-	public void testSimpleStoreRetrieve() throws ParticipantDistributionException, CassandraThriftClientException, TransformationException {
+	public void testSimpleStoreRetrieve() throws ParticipantDistributionException, CassandraThriftClientException, TransformationException, InterruptedException {
 		
         	HesperidesRow row = ComplexRow.generate(1).get(0);
         	integration.store("ComplexRow", row);
-        
+                	
         	HesperidesRow retrievedRow = integration.retrieve("ComplexRow", row.getKey());
-        	
+                	
         	assertEquals(row, retrievedRow);
 		
 	}

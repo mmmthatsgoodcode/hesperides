@@ -9,12 +9,16 @@ import java.util.List;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import com.mmmthatsgoodcode.hesperides.core.AbstractSerializer;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Serializer;
 
 public class HesperidesColumn {
 
+    	private final static HashFunction HASH_FUNCTION = Hashing.murmur3_32();
 	private List<AbstractType> nameComponents = new ArrayList<AbstractType>();
 	private AbstractType value = new NullValue();
 	private Date created = new Date();
@@ -59,6 +63,19 @@ public class HesperidesColumn {
 
 			throw new IllegalArgumentException();
 			
+		}
+		
+		@Override
+		public boolean equals(Object object) {
+		    if (!(object instanceof AbstractType)) return false;
+		    AbstractType other = (AbstractType) object;
+		    
+		    return getValue().equals(other.getValue());
+		}
+		
+		@Override
+		public int hashCode() {
+		    return getValue().hashCode();
 		}
 		
 	}
@@ -411,8 +428,21 @@ public class HesperidesColumn {
 		HesperidesColumn other = (HesperidesColumn) object;
 		
 		return this.getNameComponents().equals(other.getNameComponents())
-				&& this.getValue().equals(other.getValue()) && this.getCreated().equals(other.getCreated()) && this.isIndexed() == other.isIndexed();
+				&& this.getValue().equals(other.getValue());
 		
+	}
+	
+	public int hashCode() {
+	    
+	    Hasher hasher = HASH_FUNCTION.newHasher();
+	    for (AbstractType nameComponent:getNameComponents()) {
+		hasher.putInt(nameComponent.hashCode());
+	    }
+	    
+	    hasher.putInt(getValue().hashCode());
+	    
+	    return hasher.hash().asInt();
+	    
 	}
 	
 	public String toString() {

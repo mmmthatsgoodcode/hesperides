@@ -25,10 +25,10 @@ public class ComplexRow extends HesperidesRow {
 		RiggedRand<Class<? extends AbstractType>> rrand = new RiggedRand<Class<? extends AbstractType>>();
 		rrand.add(
 			new RiggedRand.Participant<Class<? extends AbstractType>>(20, HesperidesColumn.IntegerValue.class),
-				new RiggedRand.Participant<Class<? extends AbstractType>>(50, HesperidesColumn.StringValue.class),
-				new RiggedRand.Participant<Class<? extends AbstractType>>(10, HesperidesColumn.LongValue.class),
-				new RiggedRand.Participant<Class<? extends AbstractType>>(10, HesperidesColumn.FloatValue.class),
-				new RiggedRand.Participant<Class<? extends AbstractType>>(10, HesperidesColumn.BooleanValue.class));
+				new RiggedRand.Participant<Class<? extends AbstractType>>(20, HesperidesColumn.StringValue.class),
+				new RiggedRand.Participant<Class<? extends AbstractType>>(20, HesperidesColumn.LongValue.class),
+				new RiggedRand.Participant<Class<? extends AbstractType>>(20, HesperidesColumn.FloatValue.class),
+				new RiggedRand.Participant<Class<? extends AbstractType>>(20, HesperidesColumn.BooleanValue.class));
 		
 		for(int c=1;c<100;c++) {
 			
