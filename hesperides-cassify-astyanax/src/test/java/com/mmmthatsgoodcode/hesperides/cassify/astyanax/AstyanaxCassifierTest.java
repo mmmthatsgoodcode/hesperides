@@ -85,11 +85,11 @@ public class AstyanaxCassifierTest {
 		
 		for(HesperidesRow row:this.rows) {
 
-			Entry<byte[], List<Column<HesperidesDynamicComposite>>> astyanaxRow = cassifier.cassify(row);
+			Entry<byte[], List<Column<DynamicComposite>>> astyanaxRow = cassifier.cassify(row);
 //			System.out.println(astyanaxRow);
 
 			// astyanaxRow.getValue(), astyanaxRow.getKey()
-			HesperidesRow transformedRow = cassifier.cassify(new SimpleEntry<byte[], List<Column<HesperidesDynamicComposite>>>(astyanaxRow.getKey(), astyanaxRow.getValue()));
+			HesperidesRow transformedRow = cassifier.cassify(new SimpleEntry<byte[], List<Column<DynamicComposite>>>(astyanaxRow.getKey(), astyanaxRow.getValue()));
 			
 //			System.out.println(row);
 //			System.out.println(transformedRow);

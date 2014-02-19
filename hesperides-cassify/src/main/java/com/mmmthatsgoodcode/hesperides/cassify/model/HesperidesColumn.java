@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
@@ -18,7 +20,8 @@ import com.mmmthatsgoodcode.hesperides.core.Serializer;
 
 public class HesperidesColumn {
 
-    	private final static HashFunction HASH_FUNCTION = Hashing.murmur3_32();
+	private final static Logger LOG = LoggerFactory.getLogger(HesperidesColumn.class);
+    private final static HashFunction HASH_FUNCTION = Hashing.murmur3_32();
 	private List<AbstractType> nameComponents = new ArrayList<AbstractType>();
 	private AbstractType value = new NullValue();
 	private Date created = new Date();
@@ -50,6 +53,8 @@ public class HesperidesColumn {
 		
 		public static final AbstractType infer(Object object) throws IllegalArgumentException {
 						
+			
+			
 			if (object == null) return new NullValue();
 			if (String.class.isAssignableFrom(object.getClass())) return new StringValue((String) object);
 			if (Integer.class.isAssignableFrom(object.getClass())) return new IntegerValue((Integer) object);
@@ -61,6 +66,7 @@ public class HesperidesColumn {
 
 			if (Date.class.isAssignableFrom(object.getClass())) return new DateValue((Date) object);
 
+			LOG.error("Could not wrap object {} of type {}", object, object.getClass());
 			throw new IllegalArgumentException();
 			
 		}
@@ -279,7 +285,9 @@ public class HesperidesColumn {
 	public static class ByteValue extends AbstractType<byte[]> {
 
 		public ByteValue(ByteBuffer value) {
-			setValue(value.array());
+			byte[] arrayValue = new byte[value.remaining()];
+			value.get(arrayValue, 0, value.remaining());
+			setValue(arrayValue);
 		}
 		
 		public ByteValue(byte[] value) {

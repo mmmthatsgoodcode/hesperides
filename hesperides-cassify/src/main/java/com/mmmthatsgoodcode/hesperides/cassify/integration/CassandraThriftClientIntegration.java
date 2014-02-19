@@ -2,6 +2,9 @@ package com.mmmthatsgoodcode.hesperides.cassify.integration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.BooleanValue;

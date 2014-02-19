@@ -5,8 +5,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 
-import com.mmmthatsgoodcode.astyanax.DynamicCompositeRangeBuilder;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.mmmthatsgoodcode.astyanax.HesperidesDynamicCompositeRangeBuilder;
 import com.mmmthatsgoodcode.hesperides.cassify.HesperidesRowTransformer;
 import com.mmmthatsgoodcode.hesperides.cassify.integration.CassandraThriftClientException;
 import com.mmmthatsgoodcode.hesperides.cassify.integration.CassandraThriftClientIntegration;
@@ -25,14 +31,17 @@ import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.model.ColumnList;
+import com.netflix.astyanax.model.DynamicComposite;
 import com.netflix.astyanax.serializers.BytesArraySerializer;
 import com.netflix.astyanax.serializers.CompositeRangeBuilder;
+import com.netflix.astyanax.serializers.DynamicCompositeSerializer;
 import com.netflix.astyanax.serializers.StringSerializer;
 
 public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 
 	private final AstyanaxContext<Keyspace> keyspaceContext;
 	private AstyanaxCassifier cassifier = new AstyanaxCassifier();
+	private final Logger LOG = LoggerFactory.getLogger(AstyanaxIntegration.class);
 	
 	public AstyanaxIntegration(AstyanaxContext<Keyspace> keyspaceContext) {
 		this.keyspaceContext = keyspaceContext;
@@ -41,9 +50,9 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 	@Override
 	public void store(String cfName, HesperidesRow row) throws CassandraThriftClientException {
 		
-		ColumnFamily columnFamily = new ColumnFamily<byte[], HesperidesDynamicComposite>(cfName, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
-		ColumnFamily indexColumnFamily = new ColumnFamily<byte[], HesperidesDynamicComposite>(cfName+INDEX_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
-		ColumnFamily indexCacheColumnFamily = new ColumnFamily<byte[], HesperidesDynamicComposite>(cfName+INDEX_CACHE_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
+		ColumnFamily<byte[], DynamicComposite> columnFamily = new ColumnFamily<byte[], DynamicComposite>(cfName, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
+		ColumnFamily<byte[], DynamicComposite> indexColumnFamily = new ColumnFamily<byte[], DynamicComposite>(cfName+INDEX_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
+		ColumnFamily<byte[], DynamicComposite> indexCacheColumnFamily = new ColumnFamily<byte[], DynamicComposite>(cfName+INDEX_CACHE_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
 		
 		// first, find indexed rows
 		List<HesperidesColumn> indexes = CassandraThriftClientIntegration.IndexedRows.find(row);
@@ -74,7 +83,7 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 			
 			indexRow.addColumn(indexColumn);
 			
-			ColumnListMutation<HesperidesDynamicComposite> indexMutation = indexMutationBatch.withRow(indexColumnFamily, indexRow.getKey());
+			ColumnListMutation<DynamicComposite> indexMutation = indexMutationBatch.withRow(indexColumnFamily, indexRow.getKey());
 			cassifier.populateColumnListMutation( indexMutation, indexRow );
 			
 			/* save IndexCache row
@@ -92,7 +101,7 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 			indexCacheColumn.setTtl(index.getTtl()); // TODO enforce a short TTL ( as this row could get quite wide )
 			indexCacheRow.addColumn(indexCacheColumn);
 			
-			ColumnListMutation<HesperidesDynamicComposite> indexCacheMutation = indexCacheMutationBatch.withRow(indexCacheColumnFamily, indexCacheRow.getKey());
+			ColumnListMutation<DynamicComposite> indexCacheMutation = indexCacheMutationBatch.withRow(indexCacheColumnFamily, indexCacheRow.getKey());
 
 			cassifier.populateColumnListMutation( indexCacheMutation, indexCacheRow);
 			
@@ -101,7 +110,7 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 		/* 2) Actual mutation for the row
 		------------------------------------------ */
 
-		ColumnListMutation<HesperidesDynamicComposite> mutation = mutationBatch.withRow(columnFamily, row.getKey());
+		ColumnListMutation<DynamicComposite> mutation = mutationBatch.withRow(columnFamily, row.getKey());
 		cassifier.populateColumnListMutation( mutation, row );
 
 		
@@ -118,11 +127,11 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 	@Override
 	public HesperidesRow retrieve(String cfName, byte[] rowKey) throws CassandraThriftClientException, TransformationException {
 	    
-		ColumnFamily columnFamily = new ColumnFamily<byte[], HesperidesDynamicComposite>(cfName, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
+		ColumnFamily columnFamily = new ColumnFamily<byte[], DynamicComposite>(cfName, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
 
 	    	try {
 	    	    
-		    OperationResult<ColumnList<HesperidesDynamicComposite>> results = keyspaceContext.getClient().prepareQuery(columnFamily).getKey(rowKey).execute();
+		    OperationResult<ColumnList<DynamicComposite>> results = keyspaceContext.getClient().prepareQuery(columnFamily).getKey(rowKey).execute();
 		    return cassifier.cassify(results, rowKey);
 		    
 	    	} catch (ConnectionException e) {
@@ -142,17 +151,20 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 	public List<HesperidesRow> retrieve(String cfName, NodeLocator indexName, Object indexValue, int limit) throws CassandraThriftClientException, TransformationException {
 
 	    List<HesperidesRow> indexedRows = new ArrayList<HesperidesRow>();
-	    ColumnFamily indexCacheColumnFamily = new ColumnFamily<byte[], HesperidesDynamicComposite>(cfName+INDEX_CACHE_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
+	    ColumnFamily indexCacheColumnFamily = new ColumnFamily<byte[], DynamicComposite>(cfName+INDEX_CACHE_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
 	    // figure out the indexCache row key
 	    byte[] indexCacheRowKey = indexCacheRowKey(indexName.components());
 
-	    OperationResult<ColumnList<HesperidesDynamicComposite>> results;
+	    if (LOG.isDebugEnabled()) LOG.debug("Index name is (hex) {}", new String(Hex.encodeHex(indexCacheRowKey)));
+	    
+	    OperationResult<ColumnList<DynamicComposite>> results;
 	    
 	    try {
         		
                 // look in indexCache CF
-		DynamicCompositeRangeBuilder indexCacheRangeBuilder = HesperidesDynamicCompositeSerializer.get()
-			.buildRange(HesperidesDynamicComposite.DEFAULT_ALIAS_TO_COMPARATOR_MAPPING.inverse() )
+	    LOG.debug("Building Column range for indexCache CF query with indexValue \"{}\"", indexValue);
+		HesperidesDynamicCompositeRangeBuilder indexCacheRangeBuilder = HesperidesDynamicCompositeSerializer.get()
+			.buildRange(DynamicComposite.DEFAULT_ALIAS_TO_COMPARATOR_MAPPING.inverse() )
 //			.withPrefix(indexValue)
 			.beginsWith(indexValue);
 //			.lessThanEquals(indexValue);
@@ -162,6 +174,7 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
 //		System.out.println("--- "+indexCacheRangeBuilder.build());
 		
 		
+		
 		results = keyspaceContext.getClient()
 			.prepareQuery(indexCacheColumnFamily)
 			.getKey(indexCacheRowKey)
@@ -169,17 +182,19 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
                 	    
                 // see if we have a result
                 if (results.getResult().isEmpty() == false) {
+                	LOG.debug("Found row in indexCache CF");
                     HesperidesRow indexCacheRow = cassifier.cassify(results, indexCacheRowKey);
+                    LOG.debug("Decoded indexCache CF Row {}", indexCacheRow);
                     // TODO apply limit
                     for (HesperidesColumn indexCacheColumn:indexCacheRow.getColumns()) {
-                	AbstractType rowKey = indexCacheColumn.getNameComponents().get(1);
-                	
-                	
-                	if (rowKey instanceof ByteValue) {
-                	    indexedRows.add(retrieve(cfName, ((ByteValue)rowKey).getValue()));
-                	} else {
-                	    
-                	}
+                    	AbstractType rowKey = indexCacheColumn.getNameComponents().get(1);
+	                	
+	                	if (rowKey instanceof ByteValue) {
+	                		LOG.debug("Indexed row key is ({}) {}", ((ByteValue)rowKey).getValue().length, new String(Hex.encodeHex(((ByteValue)rowKey).getValue())));
+	                	    indexedRows.add(retrieve(cfName, ((ByteValue)rowKey).getValue()));
+	                	} else {
+	                	    
+	                	}
                 	
                 	
                     }
@@ -188,7 +203,7 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
     
     	    
                 // nope, look in the index CF
-                ColumnFamily indexColumnFamily = new ColumnFamily<byte[], HesperidesDynamicComposite>(cfName+INDEX_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
+                ColumnFamily indexColumnFamily = new ColumnFamily<byte[], DynamicComposite>(cfName+INDEX_CF_SUFFIX, BytesArraySerializer.get(), DynamicCompositeSerializer.get());
                 byte[] indexRowKey = indexRowKey(indexName.components(), indexValue);
 
 		results = keyspaceContext.getClient()
@@ -279,6 +294,17 @@ public class AstyanaxIntegration implements CassandraThriftClientIntegration {
             	
             return name.toByteArray();
 	    
+	}
+
+	public static String dynamicCompositeTypeDescriptor() {
+		
+		List<String> types = new ArrayList<String>();
+		for (Entry<Byte, String> aliasAndType:DynamicComposite.DEFAULT_ALIAS_TO_COMPARATOR_MAPPING.entrySet()) {
+			types.add(new String(new byte[] {aliasAndType.getKey()})+"=>"+aliasAndType.getValue());
+		}
+		
+		return "DynamicCompositeType("+StringUtils.join(types.toArray(), ",")+")";
+		
 	}
 	
 	

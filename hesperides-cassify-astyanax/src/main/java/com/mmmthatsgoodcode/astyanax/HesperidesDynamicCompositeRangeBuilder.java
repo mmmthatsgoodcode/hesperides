@@ -7,7 +7,7 @@ import com.netflix.astyanax.model.Equality;
 import com.netflix.astyanax.serializers.ByteBufferOutputStream;
 import com.netflix.astyanax.serializers.CompositeRangeBuilder;
 
-public abstract class DynamicCompositeRangeBuilder implements ByteBufferRange {
+public abstract class HesperidesDynamicCompositeRangeBuilder implements ByteBufferRange {
 
     private ByteBufferOutputStream start = new ByteBufferOutputStream();
     private ByteBufferOutputStream end = new ByteBufferOutputStream();
@@ -19,7 +19,7 @@ public abstract class DynamicCompositeRangeBuilder implements ByteBufferRange {
 
     abstract protected void append(ByteBufferOutputStream out, Object value, Equality equality);
 
-    public DynamicCompositeRangeBuilder withPrefix(Object object) {
+    public HesperidesDynamicCompositeRangeBuilder withPrefix(Object object) {
         if (lockComponent) {
             throw new IllegalStateException("Prefix cannot be added once equality has been specified");
         }
@@ -29,7 +29,7 @@ public abstract class DynamicCompositeRangeBuilder implements ByteBufferRange {
         return this;
     }
     
-    public DynamicCompositeRangeBuilder beginsWith(Object object) {
+    public HesperidesDynamicCompositeRangeBuilder beginsWith(Object object) {
         if (lockComponent) {
             throw new IllegalStateException("Prefix cannot be added once equality has been specified");
         }
@@ -40,12 +40,12 @@ public abstract class DynamicCompositeRangeBuilder implements ByteBufferRange {
         return this;	
     }
 
-    public DynamicCompositeRangeBuilder limit(int count) {
+    public HesperidesDynamicCompositeRangeBuilder limit(int count) {
         this.limit = count;
         return this;
     }
 
-    public DynamicCompositeRangeBuilder reverse() {
+    public HesperidesDynamicCompositeRangeBuilder reverse() {
         reversed = true;
         ByteBufferOutputStream temp = start;
         start = end;
@@ -53,25 +53,25 @@ public abstract class DynamicCompositeRangeBuilder implements ByteBufferRange {
         return this;
     }
 
-    public DynamicCompositeRangeBuilder greaterThan(Object value) {
+    public HesperidesDynamicCompositeRangeBuilder greaterThan(Object value) {
         lockComponent = true;
         append(start, value, Equality.GREATER_THAN);
         return this;
     }
 
-    public DynamicCompositeRangeBuilder greaterThanEquals(Object value) {
+    public HesperidesDynamicCompositeRangeBuilder greaterThanEquals(Object value) {
         lockComponent = true;
         append(start, value, Equality.GREATER_THAN_EQUALS);
         return this;
     }
 
-    public DynamicCompositeRangeBuilder lessThan(Object value) {
+    public HesperidesDynamicCompositeRangeBuilder lessThan(Object value) {
         lockComponent = true;
         append(end, value, Equality.LESS_THAN);
         return this;
     }
 
-    public DynamicCompositeRangeBuilder lessThanEquals(Object value) {
+    public HesperidesDynamicCompositeRangeBuilder lessThanEquals(Object value) {
         lockComponent = true;
         append(end, value, Equality.LESS_THAN_EQUALS);
         return this;

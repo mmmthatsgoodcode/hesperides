@@ -5,60 +5,30 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import com.google.common.collect.BiMap;
-import com.mmmthatsgoodcode.astyanax.DynamicCompositeRangeBuilder;
+import com.mmmthatsgoodcode.astyanax.HesperidesDynamicCompositeRangeBuilder;
 import com.netflix.astyanax.Serializer;
+import com.netflix.astyanax.model.DynamicComposite;
 import com.netflix.astyanax.model.Equality;
 import com.netflix.astyanax.serializers.AbstractSerializer;
 import com.netflix.astyanax.serializers.ByteBufferOutputStream;
 import com.netflix.astyanax.serializers.ComparatorType;
 import com.netflix.astyanax.serializers.CompositeRangeBuilder;
+import com.netflix.astyanax.serializers.DynamicCompositeSerializer;
 import com.netflix.astyanax.serializers.SerializerTypeInferer;
 import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer.ComponentSerializer;
 
-public class HesperidesDynamicCompositeSerializer extends AbstractSerializer<HesperidesDynamicComposite> {
+public class HesperidesDynamicCompositeSerializer extends DynamicCompositeSerializer {
 
 	
-    private static final HesperidesDynamicCompositeSerializer instance = new HesperidesDynamicCompositeSerializer();
     private static final ByteBuffer EMPTY_BYTE_BUFFER  = ByteBuffer.allocate(0);
+    private static final HesperidesDynamicCompositeSerializer instance = new HesperidesDynamicCompositeSerializer();
 
     public static HesperidesDynamicCompositeSerializer get() {
         return instance;
     }
-
-    @Override
-    public HesperidesDynamicComposite fromByteBuffer(ByteBuffer byteBuffer) {
-    	HesperidesDynamicComposite composite = new HesperidesDynamicComposite();
-        composite.deserialize(byteBuffer);
-        return composite;
-    }
-    
-    @Override
-    public ByteBuffer toByteBuffer(HesperidesDynamicComposite obj) {
-        return obj.serialize();
-    }
-    
-    @Override
-    public ComparatorType getComparatorType() {
-        return ComparatorType.DYNAMICCOMPOSITETYPE;
-    }
-
-    @Override
-    public ByteBuffer fromString(String string) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getString(ByteBuffer byteBuffer) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ByteBuffer getNext(ByteBuffer byteBuffer) {
-        throw new IllegalStateException("DynamicComposite columns can't be paginated this way.");
-    }
-    
-    public DynamicCompositeRangeBuilder buildRange(final Map<String, Byte> comparatorToAliasMapping) {
-        return new DynamicCompositeRangeBuilder() {
+   
+    public HesperidesDynamicCompositeRangeBuilder buildRange(final Map<String, Byte> comparatorToAliasMapping) {
+        return new HesperidesDynamicCompositeRangeBuilder() {
             private int position = 0;
 
             public void nextComponent() {
@@ -82,7 +52,6 @@ public class HesperidesDynamicCompositeSerializer extends AbstractSerializer<Hes
 
                 // Write the data: <alias><length><data><equality>
                 byte aliasFlag = -1;
-//                System.out.println("--- "+aliasFlag+", "+comparatorToAliasMapping.get( serializer.getComparatorType().getTypeName())+", "+cb.remaining());
 
                 out.write(aliasFlag);
 

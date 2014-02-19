@@ -51,19 +51,18 @@ import com.netflix.astyanax.shallows.EmptyColumn;
 import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Serializer;
 
-public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<HesperidesDynamicComposite>> {
+public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<DynamicComposite>> {
 	
 	
-	public static class AstyanaxColumn extends AbstractColumnImpl<HesperidesDynamicComposite> {
+	public static class AstyanaxColumn extends AbstractColumnImpl<DynamicComposite> {
 
 		private Object value = null;
 		private Date created;
 		private int ttl;
 		
 		
-		public AstyanaxColumn(HesperidesDynamicComposite name, Object value, Date created, int ttl) {
+		public AstyanaxColumn(DynamicComposite name, Object value, Date created, int ttl) {
 			super(name);
-//			System.out.println("Incoming date "+created.getTime());
 			this.value = value;
 			this.created = created;
 			this.ttl = ttl;
@@ -105,13 +104,13 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 	/* Astyanax -> Hesperides
 	--------------------------- */
 
-	public HesperidesRow cassify(OperationResult<ColumnList<HesperidesDynamicComposite>> opResult, byte[] id)
+	public HesperidesRow cassify(OperationResult<ColumnList<DynamicComposite>> opResult, byte[] id)
 			throws TransformationException {
 		
 		HesperidesRow hesperidesRow = new HesperidesRow(id);
 		
 		if (opResult != null && opResult.getResult() != null) {
-			for (Column<HesperidesDynamicComposite> column:opResult.getResult()) {
+			for (Column<DynamicComposite> column:opResult.getResult()) {
 				hesperidesRow.addColumn(cassify(column));
 				
 			}
@@ -121,11 +120,11 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		
 	}
 	
-	public HesperidesRow cassify(Entry<byte[], List<Column<HesperidesDynamicComposite>>> columns) {
+	public HesperidesRow cassify(Entry<byte[], List<Column<DynamicComposite>>> columns) {
 		
 		HesperidesRow hesperidesRow = new HesperidesRow(columns.getKey());
 
-		for (Column<HesperidesDynamicComposite> column:columns.getValue()) {
+		for (Column<DynamicComposite> column:columns.getValue()) {
 			hesperidesRow.addColumn(cassify(column));
 			
 		}
@@ -134,13 +133,16 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		
 	}
 	
-	public HesperidesColumn cassify(Column<HesperidesDynamicComposite> column) {
+	public HesperidesColumn cassify(Column<DynamicComposite> column) {
 		
 		HesperidesColumn hesperidesColumn = new HesperidesColumn();
 		
 		// re-build name
+		LOG.debug("Re-building column name from components {}", column.getName().getComponents());
 		for(Component component:column.getName().getComponents()) {
-			hesperidesColumn.addNameComponent(AbstractType.infer(component.getValue()));
+			AbstractType nameComponent = AbstractType.infer(component.getValue());
+			LOG.debug("Inferred name component to be {}, from {}", nameComponent.getClass(), component.getValue());
+			hesperidesColumn.addNameComponent(nameComponent);
 			
 		}
 		
@@ -206,7 +208,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 	 * @param mutation
 	 * @param row
 	 */
-	public void populateColumnListMutation(ColumnListMutation<HesperidesDynamicComposite> mutation, HesperidesRow row) {
+	public void populateColumnListMutation(ColumnListMutation<DynamicComposite> mutation, HesperidesRow row) {
 		
 		for (HesperidesColumn hesperidesColumn:row.getColumns()) {
 
@@ -232,10 +234,10 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		
 	}
 
-	public Entry<byte[], List<Column<HesperidesDynamicComposite>>> cassify(HesperidesRow row)
+	public Entry<byte[], List<Column<DynamicComposite>>> cassify(HesperidesRow row)
 			throws TransformationException {
 		
-		Entry<byte[], List<Column<HesperidesDynamicComposite>>> rowKeyAndColumns = new SimpleEntry<byte[], List<Column<HesperidesDynamicComposite>>>(row.getKey(), new ArrayList<Column<HesperidesDynamicComposite>>());
+		Entry<byte[], List<Column<DynamicComposite>>> rowKeyAndColumns = new SimpleEntry<byte[], List<Column<DynamicComposite>>>(row.getKey(), new ArrayList<Column<DynamicComposite>>());
 		
 		for (HesperidesColumn hesperidesColumn:row.getColumns()) {
 		    
@@ -247,7 +249,7 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		
 	}
 	
-	public Column<HesperidesDynamicComposite> cassify(HesperidesColumn hesperidesColumn) {
+	public Column<DynamicComposite> cassify(HesperidesColumn hesperidesColumn) {
 	
 		// encode name components
 		List<AbstractType> nameComponents = new ArrayList<AbstractType>(hesperidesColumn.getNameComponents());
@@ -266,20 +268,17 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Hesp
 		
 	}
 	
-	public HesperidesDynamicComposite cassify(List<AbstractType> nameComponents) {
+	public DynamicComposite cassify(List<AbstractType> nameComponents) {
 		
-		HesperidesDynamicComposite name = new HesperidesDynamicComposite();
+		DynamicComposite name = new DynamicComposite();
 		
 		for (AbstractType component:nameComponents) {
-//		    	System.out.println(component.getValue()+" - "+SerializerTypeInferer.getSerializer(component.getValue()).getComparatorType());
 			Serializer serializer = SerializerTypeInferer.getSerializer(component.getValue());
 
-//		    	name.getComparatorsByPosition().add(serializer.getComparatorType().getTypeName());
-//			name.getSerializersByPosition().add(serializer);
 		    	name.addComponent(component.getValue(), serializer, serializer.getComparatorType().getTypeName() );
 			
 		}
-		
+				
 		return name;
 		
 	}

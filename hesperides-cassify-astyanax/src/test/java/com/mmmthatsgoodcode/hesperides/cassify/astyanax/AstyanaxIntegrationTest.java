@@ -60,9 +60,9 @@ public class AstyanaxIntegrationTest extends
 				    
 //				    	System.out.println(HesperidesDynamicComposite.dynamicCompositeTypeDescriptor());
         				keyspaceContext.getClient().createKeyspace(ImmutableMap.<String,Object>builder().put("name", "HesperidesUnitTest").put("strategy_class", "SimpleStrategy").put("strategy_options", ImmutableMap.<String,Object>builder().put("replication_factor", "1").build() ).build());
-        				keyspaceContext.getClient().createColumnFamily(ImmutableMap.<String, Object>builder().put("name", "ComplexRow").put("comparator_type", HesperidesDynamicComposite.dynamicCompositeTypeDescriptor()).build());
-        				keyspaceContext.getClient().createColumnFamily(ImmutableMap.<String, Object>builder().put("name", "ComplexRow"+CassandraThriftClientIntegration.INDEX_CF_SUFFIX).put("comparator_type", HesperidesDynamicComposite.dynamicCompositeTypeDescriptor()).build());
-        				keyspaceContext.getClient().createColumnFamily(ImmutableMap.<String, Object>builder().put("name", "ComplexRow"+CassandraThriftClientIntegration.INDEX_CACHE_CF_SUFFIX).put("comparator_type", HesperidesDynamicComposite.dynamicCompositeTypeDescriptor()).build());
+        				keyspaceContext.getClient().createColumnFamily(ImmutableMap.<String, Object>builder().put("name", "ComplexRow").put("comparator_type", AstyanaxIntegration.dynamicCompositeTypeDescriptor()).build());
+        				keyspaceContext.getClient().createColumnFamily(ImmutableMap.<String, Object>builder().put("name", "ComplexRow"+CassandraThriftClientIntegration.INDEX_CF_SUFFIX).put("comparator_type", AstyanaxIntegration.dynamicCompositeTypeDescriptor()).build());
+        				keyspaceContext.getClient().createColumnFamily(ImmutableMap.<String, Object>builder().put("name", "ComplexRow"+CassandraThriftClientIntegration.INDEX_CACHE_CF_SUFFIX).put("comparator_type", AstyanaxIntegration.dynamicCompositeTypeDescriptor()).build());
 
 				} catch (ConnectionException e) {
 				    
