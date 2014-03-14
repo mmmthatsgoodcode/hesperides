@@ -111,6 +111,5 @@
 		<module>hesperides-cassify-astyanax</module>
 		<module>hesperides-cassify-hector</module>
 		<module>hesperides-client</module>
-    <module>hesperides-cassify-xmemcached</module>
   </modules>
 </project>
