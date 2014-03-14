@@ -5,17 +5,19 @@ import java.nio.ByteBuffer;
 import org.apache.cassandra.utils.ByteBufferUtil;
 
 import com.mmmthatsgoodcode.hesperides.core.AbstractSerializer;
+import com.mmmthatsgoodcode.hesperides.core.AbstractType;
+import com.mmmthatsgoodcode.hesperides.core.type.FloatValue;
 
 public class FloatSerializer extends AbstractSerializer<Float> {
 
 	@Override
-	public Float fromByteBuffer(ByteBuffer byteBuffer) {
-		return byteBuffer.asFloatBuffer().get();
+	public AbstractType<Float> fromByteBuffer(ByteBuffer byteBuffer) {
+		return new FloatValue( byteBuffer.asFloatBuffer().get() );
 	}
 
 	@Override
-	public ByteBuffer toByteBuffer(Float object) {
-		return ByteBufferUtil.bytes(object);
+	public ByteBuffer toByteBuffer(AbstractType<Float> object) {
+		return ByteBufferUtil.bytes(object.getValue());
 	}
 
 }

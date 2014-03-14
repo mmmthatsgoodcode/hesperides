@@ -1,21 +1,14 @@
 package com.mmmthatsgoodcode.hesperides.cassify.astyanax;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import com.google.common.collect.BiMap;
 import com.mmmthatsgoodcode.astyanax.HesperidesDynamicCompositeRangeBuilder;
 import com.netflix.astyanax.Serializer;
-import com.netflix.astyanax.model.DynamicComposite;
 import com.netflix.astyanax.model.Equality;
-import com.netflix.astyanax.serializers.AbstractSerializer;
 import com.netflix.astyanax.serializers.ByteBufferOutputStream;
-import com.netflix.astyanax.serializers.ComparatorType;
-import com.netflix.astyanax.serializers.CompositeRangeBuilder;
 import com.netflix.astyanax.serializers.DynamicCompositeSerializer;
 import com.netflix.astyanax.serializers.SerializerTypeInferer;
-import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer.ComponentSerializer;
 
 public class HesperidesDynamicCompositeSerializer extends DynamicCompositeSerializer {
 

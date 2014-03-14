@@ -9,29 +9,39 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.Mutation;
+import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.CharSet;
 
+import com.mmmthatsgoodcode.hesperides.core.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
+import com.mmmthatsgoodcode.hesperides.core.SerializationException;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.hesperides.core.type.BooleanValue;
+import com.mmmthatsgoodcode.hesperides.core.type.ByteArrayValue;
+import com.mmmthatsgoodcode.hesperides.core.type.DateValue;
+import com.mmmthatsgoodcode.hesperides.core.type.FloatValue;
+import com.mmmthatsgoodcode.hesperides.core.type.IntegerValue;
+import com.mmmthatsgoodcode.hesperides.core.type.LongValue;
+import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
+import com.mmmthatsgoodcode.hesperides.core.type.ShortValue;
+import com.mmmthatsgoodcode.hesperides.core.type.StringValue;
 import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier;
 import com.mmmthatsgoodcode.hesperides.cassify.Cassifier;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
-import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.AbstractType;
-import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.BooleanValue;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 
-public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column> {
+public class ThriftCassifier extends AbstractConfigurableCassifier<Column> {
 	
 	@Override
-	public HesperidesRow cassify(Entry<byte[], List<Column>> object)
-			throws TransformationException {
+	public HesperidesRow cassify(Entry<AbstractType, Set<Column>> object) throws TransformationException, SerializationException {
 		
 		LOG.debug("Processing {} columms for row {}", object.getValue().size(), object.getKey());
 
@@ -58,20 +68,20 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 				nameBytes.get(componentValue.array());
 				nameBytes.position(nameBytes.position()+1); // dont care about the end-of-component byte
 			
-				switch(HINT_TO_CASSANDRA_TYPE.get( getCassandraTypeAliases().inverse().get(alias) )) {
-					case Hesperides.Hints.STRING:
+				switch(Hesperides.Hint.fromCharacterAlias(alias)) {
+					case STRING:
 						hesperidesColumn.addNameComponent(new String(componentValue.array(), Charset.forName("UTF-8")));
 					break;
-					case Hesperides.Hints.FLOAT:
+					case FLOAT:
 						hesperidesColumn.addNameComponent(componentValue.asFloatBuffer().get());
 					break;
-					case Hesperides.Hints.LONG:
+					case LONG:
 						hesperidesColumn.addNameComponent(componentValue.asLongBuffer().get());
 					break;
-					case Hesperides.Hints.BOOLEAN:
+					case BOOLEAN:
 						hesperidesColumn.addNameComponent(componentValue.get() == (byte)1?true:false);
 					break;
-					case Hesperides.Hints.INT:
+					case INT:
 						hesperidesColumn.addNameComponent(componentValue.asIntBuffer().get());
 					break;
 					default:
@@ -108,7 +118,7 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 			 * ------------- */
 			
 			// last component should be the type hint
-			int valueHint = ((HesperidesColumn.IntegerValue) hesperidesColumn.getNameComponents().get(hesperidesColumn.getNameComponents().size()-1)).getValue();
+			int valueHint = ((IntegerValue) hesperidesColumn.getNameComponents().get(hesperidesColumn.getNameComponents().size()-1)).getValue();
 			LOG.debug("Processing value of hint {}", valueHint);
 			
 			switch(valueHint) {
@@ -194,14 +204,14 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 				byte aliasByte = (byte) aliasChar.charValue();
 				
 				byte[] componentValue = null;
-				if (component instanceof HesperidesColumn.StringValue) componentValue = ((String)component.getValue()).getBytes();
-				else if (component instanceof HesperidesColumn.BooleanValue) componentValue = new byte[]{(byte) ((Boolean)component.getValue()?1:0)};
-				else if (component instanceof HesperidesColumn.LongValue) componentValue = ByteBufferUtil.bytes((long)component.getValue()).array();
-				else if (component instanceof HesperidesColumn.FloatValue) componentValue = ByteBufferUtil.bytes((float)component.getValue()).array();
-				else if (component instanceof HesperidesColumn.ShortValue) componentValue = ByteBufferUtil.bytes((short)component.getValue()).array();
-				else if (component instanceof HesperidesColumn.IntegerValue) componentValue = ByteBufferUtil.bytes((int)component.getValue()).array();
-				else if (component instanceof HesperidesColumn.DateValue) componentValue = ByteBufferUtil.bytes(((Date)component.getValue()).getTime()).array();
-				else if (component instanceof HesperidesColumn.NullValue) componentValue = new byte[]{(byte) 0};
+				if (component instanceof StringValue) componentValue = ((String)component.getValue()).getBytes();
+				else if (component instanceof BooleanValue) componentValue = new byte[]{(byte) ((Boolean)component.getValue()?1:0)};
+				else if (component instanceof LongValue) componentValue = ByteBufferUtil.bytes((long)component.getValue()).array();
+				else if (component instanceof FloatValue) componentValue = ByteBufferUtil.bytes((float)component.getValue()).array();
+				else if (component instanceof ShortValue) componentValue = ByteBufferUtil.bytes((short)component.getValue()).array();
+				else if (component instanceof IntegerValue) componentValue = ByteBufferUtil.bytes((int)component.getValue()).array();
+				else if (component instanceof DateValue) componentValue = ByteBufferUtil.bytes(((Date)component.getValue()).getTime()).array();
+				else if (component instanceof NullValue) componentValue = new byte[]{(byte) 0};
 				else throw new TransformationException("Could not serialize component of type "+component.getClass().getSimpleName());
 				
 				prefix.put(aliasFlag);
@@ -232,31 +242,31 @@ public class ThriftColumnCassifier extends AbstractConfigurableCassifier<Column>
 			switch(hesperidesColumn.getValue().getHint()) {
 	
 				case Hesperides.Hints.STRING:
-					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.StringValue) hesperidesColumn.getValue() ).getValue());
+					column.value = ByteBufferUtil.bytes( ((StringValue) hesperidesColumn.getValue() ).getValue());
 				break;
 				case Hesperides.Hints.FLOAT:
-					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.FloatValue) hesperidesColumn.getValue() ).getValue());
+					column.value = ByteBufferUtil.bytes( ((FloatValue) hesperidesColumn.getValue() ).getValue());
 				break;
 				case Hesperides.Hints.LONG:
-					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.LongValue) hesperidesColumn.getValue() ).getValue());
+					column.value = ByteBufferUtil.bytes( ((LongValue) hesperidesColumn.getValue() ).getValue());
 				break;
 				case Hesperides.Hints.SHORT:
-					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.ShortValue) hesperidesColumn.getValue() ).getValue());
+					column.value = ByteBufferUtil.bytes( ((ShortValue) hesperidesColumn.getValue() ).getValue());
 				break;
 				case Hesperides.Hints.DATE:
-					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.DateValue) hesperidesColumn.getValue() ).getValue().getTime() );
+					column.value = ByteBufferUtil.bytes( ((DateValue) hesperidesColumn.getValue() ).getValue().getTime() );
 				break;
 				case Hesperides.Hints.NULL:
 					column.value = ByteBuffer.wrap(new byte[]{(byte)0});
 				break;
 				case Hesperides.Hints.BOOLEAN:
-					column.value = ByteBuffer.wrap(new byte[]{(byte)(((HesperidesColumn.BooleanValue) hesperidesColumn.getValue() ).getValue()?1:0)});
+					column.value = ByteBuffer.wrap(new byte[]{(byte)(((BooleanValue) hesperidesColumn.getValue() ).getValue()?1:0)});
 				break;
 				case Hesperides.Hints.INT:
-					column.value = ByteBufferUtil.bytes( ((HesperidesColumn.IntegerValue) hesperidesColumn.getValue() ).getValue());					
+					column.value = ByteBufferUtil.bytes( ((IntegerValue) hesperidesColumn.getValue() ).getValue());					
 				break;
 				case Hesperides.Hints.BYTES:
-					column.value = ByteBuffer.wrap(((HesperidesColumn.ByteValue) hesperidesColumn.getValue() ).getValue());				
+					column.value = ByteBuffer.wrap(((ByteArrayValue) hesperidesColumn.getValue() ).getValue());				
 				break;
 				default:
 					throw new TransformationException("Could not serialize column value of type(hint) "+hesperidesColumn.getValue().getHint());			

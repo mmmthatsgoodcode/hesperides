@@ -1,9 +1,7 @@
 package com.mmmthatsgoodcode.hesperides.cassify;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,13 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 
 
-public abstract class AbstractConfigurableCassifier<T> implements ConfigurableCassifier, Cassifier<T> {
+public abstract class AbstractConfigurableCassifier<C> implements ConfigurableCassifier, Cassifier<C> {
 	
 	public static class CassandraTypes { // aka comparators
 		
@@ -40,36 +36,35 @@ public abstract class AbstractConfigurableCassifier<T> implements ConfigurableCa
 
 	}
 	
-	public static final ImmutableBiMap<String, Integer> HINT_TO_CASSANDRA_TYPE = new ImmutableBiMap.Builder<String, Integer>()
-			.put(CassandraTypes.UTF8Type, Hesperides.Hints.STRING)
-			.put(CassandraTypes.Int32Type, Hesperides.Hints.INT32)
-			.put(CassandraTypes.IntegerType, Hesperides.Hints.INT)
-			.put(CassandraTypes.FloatType, Hesperides.Hints.FLOAT)
-			.put(CassandraTypes.LongType, Hesperides.Hints.LONG)
-			.put(CassandraTypes.BooleanType, Hesperides.Hints.BOOLEAN)
-			.put(CassandraTypes.BytesType, Hesperides.Hints.BYTES)
-			.put(CassandraTypes.EmptyType, Hesperides.Hints.NULL)
-			.put(CassandraTypes.DateType, Hesperides.Hints.DATE)
-			.put(CassandraTypes.LexicalUUIDType, Hesperides.Hints.LEXICALUUID)
-			.put(CassandraTypes.TimeUUIDType, Hesperides.Hints.TIMEUUID)
-			.put(CassandraTypes.UUIDType, Hesperides.Hints.UUID)
+	public static final ImmutableBiMap<String, Hesperides.Hint> HINT_TO_CASSANDRA_TYPE = new ImmutableBiMap.Builder<String, Hesperides.Hint>()
+			.put(CassandraTypes.UTF8Type, Hesperides.Hint.STRING)
+			.put(CassandraTypes.Int32Type, Hesperides.Hint.INT32)
+			.put(CassandraTypes.IntegerType, Hesperides.Hint.INT)
+			.put(CassandraTypes.FloatType, Hesperides.Hint.FLOAT)
+			.put(CassandraTypes.LongType, Hesperides.Hint.LONG)
+			.put(CassandraTypes.BooleanType, Hesperides.Hint.BOOLEAN)
+			.put(CassandraTypes.BytesType, Hesperides.Hint.BYTES)
+			.put(CassandraTypes.EmptyType, Hesperides.Hint.NULL)
+			.put(CassandraTypes.DateType, Hesperides.Hint.DATE)
+			.put(CassandraTypes.LexicalUUIDType, Hesperides.Hint.LEXICALUUID)
+			.put(CassandraTypes.TimeUUIDType, Hesperides.Hint.TIMEUUID)
+			.put(CassandraTypes.UUIDType, Hesperides.Hint.UUID)
 			.build();
 	
-	public static final BiMap<String, Character> DEFAULT_TYPE_ALIASES = new ImmutableBiMap.Builder<String, Character>()
-			.put(CassandraTypes.UTF8Type, 's')
-			.put(CassandraTypes.IntegerType, 'i')
-			.put(CassandraTypes.Int32Type, 'h')
-			.put(CassandraTypes.FloatType, 'f')
-			.put(CassandraTypes.LongType, 'l')
-//			.put(CassandraTypes.LongType, 'l')
-			.put(CassandraTypes.BooleanType, 'b')
-			.put(CassandraTypes.LexicalUUIDType, 'e')
-			.put(CassandraTypes.TimeUUIDType, 't')
-			.put(CassandraTypes.UUIDType, 'g')
-			.put(CassandraTypes.BytesType, 'c')
-			.put(CassandraTypes.AsciiType, 'a')
-			.put(CassandraTypes.DateType, 'd')
-			.put(CassandraTypes.EmptyType, 'n')
+	public static final BiMap<String, String> DEFAULT_TYPE_ALIASES = new ImmutableBiMap.Builder<String, String>()
+			.put(CassandraTypes.UTF8Type, Hesperides.Hint.STRING.alias())
+			.put(CassandraTypes.IntegerType, Hesperides.Hint.INT.alias())
+			.put(CassandraTypes.Int32Type, Hesperides.Hint.INT32.alias())
+			.put(CassandraTypes.FloatType, Hesperides.Hint.FLOAT.alias())
+			.put(CassandraTypes.LongType, Hesperides.Hint.LONG.alias())
+			.put(CassandraTypes.BooleanType, Hesperides.Hint.BOOLEAN.alias())
+			.put(CassandraTypes.LexicalUUIDType, Hesperides.Hint.LEXICALUUID.alias())
+			.put(CassandraTypes.TimeUUIDType, Hesperides.Hint.TIMEUUID.alias())
+			.put(CassandraTypes.UUIDType, Hesperides.Hint.UUID.alias())
+			.put(CassandraTypes.BytesType, Hesperides.Hint.BYTES.alias())
+			.put(CassandraTypes.AsciiType, Hesperides.Hint.ASCII.alias())
+			.put(CassandraTypes.DateType, Hesperides.Hint.DATE.alias())
+			.put(CassandraTypes.EmptyType, Hesperides.Hint.NULL.alias())
 			.build();
 	
 	public static final String DEFAULT_KEYSPACE_NAME = "Hesperides";
@@ -78,7 +73,7 @@ public abstract class AbstractConfigurableCassifier<T> implements ConfigurableCa
 	private String keyspaceName = DEFAULT_KEYSPACE_NAME;
 	private String columnFamilyName = DEFAULT_COLUMN_FAMILY_NAME;
 	
-	private BiMap<String, Character> cassandraTypeAliases = DEFAULT_TYPE_ALIASES;
+	private BiMap<String, String> cassandraTypeAliases = DEFAULT_TYPE_ALIASES;
 	
 	protected Logger LOG;
 	
@@ -107,14 +102,14 @@ public abstract class AbstractConfigurableCassifier<T> implements ConfigurableCa
 	}
 
 	@Override
-	public BiMap<String, Character> getCassandraTypeAliases() {
+	public BiMap<String, String> getCassandraTypeAliases() {
 		return cassandraTypeAliases;
 	}
 	
 	public String dynamicCompositeTypeDescriptor() {
 		
 		List<String> types = new ArrayList<String>();
-		for (Entry<Character, String> aliasAndType:DEFAULT_TYPE_ALIASES.inverse().entrySet()) {
+		for (Entry<String, String> aliasAndType:DEFAULT_TYPE_ALIASES.inverse().entrySet()) {
 			types.add(aliasAndType.getKey()+"=>"+aliasAndType.getValue());
 		}
 		

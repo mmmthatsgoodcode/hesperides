@@ -12,12 +12,13 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mmmthatsgoodcode.hesperides.core.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.GenericTransformer;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
-import com.mmmthatsgoodcode.hesperides.core.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 public class MapTransformer<T extends Map> implements GenericTransformer<T> {
@@ -36,14 +37,14 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 		return this.genericTypes.get(1);
 	}	
 	
-	public Node transform(T map) throws TransformationException {
+	public Node.Builder transform(T map) throws TransformationException {
 		
 		LOG.trace("Transforming map {},<{}> to Node", map.getClass(), StringUtils.join(this.genericTypes, ", "));
 		
-		Node mapNode = new NodeImpl();
+		Node.Builder mapNode = new NodeImpl.Builder();
 		
 		if (map == null) {
-			mapNode.setNullValue();
+			mapNode.setValue(new NullValue());
 			return mapNode;
 		}
 		
@@ -53,9 +54,11 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 		while (iterator.hasNext()) {
 			Map.Entry entry = (Map.Entry) iterator.next();
 			
-			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).transform(entry.getValue()) ;
+			Node.Builder childNode = TransformerRegistry.getInstance().get(getValueGenericType()).transform(entry.getValue()) ;
 
-			childNode.setName( Hesperides.Hints.typeToHint(getKeyGenericType()), entry.getKey() );
+			LOG.debug("Transformed value {}", childNode);
+			
+			childNode.setName( AbstractType.wrap( entry.getKey() ) );
 			childNode.setRepresentedType(getValueGenericType());
 			
 			mapNode.addChild(childNode);
@@ -65,15 +68,16 @@ public class MapTransformer<T extends Map> implements GenericTransformer<T> {
 		
 	}
 	
-	public T transform(Node<? extends Object, T> node) throws TransformationException {
+	@SuppressWarnings("unchecked")
+	public T transform(Node<?, ?> node) throws TransformationException {
 		
 		T instance = null;
 		
 		try {
 			
-			if (node.getValueHint() == Hesperides.Hints.NULL) return null;
+			if (node.getValue() == null || node.getValue().equals(new NullValue())) return null;
 			
-			instance = node.getRepresentedType().newInstance();
+			instance = (T) node.getRepresentedType().newInstance();
 			for (Node child:node) {
 				instance.put(child.getName(), TransformerRegistry.getInstance().get(child.getRepresentedType()).transform(child));
 			}

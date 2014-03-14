@@ -31,11 +31,13 @@ import com.mmmthatsgoodcode.hesperides.annotation.HConstructor;
 import com.mmmthatsgoodcode.hesperides.annotation.HConstructorField;
 import com.mmmthatsgoodcode.hesperides.annotation.Id;
 import com.mmmthatsgoodcode.hesperides.annotation.Ignore;
+import com.mmmthatsgoodcode.hesperides.core.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
-import com.mmmthatsgoodcode.hesperides.core.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
+import com.mmmthatsgoodcode.hesperides.core.type.StringValue;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 import com.mmmthatsgoodcode.hesperides.transform.model.HesperidesField;
 
@@ -53,20 +55,20 @@ import com.mmmthatsgoodcode.hesperides.transform.model.HesperidesField;
  *
  * @param <T> Type of the Object being transformed to a Node
  */
-public class AnnotatedObjectTransformer<T> implements Transformer<T> {
+public class AnnotatedObjectTransformer<T extends Object> implements Node.Transformer<T> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AnnotatedObjectTransformer.class);
 	
-	public Node transform(T object) throws TransformationException {
+	public Node.Builder transform(T object) throws TransformationException {
 						
 		LOG.trace("Transforming object {} to Node", object==null?null:object.getClass());
 		MethodAccess methodAccess = MethodAccess.get(object.getClass());
 		FieldAccess fieldAccess = FieldAccess.get(object.getClass());
 				
-		Node node = new NodeImpl<String, T>();
+		Node.Builder node = new NodeImpl.Builder<String, T>();
 		
 		if (object == null) {
-			node.setNullValue();
+			node.setValue(new NullValue());
 			return node;
 		}
 		
@@ -92,7 +94,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						
 						field = getterAnnotation.field();
 						HesperidesField hField = null;
-						Node childNode = null;
+						Node.Builder childNode = null;
 						try {
 							hField = new HesperidesField( object.getClass().getDeclaredField(field) );
 							fields.remove( hField.toField() ); // remove this field from fields
@@ -100,8 +102,8 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 							
 							if (hField.isNodeId()) {
 								LOG.trace("Field {} is an @Id field", hField.toField().getName());
-								int idFieldTypeHint = Hesperides.Hints.typeToHint(hField.toField().getType());
-								if (idFieldTypeHint == Hesperides.Hints.STRING) node.setName(idFieldTypeHint, method.invoke(object, (Object[])null));
+								Hesperides.Hint idFieldTypeHint = Hesperides.Hint.fromType(hField.toField().getType());
+								if (idFieldTypeHint == Hesperides.Hint.STRING) node.setName(AbstractType.wrap( method.invoke(object, (Object[])null) ));
 								else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 							}
 							
@@ -120,7 +122,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 							childNode = TransformerRegistry.getInstance().get(fieldValue.getClass()).transform(fieldValue);
 						}
 						
-						childNode.setName(Hesperides.Hints.STRING, field);
+						childNode.setName(new StringValue(field));
 						node.addChild(childNode);
 						
 					}
@@ -142,8 +144,8 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 						Method getter = object.getClass().getMethod("get"+StringUtils.capitalize(field.getName()), (Class<?>[])null);
 						iterator.remove();
 						
-						Node childNode = TransformerRegistry.getInstance().get(field).transform( methodAccess.invoke(object, getter.getName() ) );
-						childNode.setName(Hesperides.Hints.STRING, field.getName());
+						Node.Builder childNode = TransformerRegistry.getInstance().get(field).transform( methodAccess.invoke(object, getter.getName() ) );
+						childNode.setName(new StringValue(field.getName()));
 						node.addChild(childNode);
 						
 					} catch (NoSuchMethodException e) {
@@ -175,18 +177,18 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 				if (!hField.isIgnored()) {
 					
 					// this is something we'll have to work with
-					Node childNode;
+					Node.Builder childNode;
 					
 					// see if this is an @Id field
 					if (hField.isNodeId()) {
 						LOG.trace("Field {} is an @Id field", field.getName());
-						int idFieldTypeHint = Hesperides.Hints.typeToHint(field.getType());
-						if (idFieldTypeHint == Hesperides.Hints.STRING) node.setName(idFieldTypeHint, fieldAccess.get(object, field.getName()));
+						Hesperides.Hint idFieldTypeHint = Hesperides.Hint.fromType(field.getType());
+						if (idFieldTypeHint == Hesperides.Hint.STRING) node.setName(AbstractType.wrap( fieldAccess.get(object, field.getName()) ));
 						else throw new TransformationException("Id field can only be String"); // TODO add a constraint to the annotation ?
 					}
 
 					childNode = TransformerRegistry.getInstance().get(field).transform(fieldAccess.get(object, field.getName()));				
-					childNode.setName(Hesperides.Hints.STRING, field.getName());
+					childNode.setName(new StringValue(field.getName()));
 					node.addChild(childNode);
 				
 				} else {
@@ -206,11 +208,11 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 	}
 
 	
-	public T transform(Node<? extends Object, T> node) throws TransformationException {
+	public T transform(Node<?, ?> node) throws TransformationException {
 		
 		T instance = null;
 			try {
-				if (node.getValueHint() == Hesperides.Hints.NULL) return null;
+//				if (node node.getValue().equals(new NullValue())) return null;
 				
 				Class type = node.getRepresentedType();
 				List<Node> totalChildren = new ArrayList<Node>(node.getChildren()); // keep a copy of this list we can alter throughout this process without hurting the passed in node
@@ -247,14 +249,14 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 									HConstructorField fieldAnnotation = (HConstructorField) annotation;
 									Class parameterType = ((Class[])((Set<Class>)value.keySet()).toArray(new Class[]{}))[0];
 									// there should be a child node with a string id of value.
-									Node fieldNode = node.getChild(fieldAnnotation.field());
+									Node fieldNode = node.getChild(new StringValue(fieldAnnotation.field()));
 									if (fieldNode != null) {
 										
 										if (ClassUtils.isAssignable(fieldNode.getRepresentedType(), parameterType, true)) {
 											
 											HesperidesField hField = null;
 											try {
-												hField = new HesperidesField(type.getDeclaredField((String) fieldNode.getName()));
+												hField = new HesperidesField(type.getDeclaredField((String) fieldNode.getName().getValue()));
 												value.put(parameterType, TransformerRegistry.getInstance().get(hField.toField()).transform(fieldNode));
 											} catch (NoSuchFieldException e) {
 												LOG.debug("Field {} is private or does not exist on {}", fieldNode.getName(), type.getSimpleName());
@@ -348,7 +350,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 								field = setterAnnotation.field();
 								
 								// see if there is a similarly named child node on this Node
-								Node fieldNode = node.getChild(field);
+								Node fieldNode = node.getChild(new StringValue(field));
 								if (fieldNode != null) {
 									// there is
 									
@@ -361,7 +363,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 										LOG.debug("Field {} is private or does not exist on {}", field, type.getSimpleName());
 									}
 									
-									LOG.debug("Invoking {} with {}", method, fieldNode);
+									LOG.debug("Invoking {} with {}", method, TransformerRegistry.getInstance().get(fieldNode.getRepresentedType()).transform(fieldNode));
 									if (hField == null) method.invoke(instance, TransformerRegistry.getInstance().get(fieldNode.getRepresentedType()).transform(fieldNode));
 											
 									totalChildren.remove(fieldNode); // mark child as processed
@@ -385,7 +387,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 					// try to find setters for the remaining fields
 					for(Iterator<Node> iterator = totalChildren.iterator(); iterator.hasNext(); ) {
 						Node fieldNode = iterator.next();
-						String fieldName = (String) fieldNode.getName();
+						String fieldName = (String) fieldNode.getName().getValue();
 						String setterName = "set"+StringUtils.capitalize(fieldName);
 						LOG.debug("Trying to find setter {}, with {} parameter",setterName, fieldNode.getRepresentedType());
 
@@ -395,7 +397,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 							// get the field matching the attribute on the setter ( there might be none )
 							HesperidesField hField = null;
 							try {
-								hField = new HesperidesField( type.getField((String) fieldNode.getName()) );
+								hField = new HesperidesField( type.getField((String) fieldNode.getName().getValue()) );
 								setter.invoke(instance, TransformerRegistry.getInstance().get(hField.toField()).transform(fieldNode));
 							} catch (NoSuchFieldException e) {
 								LOG.debug("Field {} is private or does not exist on {}", fieldName, type.getSimpleName());
@@ -426,7 +428,7 @@ public class AnnotatedObjectTransformer<T> implements Transformer<T> {
 					LOG.trace("Trying to set {}", fieldNode.getName());
 
 					try {
-						Field field = type.getField((String) fieldNode.getName());
+						Field field = type.getField((String) fieldNode.getName().getValue());
 
 						field.setAccessible(true);
 						

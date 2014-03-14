@@ -3,13 +3,10 @@ package com.mmmthatsgoodcode.hesperides.cassify.thrift;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 
 import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +16,7 @@ import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 
 public class ThriftColumnCassifierTest {
 
-	ThriftColumnCassifier cassifier = new ThriftColumnCassifier();
+	ThriftCassifier cassifier = new ThriftCassifier();
 	
 	List<HesperidesRow> rows = new ArrayList<HesperidesRow>();
 	

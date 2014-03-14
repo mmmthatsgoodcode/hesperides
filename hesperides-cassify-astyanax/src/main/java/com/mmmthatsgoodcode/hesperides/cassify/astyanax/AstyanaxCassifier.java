@@ -1,28 +1,40 @@
 package com.mmmthatsgoodcode.hesperides.cassify.astyanax;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Set;
+
+import javax.sql.PooledConnection;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.mmmthatsgoodcode.astyanax.HesperidesDynamicCompositeRangeBuilder;
 import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier;
+import com.mmmthatsgoodcode.hesperides.cassify.HesperidesRowTransformer;
 import com.mmmthatsgoodcode.hesperides.cassify.AbstractConfigurableCassifier.CassandraTypes;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
-import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.BooleanValue;
-import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.IntegerValue;
+import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumnSlice;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
-import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn.AbstractType;
+import com.mmmthatsgoodcode.hesperides.core.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
+import com.mmmthatsgoodcode.hesperides.core.Node;
+import com.mmmthatsgoodcode.hesperides.core.SerializationException;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.model.AbstractColumnImpl;
 import com.netflix.astyanax.model.AbstractComposite.Component;
+import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.DynamicComposite;
@@ -52,15 +64,13 @@ import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Serializer;
 
 public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<DynamicComposite>> {
-	
-	
+
 	public static class AstyanaxColumn extends AbstractColumnImpl<DynamicComposite> {
 
 		private Object value = null;
 		private Date created;
 		private int ttl;
-		
-		
+
 		public AstyanaxColumn(DynamicComposite name, Object value, Date created, int ttl) {
 			super(name);
 			this.value = value;
@@ -90,198 +100,183 @@ public class AstyanaxCassifier extends AbstractConfigurableCassifier<Column<Dyna
 
 		@Override
 		public boolean hasValue() {
-			return this.value!=null;
+			return this.value != null;
 		}
-		
+
 	}
-	
 
 	public AstyanaxCassifier() {
 
-		
 	}
-	
-	/* Astyanax -> Hesperides
-	--------------------------- */
 
-	public HesperidesRow cassify(OperationResult<ColumnList<DynamicComposite>> opResult, byte[] id)
-			throws TransformationException {
-		
+	/*
+	 * Astyanax -> Hesperides ---------------------------
+	 */
+
+	public HesperidesRow cassify(OperationResult<ColumnList<DynamicComposite>> opResult, AbstractType id)
+			throws TransformationException, SerializationException {
+
 		HesperidesRow hesperidesRow = new HesperidesRow(id);
-		
+
 		if (opResult != null && opResult.getResult() != null) {
-			for (Column<DynamicComposite> column:opResult.getResult()) {
+			for (Column<DynamicComposite> column : opResult.getResult()) {
 				hesperidesRow.addColumn(cassify(column));
-				
+
 			}
 		}
-		
+
 		return hesperidesRow;
-		
+
 	}
-	
-	public HesperidesRow cassify(Entry<byte[], List<Column<DynamicComposite>>> columns) {
-		
+
+	public HesperidesRow cassify(Entry<AbstractType, Set<Column<DynamicComposite>>> columns) throws SerializationException {
+
 		HesperidesRow hesperidesRow = new HesperidesRow(columns.getKey());
 
-		for (Column<DynamicComposite> column:columns.getValue()) {
+		for (Column<DynamicComposite> column : columns.getValue()) {
 			hesperidesRow.addColumn(cassify(column));
-			
+
 		}
-		
+
 		return hesperidesRow;
-		
+
 	}
-	
-	public HesperidesColumn cassify(Column<DynamicComposite> column) {
-		
+
+	public HesperidesColumn cassify(Column<DynamicComposite> column) throws SerializationException {
+
 		HesperidesColumn hesperidesColumn = new HesperidesColumn();
-		
+
 		// re-build name
 		LOG.debug("Re-building column name from components {}", column.getName().getComponents());
-		for(Component component:column.getName().getComponents()) {
-			AbstractType nameComponent = AbstractType.infer(component.getValue());
+		for (Component component : column.getName().getComponents()) {
+			AbstractType nameComponent = AbstractType.wrap(component.getValue());
 			LOG.debug("Inferred name component to be {}, from {}", nameComponent.getClass(), component.getValue());
 			hesperidesColumn.addNameComponent(nameComponent);
-			
-		}
-		
-		// pop the last boolean name component off the list of name components and call setIndexed() on the column with it.
-        	AbstractType lastNameComponent = hesperidesColumn.getNameComponents().get(hesperidesColumn.getNameComponents().size() - 1);
-        	if (lastNameComponent instanceof BooleanValue) {
-        
-        	    BooleanValue lastBooleanNameComponent = (BooleanValue) hesperidesColumn.getNameComponents().remove(hesperidesColumn.getNameComponents().size() - 1);
-        	    hesperidesColumn.setIndexed(lastBooleanNameComponent.getValue());
-        	} else {
-        
-        	    // last name component wasnt a boolean..
-        	    LOG.warn("Last name component for column {} wasn't a Boolean..", column.getName());
-        
-        	}
-		
-        	
-		// re-build value from value hint in last name component
-		IntegerValue valueTypeHint = (IntegerValue) hesperidesColumn.getNameComponents().remove(hesperidesColumn.getNameComponents().size()-1);		
-		
-		switch(valueTypeHint.getValue()) {
-		
-			case Hesperides.Hints.OBJECT:
-			case Hesperides.Hints.NULL:
-				hesperidesColumn.setNullValue();
-			break;
-			case Hesperides.Hints.BOOLEAN:
-				hesperidesColumn.setValue((Boolean) Hesperides.Hints.hintToSerializer(valueTypeHint.getValue()).fromByteBuffer( ByteBuffer.wrap( column.getValue(BytesArraySerializer.get()))));
-			break;
-			case Hesperides.Hints.INT:
-				hesperidesColumn.setValue((Integer) Hesperides.Hints.hintToSerializer(valueTypeHint.getValue()).fromByteBuffer( ByteBuffer.wrap( column.getValue(BytesArraySerializer.get()))));
-			break;
-			case Hesperides.Hints.FLOAT:
-				hesperidesColumn.setValue((Float) Hesperides.Hints.hintToSerializer(valueTypeHint.getValue()).fromByteBuffer( ByteBuffer.wrap( column.getValue(BytesArraySerializer.get()))));
-			break;
-			case Hesperides.Hints.LONG:
-				hesperidesColumn.setValue((Long) Hesperides.Hints.hintToSerializer(valueTypeHint.getValue()).fromByteBuffer( ByteBuffer.wrap( column.getValue(BytesArraySerializer.get()))));
-			break;
-			case Hesperides.Hints.STRING:
-				hesperidesColumn.setValue((String) Hesperides.Hints.hintToSerializer(valueTypeHint.getValue()).fromByteBuffer( ByteBuffer.wrap( column.getValue(BytesArraySerializer.get()))));
-			break;
-			case Hesperides.Hints.BYTES:
-			    
-			break;
-			
-		
-		}
-		
 
-			
-		hesperidesColumn.setCreated(new Date(column.getTimestamp()));
-								
-		return hesperidesColumn;
+		}
+
+		ByteBuffer value = ByteBuffer.wrap(column.getValue(BytesArraySerializer.get()));
+
+		LOG.debug("Value is {}", value);
+		String valueHintAlias = new String(new byte[] {value.get()});
 		
+		LOG.debug("Looking at value hint alias '{}'", valueHintAlias);
+		Hesperides.Hint valueHint = Hesperides.Hint.fromStringAlias( valueHintAlias );
+		LOG.debug("Resolved to value hint '{}'", valueHint);
+
+		switch (valueHint) {
+		
+		case OBJECT:
+		case NULL:
+		case BOOLEAN:
+		case INT:
+		case FLOAT:
+		case LONG:
+		case STRING:
+			hesperidesColumn.setValue(valueHint.serializer().fromByteBuffer(value));
+			break;
+		case BYTES:
+
+			break;			
+		
+		}
+
+		hesperidesColumn.setCreated(new Date(column.getTimestamp()));
+
+		return hesperidesColumn;
+
 	}
-	
-	
-	/* Hesperides -> Astyanax
-	--------------------------- */
-	
+
+	/*
+	 * Hesperides -> Astyanax ---------------------------
+	 */
+
 	/**
 	 * Since a mutation does not take a Column..
+	 * 
 	 * @param mutation
 	 * @param row
+	 * @throws SerializationException 
 	 */
-	public void populateColumnListMutation(ColumnListMutation<DynamicComposite> mutation, HesperidesRow row) {
-		
-		for (HesperidesColumn hesperidesColumn:row.getColumns()) {
+	public void populateColumnListMutation(ColumnListMutation<DynamicComposite> mutation, HesperidesRow row) throws SerializationException {
+
+		for (HesperidesColumn hesperidesColumn : row.getColumns()) {
 
 			List<AbstractType> nameComponents = new ArrayList<AbstractType>(hesperidesColumn.getNameComponents());
-			
-			// append value hint
-			Integer valueHint = Hesperides.Hints.typeToHint( hesperidesColumn.getValue().getValue()==null?null:hesperidesColumn.getValue().getValue().getClass() );
-			nameComponents.add(new HesperidesColumn.IntegerValue(valueHint));
-			
-			// append isIndexed
-			nameComponents.add(new HesperidesColumn.BooleanValue(hesperidesColumn.isIndexed()));
-			
-			// encode value
-			com.mmmthatsgoodcode.hesperides.core.Serializer valueSerializer = hesperidesColumn.getValue().getSerializer();
-			
+
 			// set timestamp
 			mutation.setTimestamp(hesperidesColumn.getCreated().getTime());
+
+			// add hint & encode value
+			com.mmmthatsgoodcode.hesperides.core.Serializer valueSerializer = hesperidesColumn.getValue().getSerializer();
+			LOG.debug("Value serializer {}, hint: {}", valueSerializer, Hesperides.Hint.fromSerializer(valueSerializer).alias());
+			
+			
+			ByteBuffer value = valueSerializer.toByteBuffer(hesperidesColumn.getValue());
+			ByteBuffer valueWithHint = ByteBuffer.allocate(value.capacity()+1);
+
+			valueWithHint.put((Hesperides.Hint.fromSerializer(valueSerializer).alias().getBytes()));
+			valueWithHint.put(value);
+
 			
 			// add to mutation
-			mutation.putColumn( cassify( nameComponents ), valueSerializer.toByteBuffer( hesperidesColumn.getValue().getValue() ).array(), BytesArraySerializer.get(), hesperidesColumn.getTtl());			
-			
+			mutation.putColumn(cassify(nameComponents),
+					valueWithHint.array(),
+					BytesArraySerializer.get(), hesperidesColumn.getTtl());
+
 		}
-		
+
 	}
 
-	public Entry<byte[], List<Column<DynamicComposite>>> cassify(HesperidesRow row)
-			throws TransformationException {
-		
-		Entry<byte[], List<Column<DynamicComposite>>> rowKeyAndColumns = new SimpleEntry<byte[], List<Column<DynamicComposite>>>(row.getKey(), new ArrayList<Column<DynamicComposite>>());
-		
-		for (HesperidesColumn hesperidesColumn:row.getColumns()) {
-		    
-			rowKeyAndColumns.getValue().add( cassify(hesperidesColumn) );
-			
+	public Entry<AbstractType, Set<Column<DynamicComposite>>> cassify(HesperidesRow row) throws TransformationException, SerializationException {
+
+		Entry<AbstractType, Set<Column<DynamicComposite>>> rowKeyAndColumns = new SimpleEntry<AbstractType, Set<Column<DynamicComposite>>>(
+				row.getKey(), new HashSet<Column<DynamicComposite>>());
+
+		for (HesperidesColumn hesperidesColumn : row.getColumns()) {
+
+			rowKeyAndColumns.getValue().add(cassify(hesperidesColumn));
+
 		}
-		
+
 		return rowKeyAndColumns;
-		
+
 	}
-	
-	public Column<DynamicComposite> cassify(HesperidesColumn hesperidesColumn) {
-	
+
+	public Column<DynamicComposite> cassify(HesperidesColumn hesperidesColumn) throws SerializationException {
+
 		// encode name components
 		List<AbstractType> nameComponents = new ArrayList<AbstractType>(hesperidesColumn.getNameComponents());
-		
-		// append value hint
-		Integer valueHint = Hesperides.Hints.typeToHint( hesperidesColumn.getValue().getValue()==null?null:hesperidesColumn.getValue().getValue().getClass() );
-		nameComponents.add(new IntegerValue(valueHint));
-		
-		// append isIndexed
-		nameComponents.add(new HesperidesColumn.BooleanValue(hesperidesColumn.isIndexed()));
 
 		// encode value
+		// add hint & encode value
 		com.mmmthatsgoodcode.hesperides.core.Serializer valueSerializer = hesperidesColumn.getValue().getSerializer();
-		
-		return new AstyanaxColumn(cassify( nameComponents ), valueSerializer.toByteBuffer( hesperidesColumn.getValue().getValue() ).array(), hesperidesColumn.getCreated(), hesperidesColumn.getTtl());	
-		
+		LOG.debug("Value serializer {}, hint: {}", valueSerializer, Hesperides.Hint.fromSerializer(valueSerializer));
+
+		ByteBuffer value = valueSerializer.toByteBuffer(hesperidesColumn.getValue());
+		ByteBuffer valueWithHint = ByteBuffer.allocate(value.capacity()+1);
+
+		valueWithHint.put(Hesperides.Hint.fromSerializer(valueSerializer).alias().getBytes());
+		valueWithHint.put(value);
+
+		return new AstyanaxColumn(cassify(nameComponents), valueWithHint.array(), hesperidesColumn.getCreated(),
+				hesperidesColumn.getTtl());
+
 	}
-	
+
 	public DynamicComposite cassify(List<AbstractType> nameComponents) {
-		
+
 		DynamicComposite name = new DynamicComposite();
-		
-		for (AbstractType component:nameComponents) {
+
+		for (AbstractType component : nameComponents) {
 			Serializer serializer = SerializerTypeInferer.getSerializer(component.getValue());
 
-		    	name.addComponent(component.getValue(), serializer, serializer.getComparatorType().getTypeName() );
-			
+			name.addComponent(component.getValue(), serializer, serializer.getComparatorType().getTypeName());
+
 		}
-				
+
 		return name;
-		
+
 	}
-	
 
 }

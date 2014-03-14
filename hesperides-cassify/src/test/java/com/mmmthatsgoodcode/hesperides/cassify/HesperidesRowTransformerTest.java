@@ -4,18 +4,20 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mmmthatsgoodcode.hesperides.ComplexRow;
 import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.hesperides.core.type.IntegerValue;
+import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
+import com.mmmthatsgoodcode.hesperides.core.type.StringValue;
 import com.mmmthatsgoodcode.utils.other.RiggedRand.ParticipantDistributionException;
 
 public class HesperidesRowTransformerTest {
@@ -27,35 +29,23 @@ public class HesperidesRowTransformerTest {
 	@Before
 	public void setUp() {
 		
-		this.node = new NodeImpl<String, NodeImpl>("YeahRow");
+		Random rand = new Random();
 		
-		NodeImpl<String, String> strNode = new NodeImpl<String, String>("Foo");
-		strNode.setValue("BAR!");
-		
-		NodeImpl<String, Integer> indexedNode = new NodeImpl<String, Integer>("AwesomeIndex", true);
-		indexedNode.setValue(123);
-		
-		NodeImpl<String, NodeImpl> containerNode = new NodeImpl<String, NodeImpl>("Container");
-		
-			NodeImpl<String, String> strNodeInContainerNode = new NodeImpl<String, String>("IsThis");
-			strNodeInContainerNode.setValue("Madness?");
-			
-			containerNode.addChild(strNodeInContainerNode);
-		
-			for (int i=1;i<100;i++) {
-				NodeImpl<Integer, Boolean> intNode = new NodeImpl<Integer, Boolean>(i);
-				intNode.setValue((i%2==0?true:false));
-				containerNode.addChild(intNode);
-			}
-			
-			NodeImpl<String, NodeImpl> containerInContainerNode = new NodeImpl<String, NodeImpl>("ContainerInContainer");
+		node = new NodeImpl.Builder<String, NullValue>()
+				.setName(new StringValue("rootNode"))
+				.addChild(new NodeImpl.Builder<String, Integer>()
+						.setName(new StringValue("child1-1"))
+						.setValue(new IntegerValue(42))
+						.addChild(new NodeImpl.Builder<Integer, NullValue>()
+								.setName(new IntegerValue(42)))
+								.setIndexed(rand.nextBoolean())
+						.addChild(new NodeImpl.Builder<Integer, StringValue>()
+								.setName(new IntegerValue(rand.nextInt(47293449)))
+								.setIndexed(rand.nextBoolean()))
+						.addChild(new NodeImpl.Builder<String, StringValue>()
+								.setName(new StringValue("child1-2"))))
+				.build(null);
 
-			containerNode.addChild(containerInContainerNode);
-
-			
-		this.node.addChild(strNode);
-		this.node.addChild(indexedNode);
-		this.node.addChild(containerNode);
 		
 	}
 	
@@ -63,10 +53,14 @@ public class HesperidesRowTransformerTest {
 	public void testTransform() throws TransformationException {
 		
 		HesperidesRow row = this.transformer.transform(this.node);
-		System.out.println(row);
+//		System.out.println("--" + node);
 
-		Node node = this.transformer.transform(row);
+//		System.out.println("--" + row);
+
+		Node node = this.transformer.transform(row).build(null);
 		
+		System.out.println(this.node);
+
 		System.out.println(node);
 		
 		assertTrue(this.node.equals(node));

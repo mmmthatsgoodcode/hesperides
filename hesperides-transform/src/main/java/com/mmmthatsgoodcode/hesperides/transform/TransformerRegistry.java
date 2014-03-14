@@ -9,7 +9,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.mmmthatsgoodcode.hesperides.core.GenericTransformer;
-import com.mmmthatsgoodcode.hesperides.core.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.Node;
+import com.mmmthatsgoodcode.hesperides.core.Node.Transformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.AnnotatedObjectTransformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.ByteBufferTransformer;
 import com.mmmthatsgoodcode.hesperides.transform.impl.ListTransformer;
@@ -18,10 +19,10 @@ import com.mmmthatsgoodcode.hesperides.transform.impl.PrimitiveTransformer;
 
 public class TransformerRegistry {
 
-	public static final Transformer DEFAULT_SERIALIZER = new AnnotatedObjectTransformer();
-	private ConcurrentHashMap<Class<? extends Object>, Transformer> serializers = new ConcurrentHashMap<Class<? extends Object>, Transformer>();
-	private ConcurrentHashMap<Field, Transformer> fieldSpecificSerializers = new ConcurrentHashMap<Field, Transformer>();
-	private ConcurrentHashMap<String, Transformer> fieldNameSpecificSerializers = new ConcurrentHashMap<String, Transformer>();
+	public static final Node.Transformer DEFAULT_SERIALIZER = new AnnotatedObjectTransformer();
+	private ConcurrentHashMap<Class<? extends Object>, Node.Transformer> serializers = new ConcurrentHashMap<Class<? extends Object>, Node.Transformer>();
+	private ConcurrentHashMap<Field, Node.Transformer> fieldSpecificSerializers = new ConcurrentHashMap<Field, Node.Transformer>();
+	private ConcurrentHashMap<String, Node.Transformer> fieldNameSpecificSerializers = new ConcurrentHashMap<String, Node.Transformer>();
 	
 	/**
 	 * Create the TransformerRegistry with some default transformers
@@ -48,7 +49,7 @@ public class TransformerRegistry {
 	}
 
 	
-	public void register(Class<? extends Object> type, Transformer serializer) {
+	public void register(Class<? extends Object> type, Node.Transformer serializer) {
 		this.serializers.put(type, serializer);
 	}
 	
@@ -57,27 +58,27 @@ public class TransformerRegistry {
 	 * @param field Field for which the provided Transformer will be
 	 * @param serializer
 	 */
-	public void register(Field field, Transformer serializer) {
+	public void register(Field field, Node.Transformer serializer) {
 		this.fieldSpecificSerializers.put(field, serializer);
 	}
 	
-	public void register(String fieldName, Transformer serializer) {
+	public void register(String fieldName, Node.Transformer serializer) {
 		this.fieldNameSpecificSerializers.put(fieldName, serializer);
 	}
 	
-	public void register(Transformer serializer, Class<? extends Object>... classes) {
+	public void register(Node.Transformer serializer, Class<? extends Object>... classes) {
 		for (Class<? extends Object> type:classes) {
 			register(type, serializer);
 		}
 	}
 	
-	public void register(Transformer serializer, Field... fields) {
+	public void register(Node.Transformer serializer, Field... fields) {
 		for (Field field:fields) {
 			register(field, serializer);
 		}
 	}
 	
-	public void register(Transformer serializer, String... fieldNames) {
+	public void register(Node.Transformer serializer, String... fieldNames) {
 		for (String fieldName:fieldNames) {
 			register(fieldName, serializer);
 		}
@@ -105,7 +106,7 @@ public class TransformerRegistry {
 	}
 	
 
-	public Transformer get(Class<? extends Object> type) {
+	public Node.Transformer get(Class<? extends Object> type) {
 		if (this.serializers.containsKey(type)) {
 			return this.serializers.get(type);
 		}
@@ -113,8 +114,8 @@ public class TransformerRegistry {
 		return TransformerRegistry.DEFAULT_SERIALIZER;
 	}
 	
-	public Transformer get(Field field) {
-		Transformer transformer = null;
+	public Node.Transformer get(Field field) {
+		Node.Transformer transformer = null;
 		if (this.fieldSpecificSerializers.containsKey(field)) {
 			transformer = this.fieldSpecificSerializers.get(field);
 		} else {
@@ -124,7 +125,7 @@ public class TransformerRegistry {
 	}
 	
 	public GenericTransformer getFirstGenericTransformer(Field field) throws RegisteredTransformerNotGenericException {
-		Transformer transformer = null;
+		Node.Transformer transformer = null;
 		if (this.fieldSpecificSerializers.containsKey(field)) transformer = this.fieldSpecificSerializers.get(field);
 		else transformer = get(field.getType());
 		

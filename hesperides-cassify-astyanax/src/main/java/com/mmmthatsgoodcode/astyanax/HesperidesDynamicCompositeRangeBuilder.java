@@ -1,11 +1,11 @@
 package com.mmmthatsgoodcode.astyanax;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.Equality;
 import com.netflix.astyanax.serializers.ByteBufferOutputStream;
-import com.netflix.astyanax.serializers.CompositeRangeBuilder;
 
 public abstract class HesperidesDynamicCompositeRangeBuilder implements ByteBufferRange {
 
@@ -38,6 +38,22 @@ public abstract class HesperidesDynamicCompositeRangeBuilder implements ByteBuff
         append(end, object, Equality.GREATER_THAN);
         nextComponent();
         return this;	
+    }
+    
+    public HesperidesDynamicCompositeRangeBuilder beginsWith(List<Object> objects) {
+    	for(Object object:objects) {
+    		
+    		append(start, object, Equality.EQUAL);
+        	append(end, object, Equality.EQUAL);
+    		nextComponent();
+
+    	}
+    	
+    	append(end, 0, Equality.GREATER_THAN);
+		nextComponent();
+
+    	return this;
+    	
     }
 
     public HesperidesDynamicCompositeRangeBuilder limit(int count) {
