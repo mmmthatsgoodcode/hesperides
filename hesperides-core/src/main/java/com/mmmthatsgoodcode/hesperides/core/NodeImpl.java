@@ -22,12 +22,17 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	public static class Builder<N, T> implements Node.Builder<N, T> {
 
 		private final NodeImpl<N, T> node = new NodeImpl();
-		private final Collection<Node.Builder<?, ?>> children = new ArrayList<Node.Builder<?, ?>>();
+		private final Set<Node.Builder<?, ?>> children = new HashSet<Node.Builder<?, ?>>();
 		
 		@Override
 		public Builder<N, T> setName(AbstractType<N> name) {
 			node.setName(name);
 			return this;
+		}
+		
+		@Override
+		public AbstractType<N> getName() {
+			return node.getName();
 		}
 
 		@Override
@@ -50,14 +55,30 @@ public class NodeImpl<N, T> implements Node<N, T> {
 
 		@Override
 		public Builder<N, T> setValue(AbstractType<T> value) {
+			if (children.size() > 0) throw new IllegalStateException("A Node may have either a Value or child nodes. Not Both. This Node already has children.");
 			node.setValue(value);
 			return this;
 		}
 		
 		@Override
 		public Builder<N, T> addChild(Node.Builder<?, ?> child) {
+			if (node.getValue().equals(new NullValue()) == false) throw new IllegalStateException("A Node may have either a Value or child nodes. Not Both. This Node already has value.");
 			children.add(child);
 			return this;
+		}
+		
+
+		@Override
+		public Node.Builder addOrGetChild(Node.Builder<?, ?> child) {
+			
+			for (Node.Builder c:children) {
+				if (c.getName().equals(child.getName())) return c;
+			}
+			
+			addChild(child);
+			
+			return child;
+			
 		}
 
 		@Override
@@ -82,12 +103,19 @@ public class NodeImpl<N, T> implements Node<N, T> {
 			else node.setParent(parent);
 			
 			for(Node.Builder<?, ?> child:children) {
+				
 				node.addChild(child.build(parent));
 			}
 			
 			return node;
 			
 		}
+		
+		@Override
+		public String toString() {
+			return "Builder for: "+this.node;
+		}
+
 		
 	}
 	
@@ -117,7 +145,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		}
 		
 		private Locator p(Node<?, ?> parent) {
-			if (parent != null) throw new IllegalStateException("The actual node is already defined, can not add parent");
+			if (actualNode != null) throw new IllegalStateException("The actual node is already defined, can not add parent");
 			parentNodes.add(parent);
 			return this;
 		}
@@ -158,6 +186,10 @@ public class NodeImpl<N, T> implements Node<N, T> {
 			return actualNode;
 		}
 
+		@Override
+		public String toString() {
+			return "Parents: "+parentNames()+", actualNode: "+node();
+		}
 
 		
 	}
@@ -245,7 +277,10 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		|| other.getName().equals(this.getName()) == false) return false;
 		
 		// same parents..
-		return (getUpstreamNodes().equals(other.getUpstreamNodes()));
+		if (getUpstreamNodeNames().equals(other.getUpstreamNodeNames()) == false) return false;
+		
+		// same children
+		return getChildren().equals(other.getChildren());
 		
 	}
 
@@ -254,6 +289,11 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		
 		Long sum = new Long(getRepresentedType().hashCode());
 		sum += (getName()==null?0:getName().hashCode());
+		sum += (getValue().hashCode());
+		
+		for(Node child:getChildren()) {
+			sum += child.hashCode();
+		}
 		
 		return Hashing.murmur3_32().hashLong(sum).asInt();
 		
@@ -293,21 +333,27 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	}
 	
 	private void addChild(Node<?, ?> child) {
+		for(Node c:children) {
+			if (c.getName().equals(child.getName())) return;
+		}
+		
 		this.children.add(child);
 	}
 	
 	private void addChildren(Set<Node<?, ?>> children) {
-		this.children.addAll(children);
+		for(Node child:children) {
+			addChild(child);
+		}
 	}
 	
 	@Override
-	public Set<Node<?, ?>> getUpstreamNodes() {
+	public Set<AbstractType<?>> getUpstreamNodeNames() {
 		
-		Set<Node<?, ?>> upstreamNodes = new HashSet<Node<?, ?>>();
+		Set<AbstractType<?>> upstreamNodes = new HashSet<AbstractType<?>>();
 		if (getParent() != null) {
 		
-			upstreamNodes.add(parent);
-			upstreamNodes.addAll(parent.getUpstreamNodes());
+			upstreamNodes.add(parent.getName());
+			upstreamNodes.addAll(parent.getUpstreamNodeNames());
 		
 			return upstreamNodes;
 
@@ -319,34 +365,36 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	
 	@Override
 	public String toString() {
-		return getName()+":"+getValue()+(getChildren().size()>0?(" - "+getChildren()):"");
+		return "("+getRepresentedType()+")"+getName()+":"+getValue()+(getChildren().size()>0?(" - "+getChildren()):"");
 	}
 
 
 	@Override
 	public Node<?, ?> locate(Node.Locator locator) {
-		
+				
 		Node node = this;
 		for(AbstractType<?> parentName:locator.parentNames()) {
 			
+			boolean match = false;
 			// is there a child node under "node" with this name?
 			for (Object o:node.getChildren()) {
 				Node child = (Node) o; // eclipse bug..?
 				
 				if (child.getName().equals(parentName)) {
-					node = child; break;
+					node = child; match = true; break;
 				}
 				
 			}
 			
 			// there wasnt..
-			return null;
+			if (match == false) return null;
 			
 		}
 		
+		
 		// found all parents
 		if (locator.node() != null) {
-			
+						
 			for (Object o:node.getChildren()) {
 				Node child = (Node) o;
 				

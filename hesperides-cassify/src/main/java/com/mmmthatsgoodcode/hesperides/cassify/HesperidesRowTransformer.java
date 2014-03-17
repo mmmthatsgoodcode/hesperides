@@ -52,7 +52,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		
 		for (HesperidesColumn column:columns) {
 			// create Node for descendant column and attach it to parent node
-			rootNode.addChild(hesperidesColumnToNode(rootNode, column));
+			hesperidesColumnToNode(rootNode, column);
 		}
 		
 		return rootNode;
@@ -154,9 +154,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 				throw new TransformationException("HesperidesRowTransformer does not support node name of type "+node.getName().getClass().getSimpleName());
 		
 		}
-		
-//		// add value hint
-//		hesperidesColumn.addNameComponent( node.getValueHint() );
+
 		
 		// add indexed flag
 		hesperidesColumn.setIndexed(node.isIndexed());		
@@ -168,21 +166,41 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 	
 	public Node.Builder hesperidesColumnToNode(Node.Builder rootNode, HesperidesColumn column) throws TransformationException {
 				
+		
+		LOG.debug("Transforming {}", column);
 		if (column.getNameComponents().size() % 3 != 0) throw new TransformationException("Malformed column name "+column.getNameComponents());
+		if (rootNode != null && column.getNameComponents().size() == 3) return null;
 		
 		// process parent nodes..
 		
-		Node.Builder node = new NodeImpl.Builder().setName(column.getNameComponents().get(column.getNameComponents().size()-1)); Node.Builder parentNode = rootNode; 
+		Node.Builder node = new NodeImpl.Builder().setName(column.getNameComponents().get(column.getNameComponents().size()-1)); 
+		Node.Builder parentNode = rootNode;
 
 		try {
 			
-			for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents(), 3)) {
+			if (column.getNameComponents().size() >= 9) {
+			
+				for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents().subList(3, column.getNameComponents().size()-3), 3)) {
+					LOG.debug("Looking at {}", childNodeData);
+					Node.Builder nodeInNameComponent = new NodeImpl.Builder().setName(childNodeData.get(2)).setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) childNodeData.get(1)).getValue()) );
+
+					LOG.debug("Adding {} to {}", childNodeData.get(2), parentNode);
+					parentNode = parentNode.addOrGetChild(nodeInNameComponent);
+					
+				}
 				
-				node = new NodeImpl.Builder().setName(childNodeData.get(2)).setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) childNodeData.get(1)).getValue()) );
-				if (parentNode != null) parentNode.addChild(node);
-				parentNode = node;
+				LOG.debug("--- Done adding nodes in name components");
+			
+			} else {
+				
+				LOG.debug("--- No nodes in name components");
+
 				
 			}
+			
+			
+			node.setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) column.getNameComponents().get(column.getNameComponents().size()-2)).getValue()) );
+
 
 		} catch (ClassNotFoundException e) {
 			
@@ -214,6 +232,8 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		}
 		
 		node.setCreated(column.getCreated());
+		if (parentNode != null) parentNode.addOrGetChild(node);
+		LOG.debug("Created {}", node);
 		
 		return node;
 	}

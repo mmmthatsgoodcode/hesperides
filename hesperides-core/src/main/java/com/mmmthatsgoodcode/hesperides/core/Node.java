@@ -13,8 +13,11 @@ public interface Node<N, T> extends Iterable<Node<?, ?>> {
 		public Builder<N, T> setCreated(Date created);
 		public Builder<N, T> setIndexed(boolean indexed);
 		public Builder<N, T> setName(AbstractType<N> value);
+		public AbstractType<N> getName();
+		
 		public Builder<N, T> setValue(AbstractType<T> value);
 		public Builder<N, T> addChild(Node.Builder<?, ?> child);
+		public Builder addOrGetChild(Node.Builder<?, ?> child);
 		public Builder<N, T> addChildren(Collection<Node.Builder<?, ?>> children);
 		public Builder<N, T> setRepresentedType(Class<T> type);
 		
@@ -62,7 +65,7 @@ public interface Node<N, T> extends Iterable<Node<?, ?>> {
 	public Class<T> getRepresentedType();
 	
 	public Node<?, ?> getParent();
-	public Set<Node<?, ?>> getUpstreamNodes();	
+	public Set<AbstractType<?>> getUpstreamNodeNames();	
 	
 	public Set<Node<?, ?>> getChildren();
 	public <C> Node<C, ?> getChild(AbstractType<C> name);

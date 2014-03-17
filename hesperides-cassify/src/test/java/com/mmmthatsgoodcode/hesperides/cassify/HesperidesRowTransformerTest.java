@@ -35,7 +35,6 @@ public class HesperidesRowTransformerTest {
 				.setName(new StringValue("rootNode"))
 				.addChild(new NodeImpl.Builder<String, Integer>()
 						.setName(new StringValue("child1-1"))
-						.setValue(new IntegerValue(42))
 						.addChild(new NodeImpl.Builder<Integer, NullValue>()
 								.setName(new IntegerValue(42)))
 								.setIndexed(rand.nextBoolean())
@@ -55,7 +54,6 @@ public class HesperidesRowTransformerTest {
 		HesperidesRow row = this.transformer.transform(this.node);
 //		System.out.println("--" + node);
 
-//		System.out.println("--" + row);
 
 		Node node = this.transformer.transform(row).build(null);
 		
@@ -67,21 +65,5 @@ public class HesperidesRowTransformerTest {
 
 		
 	}
-	
-	@Test
-	public void testVolume() throws ParticipantDistributionException, TransformationException {
-		
-		List<Node> nodes = new ArrayList<Node>();
-		
-		Long start = System.nanoTime();
-		LOG.debug("Transforming {} Nodes to rows", nodes.size());
-
-		
-		Float time = new Float((System.nanoTime() - start)/1000000);
-		LOG.debug("Done in {}ms or {}ms/object", time, time/nodes.size());
-
-		
-	}
-	
 	
 }

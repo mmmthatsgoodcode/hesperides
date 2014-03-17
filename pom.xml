@@ -109,7 +109,6 @@
 		<module>hesperides-cassify</module>
 		<module>hesperides-core</module>
 		<module>hesperides-cassify-astyanax</module>
-		<module>hesperides-cassify-hector</module>
 		<module>hesperides-client</module>
   </modules>
 </project>
