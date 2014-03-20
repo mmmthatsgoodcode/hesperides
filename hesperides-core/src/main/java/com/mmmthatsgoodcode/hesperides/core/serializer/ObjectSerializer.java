@@ -37,7 +37,7 @@ public class ObjectSerializer extends AbstractSerializer<Object> {
 			ObjectOutput out;
 			try {
 				out = new ObjectOutputStream(bytes);
-				out.writeObject(object);
+				out.writeObject(object.getValue());
 
 				return ByteBuffer.wrap(bytes.toByteArray());
 

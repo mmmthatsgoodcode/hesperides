@@ -61,6 +61,10 @@ public abstract class AbstractType<T> {
 		
 	}
 	
+	public Class getRepresentedType() {
+		return (getValue()==null?NullValue.class:getValue().getClass());
+	}
+	
 	@Override
 	public boolean equals(Object object) {
 	    if (!(object instanceof AbstractType)) return false;

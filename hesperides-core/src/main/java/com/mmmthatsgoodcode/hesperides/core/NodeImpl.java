@@ -1,18 +1,13 @@
 package com.mmmthatsgoodcode.hesperides.core;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
 
 import com.google.common.hash.Hashing;
 import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
@@ -88,7 +83,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		}
 
 		@Override
-		public Builder<N, T> setRepresentedType(Class<T> representedType) {
+		public Builder<N, T> setRepresentedType(Class representedType) {
 			node.setRepresentedType(representedType);
 			return this;
 			
@@ -188,7 +183,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 
 		@Override
 		public String toString() {
-			return "Parents: "+parentNames()+", actualNode: "+node();
+			return "Parents: "+parents()+", actualNode: "+node();
 		}
 
 		
@@ -200,9 +195,6 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	
 	private boolean indexed = false;
 	
-	private Hesperides.Hint valueHint = Hesperides.Hint.OBJECT;
-	private Hesperides.Hint nameHint = Hesperides.Hint.STRING;
-
 	private Class<? extends Object> representedType = NodeImpl.class;
 
 	private AbstractType<T> value = new NullValue();
@@ -230,6 +222,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	}
 	
 	private void setValue(AbstractType<T> value) {
+		setRepresentedType(value.getRepresentedType());
 		this.value = value;
 	}
 
@@ -333,11 +326,13 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	}
 	
 	private void addChild(Node<?, ?> child) {
-		for(Node c:children) {
-			if (c.getName().equals(child.getName())) return;
+		if (child != null) {
+			for(Node c:children) {
+				if (c.getName().equals(child.getName())) return;
+			}
+			
+			this.children.add(child);
 		}
-		
-		this.children.add(child);
 	}
 	
 	private void addChildren(Set<Node<?, ?>> children) {
@@ -365,7 +360,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 	
 	@Override
 	public String toString() {
-		return "("+getRepresentedType()+")"+getName()+":"+getValue()+(getChildren().size()>0?(" - "+getChildren()):"");
+		return "("+getRepresentedType()+")"+getName()+":"+getValue()+(getChildren().size()>0?(" - "+getChildren()):" - []");
 	}
 
 

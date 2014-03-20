@@ -33,16 +33,21 @@ public class HesperidesRowTransformerTest {
 		
 		node = new NodeImpl.Builder<String, NullValue>()
 				.setName(new StringValue("rootNode"))
+				.setRepresentedType(NodeImpl.class)
 				.addChild(new NodeImpl.Builder<String, Integer>()
 						.setName(new StringValue("child1-1"))
+						.setRepresentedType(NodeImpl.class)
 						.addChild(new NodeImpl.Builder<Integer, NullValue>()
 								.setName(new IntegerValue(42)))
+								.setRepresentedType(NodeImpl.class)
 								.setIndexed(rand.nextBoolean())
 						.addChild(new NodeImpl.Builder<Integer, StringValue>()
 								.setName(new IntegerValue(rand.nextInt(47293449)))
+								.setRepresentedType(NodeImpl.class)
 								.setIndexed(rand.nextBoolean()))
 						.addChild(new NodeImpl.Builder<String, StringValue>()
 								.setName(new StringValue("child1-2"))))
+								.setRepresentedType(NodeImpl.class)
 				.build(null);
 
 		

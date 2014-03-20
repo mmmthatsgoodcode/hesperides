@@ -23,12 +23,13 @@ public class StringValue extends AbstractType<String> {
 		return Hesperides.Hint.STRING;
 	}
 	
+	@Override
 	public boolean equals(Object object) {
 		
 		if (!(object instanceof StringValue)) return false;
 		StringValue other = (StringValue) object;
 		
-		return this.getValue()==null?other.getValue()==null:this.getValue().equals(other.getValue());
+		return this.getValue()==other.getValue()||this.getValue().equals(other.getValue());
 		
 	}
 

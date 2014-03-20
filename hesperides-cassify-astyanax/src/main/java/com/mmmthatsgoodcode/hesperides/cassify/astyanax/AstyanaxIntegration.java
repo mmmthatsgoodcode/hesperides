@@ -361,17 +361,19 @@ public class AstyanaxIntegration implements DataStoreIntegration {
 		Set<AbstractType> rowKeys = new HashSet<AbstractType>();
 		ColumnFamily indexCacheColumnFamily = new ColumnFamily<byte[], DynamicComposite>(
 				entityName + INDEX_CACHE_CF_SUFFIX, BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
-		// figure out the indexCache row key
-		AbstractType indexCacheRowKey = new ByteArrayValue( indexCacheRowKey( new HesperidesColumnSlice().n(indexName.components())).toByteArray() );
-
-		if (LOG.isDebugEnabled())
-			LOG.debug("Index name is (hex) {}", indexCacheRowKey);
 
 		OperationResult<ColumnList<DynamicComposite>> results;
 
 		try {
 
 			if (DataStoreIntegration.USE_INDEX_CACHE_CF) {
+
+				// figure out the indexCache row key
+				AbstractType indexCacheRowKey = new ByteArrayValue( indexCacheRowKey( new HesperidesColumnSlice().n(indexName.components())).toByteArray() );
+
+				if (LOG.isDebugEnabled())
+					LOG.debug("Index name is (hex) {}", indexCacheRowKey);
+
 				// look in indexCache CF
 				LOG.debug("Building Column range for indexCache CF query with indexValue \"{}\"", indexValue);
 				
@@ -417,7 +419,7 @@ public class AstyanaxIntegration implements DataStoreIntegration {
 			// see if we have a result
 			if (results.getResult().isEmpty() == false) {
 				LOG.debug("Found row in index CF");
-				HesperidesRow indexRow = cassifier.cassify(results, indexCacheRowKey);
+				HesperidesRow indexRow = cassifier.cassify(results, indexRowKey);
 				LOG.debug("Decoded indexCache CF {}", indexRow);
 				// TODO apply limit
 				for (HesperidesColumn indexColumn : indexRow.getColumns()) {
