@@ -34,36 +34,17 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 	public static HesperidesRowTransformer getInstance() {
 		return HesperidesRowTransformerHolder.INSTANCE;
 	}
-	
-	@Override
-	public Node.Builder transform(HesperidesRow row) throws TransformationException {
-				
-		if (row.getColumns().size() == 0) return new NodeImpl.Builder().setName(row.getKey());
-		return transform(row.getColumns());
-	}
-	
-	public Node.Builder transform(List<HesperidesColumn> columns)
-			throws TransformationException {
-			
-		HesperidesColumn rootColumn = rootColumnFrom(columns.get(0));
-		LOG.debug("Found root column {}", rootColumn);
-		Node.Builder rootNode = hesperidesColumnToNode(null, rootColumn);
-			
-		
-		for (HesperidesColumn column:columns) {
-			// create Node for descendant column and attach it to parent node
-			hesperidesColumnToNode(rootNode, column);
-		}
-		
-		return rootNode;
-	}
-
 
 	@Override
 	public HesperidesRow transform(Node parent) throws TransformationException {
 		
 		HesperidesRow row = new HesperidesRow(parent.getName());
-		row.addColumns(transform(parent, null));
+		for(Object o:parent.getChildren()) {
+			Node child = (Node) o;
+			
+			row.addColumns(transform(child, null));
+			
+		}
 
 		return row;
 		
@@ -147,13 +128,33 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		return hesperidesColumn;
 		
 	}
+
+	
+	@Override
+	public Node.Builder transform(HesperidesRow row) throws TransformationException {
+				
+		if (row.getColumns().size() == 0) return new NodeImpl.Builder().setName(row.getKey());
+
+//		HesperidesColumn rootColumn = rootColumnFrom(columns.get(0));
+//		LOG.debug("Found root column {}", rootColumn);
+//		Node.Builder rootNode = hesperidesColumnToNode(null, rootColumn);
+			
+		Node.Builder rootNode = new NodeImpl.Builder().setName(row.getKey());
+		
+		
+		for (HesperidesColumn column:row.getColumns()) {
+			// create Node for descendant column and attach it to parent node
+			hesperidesColumnToNode(rootNode, column);
+		}
+		
+		return rootNode;
+	}	
 	
 	public Node.Builder hesperidesColumnToNode(Node.Builder rootNode, HesperidesColumn column) throws TransformationException {
 				
 		
 		LOG.debug("Transforming {}", column);
 		if (column.getNameComponents().size() % 2 != 0) throw new TransformationException("Malformed column name "+column.getNameComponents());
-		if (rootNode != null && column.getNameComponents().size() == 2) return null;
 		
 		// process parent nodes..
 		
@@ -162,9 +163,9 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 
 		try {
 			
-			if (column.getNameComponents().size() >= 6) {
+			if (column.getNameComponents().size() >= 4) {
 			
-				for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents().subList(2, column.getNameComponents().size()-2), 2)) {
+				for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents().subList(0, column.getNameComponents().size()-2), 2)) {
 					LOG.debug("Looking at {}", childNodeData);
 					Node.Builder nodeInNameComponent = new NodeImpl.Builder().setName(childNodeData.get(0)).setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) childNodeData.get(1)).getValue()) );
 
@@ -220,30 +221,6 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		
 		return node;
 	}
-	
-	public List<HesperidesColumn> directDescendantsOf(HesperidesColumn needle, List<HesperidesColumn> haystack) {
-		
-		List<HesperidesColumn> descendants = new ArrayList<HesperidesColumn>();
-		
-		for (HesperidesColumn hay:haystack) {
 
-			if (
-					hay.getNameComponents().size() == needle.getNameComponents().size()+2 // any direct descendant will have 3 more components than the parents inheritable components
-					&& hay.getNameComponents().subList(0, needle.getNameComponents().size()).equals(needle.getNameComponents()) // the beginning of the hay's components must match the parents inheritable components
-					) {
-//				LOG.debug("{} is a direct descendant of {}", hay, needle);
-				descendants.add(hay);
-			}
-			
-		}
-		return descendants;
-		
-	}
-	
-	public HesperidesColumn rootColumnFrom(HesperidesColumn column) {
-		
-		return new HesperidesColumn().addNameComponents(column.getNameComponents().subList(0, 2));
-		
-	}
 
 }
