@@ -42,29 +42,35 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		for(Object o:parent.getChildren()) {
 			Node child = (Node) o;
 			
-			row.addColumns(transform(child, null));
+			for (HesperidesColumn column:transform(child, null)) {
+				if (column.getValue() != null && !(column.getValue() instanceof NullValue)) row.addColumn(column);
+			}
 			
 		}
+
+		LOG.debug("Created row {}", row);
 
 		return row;
 		
 	}
 	
-	protected List<HesperidesColumn> transform(Node<? extends Object, List<HesperidesColumn>> parent, HesperidesColumn parentColumn) throws TransformationException {
+	protected List<HesperidesColumn> transform(Node parent, HesperidesColumn parentColumn) throws TransformationException {
 		
-		List<HesperidesColumn> nodes = new ArrayList<HesperidesColumn>();
+		List<HesperidesColumn> columns = new ArrayList<HesperidesColumn>();
 		
 		// add the parent itself
 		HesperidesColumn column = nodeToHesperidesColumn(parent, parentColumn);
 		
-		nodes.add(column);
+		columns.add(column);
 		// add each child
-		for(Node child:parent) {
-			nodes.addAll(transform(child, column));
+		for(Object o:parent) {
+			Node child = (Node) o;
+			columns.addAll(transform(child, column));
 			
 		}
 		
-		return nodes;
+		
+		return columns;
 		
 	}
 	
@@ -77,32 +83,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		if (previous != null) hesperidesColumn.addNameComponents(previous.getNameComponents());
 
 		
-
-		
-		/* Add The actual type if this node represents a Type 
-		------------------------------------------------------ */
-		if (node.getValue() != null && node.getValue().getHint() != Hesperides.Hint.OBJECT) {
-			
-			switch(node.getValue().getHint()) {
-			
-				case NULL:
-				case STRING:
-				case INT:
-				case LONG:
-				case FLOAT:
-				case BOOLEAN:
-				case BYTES:
-					hesperidesColumn.setValue(node.getValue());
-				break;
-				case OBJECT:
-				default:
-					throw new TransformationException("HesperidesColumnTransformer does not do serialization on non-primitive types. "+node.getValue().getClass().getSimpleName()+" is such a type. Pass in a byte array instead.");
-			
-			}
-			
-		}
-		
-		/* Add name as component to the Column's component list
+		/* Add name as component to the Column's name component list
 		-------------------------------------------------------- */
 		switch(node.getName().getHint()) {
 		
@@ -117,7 +98,32 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		
 		}
 		
-		hesperidesColumn.addNameComponent(node.getRepresentedType().getName()); // add type
+		/* Add The actual type if this node represents a Type 
+		------------------------------------------------------ */
+		if (node.getChildren().size() == 0) {
+			
+			switch(node.getValue().getHint()) {
+			
+				case NULL:
+				case STRING:
+				case INT:
+				case LONG:
+				case FLOAT:
+				case BOOLEAN:
+				case BYTES:
+					hesperidesColumn.setValue(node.getValue());
+				break;
+				default:
+					throw new TransformationException("HesperidesColumnTransformer does not do serialization on non-primitive types. "+node.getValue().getClass().getSimpleName()+" is such a type. Pass in a byte array instead.");
+			
+			}
+			
+		} else {
+			
+			hesperidesColumn.addNameComponent(node.getRepresentedType().getName()); // add type
+			
+		}
+
 		
 		// add indexed flag
 		hesperidesColumn.setIndexed(node.isIndexed());		
@@ -154,18 +160,18 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 				
 		
 		LOG.debug("Transforming {}", column);
-		if (column.getNameComponents().size() % 2 != 0) throw new TransformationException("Malformed column name "+column.getNameComponents());
+//		if (column.getNameComponents().size() % 2 != 1) throw new TransformationException("Malformed column name "+column.getNameComponents());
 		
 		// process parent nodes..
 		
-		Node.Builder node = new NodeImpl.Builder().setName(column.getNameComponents().get(column.getNameComponents().size()-2)); 
+		Node.Builder node = new NodeImpl.Builder().setName(column.getNameComponents().get(column.getNameComponents().size()-1)); 
 		Node.Builder parentNode = rootNode;
 
 		try {
 			
-			if (column.getNameComponents().size() >= 4) {
+			if (column.getNameComponents().size() >= 3) {
 			
-				for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents().subList(0, column.getNameComponents().size()-2), 2)) {
+				for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents().subList(0, column.getNameComponents().size()-1), 2)) {
 					LOG.debug("Looking at {}", childNodeData);
 					Node.Builder nodeInNameComponent = new NodeImpl.Builder().setName(childNodeData.get(0)).setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) childNodeData.get(1)).getValue()) );
 
@@ -205,7 +211,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 			}
 			
-			node.setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) column.getNameComponents().get(column.getNameComponents().size()-1)).getValue()) );
+//			node.setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) column.getNameComponents().get(column.getNameComponents().size()-1)).getValue()) );
 
 		} catch (ClassNotFoundException e) {
 			

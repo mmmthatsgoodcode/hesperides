@@ -65,7 +65,7 @@ public class AnnotatedObjectTransformer<T extends Object> implements Node.Transf
 		MethodAccess methodAccess = MethodAccess.get(object.getClass());
 		FieldAccess fieldAccess = FieldAccess.get(object.getClass());
 				
-		Node.Builder node = new NodeImpl.Builder<String, T>();
+		Node.Builder node = new NodeImpl.Builder<StringValue, AbstractType<T>>();
 		
 		if (object == null) {
 			node.setValue(new NullValue());

@@ -35,7 +35,7 @@ public class HesperidesColumnSliceTransformer implements Node.Locator.Transforme
 		}
 		
 		if (locator.node() == null) columnSlice.n(new WildcardValue());
-		else columnSlice.n(extractNodeName(locator.node()));
+		else columnSlice.n((locator.node().getName()));
 		
 		return columnSlice;
 	}

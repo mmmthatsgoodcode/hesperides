@@ -4,18 +4,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-public interface Node<N, T> extends Iterable<Node<?, ?>> {
+public interface Node<N extends AbstractType, T extends AbstractType> extends Iterable<Node<?, ?>> {
 
-	public interface Builder<N, T> {
+	public interface Builder<N extends AbstractType, T extends AbstractType> {
 		
 		
 		public Builder<N, T> setTtl(long ttl);
 		public Builder<N, T> setCreated(Date created);
 		public Builder<N, T> setIndexed(boolean indexed);
-		public Builder<N, T> setName(AbstractType<N> value);
-		public AbstractType<N> getName();
+		public Builder<N, T> setName(N value);
+		public N getName();
 		
-		public Builder<N, T> setValue(AbstractType<T> value);
+		public Builder<N, T> setValue(T value);
 		public Builder<N, T> addChild(Node.Builder<?, ?> child);
 		public Builder addOrGetChild(Node.Builder<?, ?> child);
 		public Builder<N, T> addChildren(Collection<Node.Builder<?, ?>> children);
@@ -68,7 +68,7 @@ public interface Node<N, T> extends Iterable<Node<?, ?>> {
 	public Set<AbstractType<?>> getUpstreamNodeNames();	
 	
 	public Set<Node<?, ?>> getChildren();
-	public <C> Node<C, ?> getChild(AbstractType<C> name);
+	public <C extends AbstractType> Node<C, ?> getChild(C name);
 	
 	public Node<?, ?> locate(Node.Locator locator);
 	

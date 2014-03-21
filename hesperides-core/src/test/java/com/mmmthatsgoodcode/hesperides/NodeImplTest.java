@@ -17,14 +17,14 @@ import com.mmmthatsgoodcode.hesperides.core.type.StringValue;
 
 public class NodeImplTest {
 	
-	private final Node complexTree = new NodeImpl.Builder<String, NullValue>()
+	private final Node complexTree = new NodeImpl.Builder<StringValue, NullValue>()
 			.setName(new StringValue("rootNode"))
-			.addChild(new NodeImpl.Builder<String, Integer>()
+			.addChild(new NodeImpl.Builder<StringValue, IntegerValue>()
 					.setName(new StringValue("child1-1"))
-					.addChild(new NodeImpl.Builder<Integer, Float>()
+					.addChild(new NodeImpl.Builder<IntegerValue, FloatValue>()
 							.setName(new IntegerValue(42))
 							.setValue(new FloatValue(3.14f)))
-					.addChild(new NodeImpl.Builder<String, StringValue>()
+					.addChild(new NodeImpl.Builder<StringValue, StringValue>()
 							.setName(new StringValue("child1-2"))))
 			.build(null);
 	

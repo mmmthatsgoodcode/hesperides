@@ -31,23 +31,23 @@ public class HesperidesRowTransformerTest {
 		
 		Random rand = new Random();
 		
-		node = new NodeImpl.Builder<String, NullValue>()
+		node = new NodeImpl.Builder<StringValue, NullValue>()
 				.setName(new StringValue("rootNode"))
 				.setRepresentedType(NodeImpl.class)
-				.addChild(new NodeImpl.Builder<String, Integer>()
+				.addChild(new NodeImpl.Builder<StringValue, IntegerValue>()
 						.setName(new StringValue("child1-1"))
 						.setRepresentedType(NodeImpl.class)
-						.addChild(new NodeImpl.Builder<Integer, NullValue>()
-								.setName(new IntegerValue(42)))
-								.setRepresentedType(NodeImpl.class)
+						.addChild(new NodeImpl.Builder<IntegerValue, IntegerValue>()
+								.setName(new IntegerValue(42))
+								.setValue(new IntegerValue(13)))
 								.setIndexed(rand.nextBoolean())
-						.addChild(new NodeImpl.Builder<Integer, StringValue>()
+						.addChild(new NodeImpl.Builder<IntegerValue, StringValue>()
 								.setName(new IntegerValue(rand.nextInt(47293449)))
-								.setRepresentedType(NodeImpl.class)
+								.setValue(new StringValue("Yeah!"))
 								.setIndexed(rand.nextBoolean()))
-						.addChild(new NodeImpl.Builder<String, StringValue>()
-								.setName(new StringValue("child1-2"))))
-								.setRepresentedType(NodeImpl.class)
+						.addChild(new NodeImpl.Builder<StringValue, StringValue>()
+								.setName(new StringValue("child1-2"))
+								.setValue(new StringValue("Grandchild!"))))
 				.build(null);
 
 		

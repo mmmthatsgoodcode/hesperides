@@ -12,22 +12,22 @@ import java.util.Set;
 import com.google.common.hash.Hashing;
 import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
 
-public class NodeImpl<N, T> implements Node<N, T> {
+public class NodeImpl<N extends AbstractType, T extends AbstractType> implements Node<N, T> {
 
-	public static class Builder<N, T> implements Node.Builder<N, T> {
+	public static class Builder<N extends AbstractType, T extends AbstractType> implements Node.Builder<N, T> {
 
 		private final NodeImpl<N, T> node = new NodeImpl();
 		private final Set<Node.Builder<?, ?>> children = new HashSet<Node.Builder<?, ?>>();
 		
 		@Override
-		public Builder<N, T> setName(AbstractType<N> name) {
+		public Builder<N, T> setName(N name) {
 			node.setName(name);
 			return this;
 		}
 		
 		@Override
-		public AbstractType<N> getName() {
-			return node.getName();
+		public N getName() {
+			return (N) node.getName();
 		}
 
 		@Override
@@ -49,8 +49,8 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		}
 
 		@Override
-		public Builder<N, T> setValue(AbstractType<T> value) {
-			if (children.size() > 0) throw new IllegalStateException("A Node may have either a Value or child nodes. Not Both. This Node already has children.");
+		public Builder<N, T> setValue(T value) {
+			if (children.size() > 0) throw new IllegalStateException("A Node may have either a Value or child nodes. Not Both. This Node already has children: "+children);
 			node.setValue(value);
 			return this;
 		}
@@ -221,7 +221,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 		return this.value;
 	}
 	
-	private void setValue(AbstractType<T> value) {
+	private void setValue(T value) {
 		setRepresentedType(value.getRepresentedType());
 		this.value = value;
 	}
@@ -317,7 +317,7 @@ public class NodeImpl<N, T> implements Node<N, T> {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <C> Node<C, ?> getChild(AbstractType<C> name) {
+	public <C extends AbstractType> Node<C, ?> getChild(C name) {
 		for (Node<?, ?> child:this.children) {
 			if (child.getName().equals(name)) return (Node<C, ?>) child;
 		}
