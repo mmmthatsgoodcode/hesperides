@@ -51,7 +51,7 @@ public class HesperidesColumnSliceTransformerTest {
 				new StringValue(SomeOtherClass.class.getName()),
 				new FloatValue(3.14f),
 				new StringValue(NodeImpl.class.getName()),
-				new StringValue("Answer") })), columnSlice.components());		
+				new StringValue("Answer") })), columnSlice.components());
 		assertFalse(columnSlice.isPartial());
 		
 	}

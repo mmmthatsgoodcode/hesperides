@@ -47,6 +47,7 @@ import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.DynamicComposite;
+import com.netflix.astyanax.query.RowQuery;
 import com.netflix.astyanax.serializers.BytesArraySerializer;
 import com.netflix.astyanax.serializers.DynamicCompositeSerializer;
 
@@ -180,6 +181,22 @@ public class AstyanaxIntegration implements DataStoreIntegration {
 	}
 	
 	@Override
+	public boolean exists(String entityName, AbstractType rowKey) throws DataStoreIntegrationException {
+		
+		ColumnFamily columnFamily = new ColumnFamily<byte[], DynamicComposite>(entityName, BytesArraySerializer.get(),
+				HesperidesDynamicCompositeSerializer.get());
+		
+		try {
+			OperationResult<Integer> columns = keyspaceContext.getClient().prepareQuery(columnFamily).getKey(rowKey.getSerializer().toByteBufferWithHint(rowKey).array()).getCount().execute();
+			return columns.getResult() > 0;
+		} catch (ConnectionException | SerializationException e) {
+			throw new DataStoreIntegrationException(e);
+		}
+		
+	}
+	
+	
+	@Override
 	public HesperidesRow retrieve(String entityName, AbstractType rowKey) throws DataStoreIntegrationException,
 			TransformationException, SerializationException {
 
@@ -228,34 +245,63 @@ public class AstyanaxIntegration implements DataStoreIntegration {
 	}
 	
 	@Override
-	public HesperidesRow retrieve(String cfName, AbstractType rowKey, HesperidesColumnSlice locator)
+	public HesperidesRow retrieveMatching(String cfName, AbstractType rowKey, List<HesperidesColumnSlice> locators)
 			throws DataStoreIntegrationException, TransformationException, SerializationException {
 
 	
 		ColumnFamily<byte[], DynamicComposite> columnFamily = new ColumnFamily<byte[], DynamicComposite>(cfName, BytesArraySerializer.get(),
 				HesperidesDynamicCompositeSerializer.get());
 		
+		
 		try {
 			
-			OperationResult<ColumnList<DynamicComposite>> results = null;
-			if (locator.isPartial()) {
-				// create composite range builder from column slice
-				HesperidesDynamicCompositeRangeBuilder partialReadRangeBuilder = columnSliceToRange(locator);
-				
-				results = keyspaceContext.getClient()
-						.prepareQuery(columnFamily).getKey(rowKey.getSerializer().toByteBufferWithHint(rowKey).array()).withColumnRange(partialReadRangeBuilder).execute();
 			
-			} else {
-				// just get the specified column
-				LOG.debug("Trying to get column {} for row key {}", cassifier.cassify(locator.components()), rowKey);
-				results = keyspaceContext.getClient()
-						.prepareQuery(columnFamily).getKey(rowKey.getSerializer().toByteBufferWithHint(rowKey).array()).withColumnSlice( cassifier.cassify(locator.components()) ).execute();
+			RowQuery<byte[], DynamicComposite> rangeQuery = keyspaceContext.getClient()
+					.prepareQuery(columnFamily)
+					.getKey(rowKey.getSerializer().toByteBufferWithHint(rowKey).array());
+			
+			RowQuery<byte[], DynamicComposite> sliceQuery = keyspaceContext.getClient()
+					.prepareQuery(columnFamily)
+					.getKey(rowKey.getSerializer().toByteBufferWithHint(rowKey).array());
+			
+			List<HesperidesColumn> columns = new ArrayList<HesperidesColumn>();
+			
+			for (HesperidesColumnSlice locator:locators) {
 				
-				LOG.debug("Found column {}", results.getResult());
+				LOG.debug("Looking for {} on row {}", locator, rowKey);
+				
+				if (locator.isPartial()) {
+					
+					// create composite range builder from column slice
+					OperationResult<ColumnList<DynamicComposite>> results = keyspaceContext.getClient()
+					.prepareQuery(columnFamily)
+					.getKey(rowKey.getSerializer().toByteBufferWithHint(rowKey).array())
+					.withColumnRange(columnSliceToRange(locator))
+					.execute();				
+				
+					columns.addAll( cassifier.cassify(results, rowKey).getColumns() );
+				
+				} else {
+					// just get the specified column
+					
+					// create composite range builder from column slice
+					OperationResult<ColumnList<DynamicComposite>> results = keyspaceContext.getClient()
+					.prepareQuery(columnFamily)
+					.getKey(rowKey.getSerializer().toByteBufferWithHint(rowKey).array())
+					.withColumnSlice( cassifier.cassify(locator.components()) )
+					.execute();				
+				
+					columns.addAll( cassifier.cassify(results, rowKey).getColumns() );
+					
+				}
+				
+
 				
 			}
 			
-			return cassifier.cassify(results, rowKey);
+			LOG.debug("Found columns {}", columns);
+			
+			return new HesperidesRow(rowKey).addColumns(columns);
 
 		} catch (ConnectionException e) {
 
@@ -298,13 +344,13 @@ public class AstyanaxIntegration implements DataStoreIntegration {
 
 	@Override
 	public Set<HesperidesRow> retrieve(String cfName, HesperidesColumnSlice indexName, AbstractType indexValue, int limit,
-			HesperidesColumnSlice slice) throws DataStoreIntegrationException, TransformationException, SerializationException {
+			List<HesperidesColumnSlice> slice) throws DataStoreIntegrationException, TransformationException, SerializationException {
 		
 		Set<HesperidesRow> indexedRows = new HashSet<HesperidesRow>();
 		
 		for (AbstractType indexedRowKey:retrieveRowKeysByIndex(cfName, indexName, indexValue, limit)) {
 			
-			indexedRows.add(retrieve(cfName, indexedRowKey, slice));
+			indexedRows.add(retrieveMatching(cfName, indexedRowKey, slice));
 			
 		}
 
@@ -510,16 +556,21 @@ public class AstyanaxIntegration implements DataStoreIntegration {
 	}
 
 	@Override
-	public void delete(String entityName, AbstractType rowKey, HesperidesColumnSlice columns) throws DataStoreIntegrationException, TransformationException, SerializationException {
+	public void deleteMatching(String entityName, AbstractType rowKey, List<HesperidesColumnSlice> columns) throws DataStoreIntegrationException, TransformationException, SerializationException {
+
+		LOG.debug("Deleting columns matching column slices {}", columns);
 
 		ColumnFamily<byte[], DynamicComposite> columnFamily = new ColumnFamily<byte[], DynamicComposite>(entityName,
 				BytesArraySerializer.get(), HesperidesDynamicCompositeSerializer.get());
 		
 		MutationBatch mutationBatch = keyspaceContext.getClient().prepareMutationBatch();
 		
-		// since there is no delete on a slice, we need to get matching columns and delete them 
-		HesperidesRow row = retrieve(entityName, rowKey, columns);
+		// since there is no deleting columns on a slice ( CASSANDRA-494 ), we need to get matching columns and delete them 
+		HesperidesRow row = retrieveMatching(entityName, rowKey, columns);
+		LOG.debug("Deleting columns {}", row);
 		for (HesperidesColumn column:row.getColumns()) {
+			
+			LOG.debug("Deleting column {}", column);
 			
 			// delete the actual column
 			mutationBatch.withRow(columnFamily, rowKey.getSerializer().toByteBufferWithHint(rowKey).array() ).deleteColumn(cassifier.cassify(column.getNameComponents()));
@@ -680,11 +731,14 @@ public class AstyanaxIntegration implements DataStoreIntegration {
 			rangeBuilder.beginsWith(columnSlice.components().get(0).getValue());
 			
 		}
+		
+		LOG.debug("Created range builder {} from {}", rangeBuilder, columnSlice);
 				
 		return rangeBuilder;
 
 
 	}
+
 		
 
 }

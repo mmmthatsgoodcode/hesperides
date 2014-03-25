@@ -1,6 +1,7 @@
 package com.mmmthatsgoodcode.astyanax;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 import com.netflix.astyanax.model.ByteBufferRange;
@@ -41,7 +42,9 @@ public abstract class HesperidesDynamicCompositeRangeBuilder implements ByteBuff
     }
     
     public HesperidesDynamicCompositeRangeBuilder beginsWith(List<Object> objects) {
-    	for(Object object:objects) {
+    	for(int i=0; i <= objects.size()-2; i++) {
+    		
+    		Object object = objects.get(i);
     		
     		append(start, object, Equality.EQUAL);
         	append(end, object, Equality.EQUAL);
@@ -49,7 +52,8 @@ public abstract class HesperidesDynamicCompositeRangeBuilder implements ByteBuff
 
     	}
     	
-    	append(end, 0, Equality.GREATER_THAN);
+    	append(end, objects.get(objects.size()-1), Equality.GREATER_THAN);
+
 		nextComponent();
 
     	return this;

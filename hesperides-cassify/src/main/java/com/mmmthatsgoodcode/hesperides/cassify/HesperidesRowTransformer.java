@@ -44,11 +44,12 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 			for (HesperidesColumn column:transform(child, null)) {
 				if (column.getValue() != null && !(column.getValue() instanceof NullValue)) row.addColumn(column);
+				
 			}
 			
 		}
 
-		LOG.debug("Created row {}", row);
+		LOG.trace("Created row {}", row);
 
 		return row;
 		
@@ -129,7 +130,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		hesperidesColumn.setIndexed(node.isIndexed());		
 		hesperidesColumn.setCreated(node.getCreated());
 		
-		LOG.debug("Transformed {} to {}", node, hesperidesColumn);
+		LOG.trace("Transformed {} to {}", node, hesperidesColumn);
 		
 		return hesperidesColumn;
 		
@@ -159,7 +160,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 	public Node.Builder hesperidesColumnToNode(Node.Builder rootNode, HesperidesColumn column) throws TransformationException {
 				
 		
-		LOG.debug("Transforming {}", column);
+		LOG.trace("Transforming {}", column);
 //		if (column.getNameComponents().size() % 2 != 1) throw new TransformationException("Malformed column name "+column.getNameComponents());
 		
 		// process parent nodes..
@@ -172,19 +173,19 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			if (column.getNameComponents().size() >= 3) {
 			
 				for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents().subList(0, column.getNameComponents().size()-1), 2)) {
-					LOG.debug("Looking at {}", childNodeData);
+					LOG.trace("Looking at {}", childNodeData);
 					Node.Builder nodeInNameComponent = new NodeImpl.Builder().setName(childNodeData.get(0)).setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) childNodeData.get(1)).getValue()) );
 
-					LOG.debug("Adding {} to {}", childNodeData.get(0), parentNode);
+					LOG.trace("Adding {} to {}", childNodeData.get(0), parentNode);
 					parentNode = parentNode.addOrGetChild(nodeInNameComponent);
 					
 				}
 				
-				LOG.debug("--- Done adding nodes in name components");
+				LOG.trace("--- Done adding nodes in name components");
 			
 			} else {
 				
-				LOG.debug("--- No nodes in name components");
+				LOG.trace("--- No nodes in name components");
 
 				
 			}
@@ -223,7 +224,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 
 		node.setCreated(column.getCreated());
 		if (parentNode != null) parentNode.addOrGetChild(node);
-		LOG.debug("Created {}", node);
+		LOG.trace("Created {}", node);
 		
 		return node;
 	}

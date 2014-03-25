@@ -71,11 +71,13 @@ public interface DataStoreIntegration {
 	 */
 	public HesperidesRow retrieve(String entityName, AbstractType rowKey) throws DataStoreIntegrationException, TransformationException, SerializationException;
 	
-	public HesperidesRow retrieve(String cfName, AbstractType rowKey, List<HesperidesColumn> columns) throws DataStoreIntegrationException, TransformationException, SerializationException;	
-	public HesperidesRow retrieve(String cfName, AbstractType rowKey, HesperidesColumnSlice locator) throws DataStoreIntegrationException, TransformationException, SerializationException;
-	public Set<HesperidesRow> retrieve(String cfName, HesperidesColumnSlice indexName, AbstractType indexValue, int limit) throws DataStoreIntegrationException, TransformationException, SerializationException;
-	public Set<HesperidesRow> retrieve(String cfName, HesperidesColumnSlice indexName, AbstractType indexValue, int limit, HesperidesColumnSlice locator) throws DataStoreIntegrationException, TransformationException, SerializationException;
-	public Set<HesperidesRow> retrieve(String cfName, Multimap<HesperidesColumnSlice, AbstractType> indexes, HesperidesColumnSlice.Relation relation) throws DataStoreIntegrationException, TransformationException, SerializationException;	
+	public HesperidesRow retrieve(String entityName, AbstractType rowKey, List<HesperidesColumn> columns) throws DataStoreIntegrationException, TransformationException, SerializationException;	
+	public HesperidesRow retrieveMatching(String entityName, AbstractType rowKey, List<HesperidesColumnSlice> locator) throws DataStoreIntegrationException, TransformationException, SerializationException;
+	public Set<HesperidesRow> retrieve(String entityName, HesperidesColumnSlice indexName, AbstractType indexValue, int limit) throws DataStoreIntegrationException, TransformationException, SerializationException;
+	public Set<HesperidesRow> retrieve(String entityName, HesperidesColumnSlice indexName, AbstractType indexValue, int limit, List<HesperidesColumnSlice> locator) throws DataStoreIntegrationException, TransformationException, SerializationException;
+	public Set<HesperidesRow> retrieve(String entityName, Multimap<HesperidesColumnSlice, AbstractType> indexes, HesperidesColumnSlice.Relation relation) throws DataStoreIntegrationException, TransformationException, SerializationException;	
+	
+	public boolean exists(String entityName, AbstractType rowKey) throws DataStoreIntegrationException;
 	
 	/**
 	 * Delete a full row ( and it's index rows )
@@ -106,7 +108,7 @@ public interface DataStoreIntegration {
 	 * @throws DataStoreIntegrationException 
 	 * @throws SerializationException 
 	 */
-	public void delete(String entityName, AbstractType rowKey, HesperidesColumnSlice columns) throws DataStoreIntegrationException, TransformationException, SerializationException;
+	public void deleteMatching(String entityName, AbstractType rowKey, List<HesperidesColumnSlice> columns) throws DataStoreIntegrationException, TransformationException, SerializationException;
 	
 	
 }

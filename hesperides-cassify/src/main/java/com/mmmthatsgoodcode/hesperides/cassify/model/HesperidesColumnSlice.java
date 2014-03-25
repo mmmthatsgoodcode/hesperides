@@ -10,7 +10,7 @@ import com.mmmthatsgoodcode.hesperides.core.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.type.WildcardValue;
 
 /**
- * Represents a range of dynamic composite named Columns by
+ * Represents a range of dynamic composite Columns by
  * @author andras
  *
  */

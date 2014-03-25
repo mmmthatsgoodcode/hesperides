@@ -85,7 +85,7 @@ public abstract class DataStoreIntegrationTest {
     	HesperidesRow singleColumnRow = new HesperidesRow(row.getKey());
     	singleColumnRow.addColumn(firstColumn);
     	
-    	HesperidesRow retrievedRow = integration.retrieve("ComplexRow", row.getKey(), new HesperidesColumnSlice().n(firstColumn.getNameComponents()));
+    	HesperidesRow retrievedRow = integration.retrieveMatching("ComplexRow", row.getKey(), Arrays.asList( new HesperidesColumnSlice[] { new HesperidesColumnSlice().n(firstColumn.getNameComponents())} ));
             	
     	assertEquals(singleColumnRow, retrievedRow);
 		
@@ -99,6 +99,10 @@ public abstract class DataStoreIntegrationTest {
 		row.addColumn(new HesperidesColumn().addNameComponent("foo").addNameComponent(true).addNameComponent(3.14f).setValue(new StringValue("yeah!")));
 		row.addColumn(new HesperidesColumn().addNameComponent("no-row").setValue(new StringValue("no-value")));
 		row.addColumn(new HesperidesColumn().addNameComponent("foo").addNameComponent(true).setValue(new BooleanValue(true)));
+		row.addColumn(new HesperidesColumn().addNameComponent("bar").addNameComponent(42).addNameComponent(3.15f).setValue(new StringValue("ooh yeah!")));
+		row.addColumn(new HesperidesColumn().addNameComponent("bar").addNameComponent(42).addNameComponent("baz").setValue(new StringValue("ooh yeah!!!!")));
+		row.addColumn(new HesperidesColumn().addNameComponent("bar").addNameComponent(43).addNameComponent("baz").setValue(new StringValue("nope")));
+		row.addColumn(new HesperidesColumn().addNameComponent("bar").addNameComponent("definitely not").addNameComponent("baz").setValue(new StringValue("nope")));
 
 		
     	integration.store("ComplexRow", row);
@@ -107,8 +111,12 @@ public abstract class DataStoreIntegrationTest {
     	expectedRow.addColumn(row.getColumn(new StringValue("foo"), new IntegerValue(123)));
     	expectedRow.addColumn(row.getColumn(new StringValue("foo"), new BooleanValue(true)));
     	expectedRow.addColumn(row.getColumn(new StringValue("foo"), new BooleanValue(true), new FloatValue(3.14f)));
+    	expectedRow.addColumn(row.getColumn(new StringValue("bar"), new IntegerValue(42), new FloatValue(3.15f)));
+    	expectedRow.addColumn(row.getColumn(new StringValue("bar"), new IntegerValue(42), new StringValue("baz")));
     	
-    	HesperidesRow retrievedRow = integration.retrieve("ComplexRow", row.getKey(), new HesperidesColumnSlice().n(new StringValue("foo")).n(new WildcardValue()));
+    	HesperidesRow retrievedRow = integration.retrieveMatching("ComplexRow", row.getKey(), Arrays.asList( new HesperidesColumnSlice[] {
+    			new HesperidesColumnSlice().n(new StringValue("foo")).n(new WildcardValue()),
+    			new HesperidesColumnSlice().n(new StringValue("bar")).n(new IntegerValue(42)).n(new WildcardValue())}));
   	
     	assertEquals(expectedRow, retrievedRow);
 
@@ -132,10 +140,20 @@ public abstract class DataStoreIntegrationTest {
     	expectedRow.addColumn(row.getColumn(new StringValue("foo"), new BooleanValue(true)));
     	expectedRow.addColumn(row.getColumn(new StringValue("foo"), new BooleanValue(true), new FloatValue(3.14f)));
     	
-    	HesperidesRow retrievedRow = integration.retrieve("ComplexRow", row.getKey(), new HesperidesColumnSlice().n(new StringValue("foo")).n(new BooleanValue(true)).n(new WildcardValue()));
+    	HesperidesRow retrievedRow = integration.retrieveMatching("ComplexRow", row.getKey(), Arrays.asList( new HesperidesColumnSlice[] { new HesperidesColumnSlice().n(new StringValue("foo")).n(new BooleanValue(true)).n(new WildcardValue())}));
   	
     	assertEquals(expectedRow, retrievedRow);
 
+	}
+	
+	@Test
+	public void testExists() throws DataStoreIntegrationException, TransformationException, SerializationException, ParticipantDistributionException {
+		
+    	HesperidesRow row = ComplexRow.generate(1).get(0);
+    	integration.store("ComplexRow", row);
+
+    	assertTrue( integration.exists("ComplexRow", row.getKey()));
+    	    	
 	}
 	
 	@Test
@@ -281,7 +299,7 @@ public abstract class DataStoreIntegrationTest {
 		row.addColumn(new HesperidesColumn().addNameComponent("foo").addNameComponent(true).setValue(new BooleanValue(true)));
 		
 		integration.store("ComplexRow", row);
-		integration.delete("ComplexRow", row.getKey(), new HesperidesColumnSlice().n(new StringValue("foo")).n(new BooleanValue(true)).n(new WildcardValue()));
+		integration.deleteMatching("ComplexRow", row.getKey(), Arrays.asList( new HesperidesColumnSlice[] { new HesperidesColumnSlice().n(new StringValue("foo")).n(new BooleanValue(true)).n(new WildcardValue())}));
 
 		HesperidesRow retrievedRow = integration.retrieve("ComplexRow", row.getKey());
 

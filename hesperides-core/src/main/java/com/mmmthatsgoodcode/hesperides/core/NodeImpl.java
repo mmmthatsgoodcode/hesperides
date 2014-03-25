@@ -99,7 +99,7 @@ public class NodeImpl<N extends AbstractType, T extends AbstractType> implements
 			
 			for(Node.Builder<?, ?> child:children) {
 				
-				node.addChild(child.build(parent));
+				if (child != null) node.addChild(child.build(parent));
 			}
 			
 			return node;
