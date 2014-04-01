@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesColumn;
-import com.mmmthatsgoodcode.hesperides.cassify.model.HesperidesRow;
 import com.mmmthatsgoodcode.hesperides.core.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.type.BooleanValue;
 import com.mmmthatsgoodcode.hesperides.core.type.FloatValue;
 import com.mmmthatsgoodcode.hesperides.core.type.IntegerValue;
 import com.mmmthatsgoodcode.hesperides.core.type.LongValue;
 import com.mmmthatsgoodcode.hesperides.core.type.StringValue;
+import com.mmmthatsgoodcode.hesperides.datastore.model.HesperidesColumn;
+import com.mmmthatsgoodcode.hesperides.datastore.model.HesperidesRow;
 import com.mmmthatsgoodcode.utils.other.RiggedRand;
 import com.mmmthatsgoodcode.utils.other.RiggedRand.ParticipantDistributionException;
 

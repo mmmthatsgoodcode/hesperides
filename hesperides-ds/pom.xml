@@ -7,8 +7,8 @@
 		<artifactId>hesperides</artifactId>
 		<version>0.1-SNAPSHOT</version>
 	</parent>
-	<artifactId>hesperides-cassify</artifactId>
-	<name>hesperides-cassify</name>
+	<artifactId>hesperides-ds</artifactId>
+	<name>hesperides-ds</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -46,6 +46,23 @@
 	</build>
 	<dependencies>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.1</version>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>14.0.1</version>
+		</dependency>
+		<dependency>
 			<groupId>com.mmmthatsgoodcode.hesperides</groupId>
 			<artifactId>hesperides-core</artifactId>
 			<version>0.1-SNAPSHOT</version>
@@ -59,12 +76,6 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cassandra</groupId>
-			<artifactId>cassandra-all</artifactId>
-			<version>1.2.9</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
