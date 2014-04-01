@@ -106,9 +106,9 @@
 	</build>
 	<modules>
 		<module>hesperides-transform</module>
-		<module>hesperides-cassify</module>
+		<module>hesperides-ds</module>
 		<module>hesperides-core</module>
-		<module>hesperides-cassify-astyanax</module>
+		<module>hesperides-ds-astyanax</module>
 		<module>hesperides-client</module>
   </modules>
 </project>
