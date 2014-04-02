@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.mmmthatsgoodcode.hesperides</groupId>
@@ -12,6 +11,10 @@
 	<url>http://mmmthatsgoodcode.com</url>
 
 	<repositories>
+                <repository>
+                        <id>3rdparty</id>
+                        <url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/thirdparty/</url>
+                </repository>
 		<repository>
 			<id>release</id>
 			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/releases/</url>
@@ -22,7 +25,12 @@
 		</repository>
 		<repository>
 			<id>central</id>
-			<url>http://build.mmmthatsgoodcode.com:28080/nexus/content/repositories/central/</url>
+			<name>Central Repository</name>
+			<url>http://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 
@@ -98,11 +106,10 @@
 	</build>
 	<modules>
 		<module>hesperides-transform</module>
-		<module>hesperides-cassify</module>
+		<module>hesperides-ds</module>
 		<module>hesperides-core</module>
-		<module>hesperides-cassify-thrift</module>
-		<module>hesperides-cassify-astyanax</module>
-		<module>hesperides-cassify-hector</module>
+		<module>hesperides-ds-astyanax</module>
 		<module>hesperides-client</module>
-	</modules>
+    <module>hesperides-ds-cassandra</module>
+  </modules>
 </project>

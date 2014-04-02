@@ -1,44 +1,75 @@
 package com.mmmthatsgoodcode.hesperides.core;
-import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-public interface Node<N, T extends Object> extends Iterable<Node> {
+public interface Node<N extends AbstractType, T extends AbstractType> extends Iterable<Node<?, ?>> {
 
-	public int getTtl();
-	public void setTtl(int ttl);
+	public interface Builder<N extends AbstractType, T extends AbstractType> {
+		
+		
+		public Builder<N, T> setTtl(long ttl);
+		public Builder<N, T> setCreated(Date created);
+		public Builder<N, T> setIndexed(boolean indexed);
+		public Builder<N, T> setName(N value);
+		public N getName();
+		
+		public Builder<N, T> setValue(T value);
+		public Builder<N, T> addChild(Node.Builder<?, ?> child);
+		public Builder addOrGetChild(Node.Builder<?, ?> child);
+		public Builder<N, T> addChildren(Collection<Node.Builder<?, ?>> children);
+		public Builder<N, T> setRepresentedType(Class<T> type);
+		
+		public Node<N, T> build(Node<?, ?> parent);
+	}
+	
+	public interface Locator {
+		
+		public interface Transformer<T extends Object> {
+			
+			public T transform(Locator locator) throws TransformationException;
+			public Locator transform(T locator) throws TransformationException;
+			
+		}
+		
+		public Locator p(Node<?, ?>...parents);
+		public Locator p(AbstractType<?>...parentNames);
+		
+		public Locator n(Node<?, ?> node);
+		public Locator n(AbstractType<?> nodeName);
+		
+		public List<Node<?, ?>> parents();
+		public List<AbstractType<?>> parentNames();
+		public Node<?, ?> node();
+		
+	}
+	
+	public interface Transformer<T> {
+		
+		public Node.Builder<?, ?> transform(T node) throws TransformationException;
+		public T transform(Node<?, ?> node) throws TransformationException;
+		
+	}
+	
+	public long getTtl();
 	
 	public Date getCreated();
-	public void setCreated(Date created);
 	
-	public void setName(int hint, N name);
-	public N getName();
-	public int getNameHint();
+	public boolean isIndexed();
 	
-	public T getValue();
+	public AbstractType<N> getName();
 	
-	public void setValue(String value);
-	public void setValue(Integer value);
-	public void setValue(Long value);
-	public void setValue(Float value);
-	public void setValue(Boolean value);
-	public void setValue(ByteBuffer value);
-	public void setNullValue();
-	public int getValueHint();
+	public AbstractType<T> getValue();
 	
-
-	public void setRepresentedType(Class<T> type);
 	public Class<T> getRepresentedType();
 	
-	public Node addChild(Node child);
-	public void removeChild(Object name);
+	public Node<?, ?> getParent();
+	public Set<AbstractType<?>> getUpstreamNodeNames();	
 	
-	public void addChildren(Iterable<Node> children);
+	public Set<Node<?, ?>> getChildren();
+	public <C extends AbstractType> Node<C, ?> getChild(C name);
 	
-	public List<Node> getChildren();
-	public Node getChild(Object name);
-	
-	public boolean equals(Object object);
+	public Node<?, ?> locate(Node.Locator locator);
 	
 }

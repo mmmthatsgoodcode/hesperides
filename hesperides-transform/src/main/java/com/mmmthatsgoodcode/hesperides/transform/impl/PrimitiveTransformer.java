@@ -6,63 +6,41 @@ import java.lang.reflect.InvocationTargetException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mmmthatsgoodcode.hesperides.core.AbstractType;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
-import com.mmmthatsgoodcode.hesperides.core.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
 
-public class PrimitiveTransformer<T extends Object> implements Transformer<T> {
+public class PrimitiveTransformer<T extends Object> implements Node.Transformer<T> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PrimitiveTransformer.class);
 	
 	@Override
-	public Node transform(T object) {
+	public Node.Builder transform(T object) {
 		
 		LOG.trace("Transforming primitive {}", object);
 		
-		Node node = new NodeImpl();
+		Node.Builder node = new NodeImpl.Builder();
 		
 		if (object == null) {
-			node.setNullValue();
+			node.setValue(new NullValue());
 			return node;
 		}
 		
 		node.setRepresentedType(object.getClass());
 		
-		if (object instanceof Integer) {
-			node.setValue((Integer) object);
-			return node;
-		}
-		
-		if (object instanceof Long) {
-			node.setValue((Long) object);
-			return node;
-		}
-		
-		if (object instanceof Float) {
-			node.setValue((Float) object);
-			return node;
-		}
-		
-		if (object instanceof Boolean) {
-			node.setValue((Boolean) object);
-			return node;
-		}
-		
-		if (object instanceof String) {
-			node.setValue((String) object);
-			return node;
-		}
+		node.setValue(AbstractType.wrap(object));
 		
 		return node;
 		
 	}
 
 	@Override
-	public T transform(Node<? extends Object, T> node) throws TransformationException {
+	public T transform(Node<?, ?> node) throws TransformationException {
 		
-		if (node.getValue() == null) return null;
-		return (T) node.getValue();
+		if (node.getValue() == null || node.getValue().equals(new NullValue())) return null;
+		return (T) node.getValue().getValue();
 
 		
 	}

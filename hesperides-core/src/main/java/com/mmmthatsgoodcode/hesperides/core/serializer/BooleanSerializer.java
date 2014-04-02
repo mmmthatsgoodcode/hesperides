@@ -2,22 +2,22 @@ package com.mmmthatsgoodcode.hesperides.core.serializer;
 
 import java.nio.ByteBuffer;
 
-import org.apache.cassandra.utils.ByteBufferUtil;
-
 import com.mmmthatsgoodcode.hesperides.core.AbstractSerializer;
-import com.mmmthatsgoodcode.hesperides.core.Serializer;
+import com.mmmthatsgoodcode.hesperides.core.AbstractType;
+import com.mmmthatsgoodcode.hesperides.core.type.BooleanValue;
 
 public class BooleanSerializer extends AbstractSerializer<Boolean> {
 
 	@Override
-	public Boolean fromByteBuffer(ByteBuffer byteBuffer) {
-		if (byteBuffer.get() == (byte)1) return true;
-		return false;
+	public AbstractType<Boolean> fromByteBuffer(ByteBuffer byteBuffer) {
+		if (byteBuffer.get() == (byte)1) return new BooleanValue(true);
+		return new BooleanValue(false);
 	}
 
 	@Override
-	public ByteBuffer toByteBuffer(Boolean object) {
-		return ByteBuffer.wrap(new byte[]{ (byte) (object==true?1:0) });
+	public ByteBuffer toByteBuffer(AbstractType<Boolean> object) {
+		return ByteBuffer.wrap(new byte[]{ (byte) (object.getValue()==true?1:0) });
 	}
+
 
 }

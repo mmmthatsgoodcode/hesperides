@@ -2,34 +2,25 @@ package com.mmmthatsgoodcode.hesperides.transform.impl;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.io.Files;
 import com.mmmthatsgoodcode.hesperides.ComplexHBeanAnnotatedType;
 import com.mmmthatsgoodcode.hesperides.ComplexHConstructorAnnotatedType;
 import com.mmmthatsgoodcode.hesperides.ComplexPublicFieldsType;
 import com.mmmthatsgoodcode.hesperides.ComplexType;
-import com.mmmthatsgoodcode.hesperides.annotation.Id;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
+import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
 import com.mmmthatsgoodcode.hesperides.transform.RegisteredTransformerNotGenericException;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 import com.mmmthatsgoodcode.hesperides.transform.impl.AnnotatedObjectTransformer;
-import com.mmmthatsgoodcode.hesperides.transform.impl.MapTransformer;
 
 public class AnnotatedObjectTransformerTest {
 
@@ -65,7 +56,7 @@ public class AnnotatedObjectTransformerTest {
 		TransformerRegistry.getInstance().register(new Class[]{Integer.class}, ComplexPublicFieldsType.class.getField("integerList"));
 		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexPublicFieldsType.class.getField("objectList"));
 	
-		Node serializedCo = transformer.transform(complexPublicFieldsType);
+		Node serializedCo = transformer.transform(complexPublicFieldsType).setName(new NullValue()).build(null);
 		
 		ComplexPublicFieldsType deserializedCo = transformer.transform(serializedCo);
 
@@ -84,9 +75,13 @@ public class AnnotatedObjectTransformerTest {
 		TransformerRegistry.getInstance().register(new Class[]{Integer.class}, ComplexHBeanAnnotatedType.class.getField("integerList"));
 		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexHBeanAnnotatedType.class.getField("objectList"));
 	
-		Node serializedCo = transformer.transform(complexHBeanAnnotatedType);
+		Node serializedCo = transformer.transform(complexHBeanAnnotatedType).build(null);
+		
+		LOG.debug("Built {}", serializedCo);
 		
 		ComplexHBeanAnnotatedType deserializedCo = transformer.transform(serializedCo);
+		
+		LOG.debug("Built {}", deserializedCo);
 		
 		assertTrue(deserializedCo.equals(complexHBeanAnnotatedType));		
 		
@@ -103,7 +98,7 @@ public class AnnotatedObjectTransformerTest {
 		TransformerRegistry.getInstance().register(new Class[]{Integer.class}, ComplexHConstructorAnnotatedType.class.getField("integerList"));
 		TransformerRegistry.getInstance().register(new Class[]{ComplexType.EnclosedType.class}, ComplexHConstructorAnnotatedType.class.getField("objectList"));
 		
-		Node serializedCo = transformer.transform(complexHConstructorAnnotatedType);
+		Node serializedCo = transformer.transform(complexHConstructorAnnotatedType).build(null);
 
 		ComplexHConstructorAnnotatedType deserializedCo = transformer.transform(serializedCo);
 		
@@ -140,7 +135,7 @@ public class AnnotatedObjectTransformerTest {
 		Long start = System.nanoTime();
 		for(ComplexType object:objects) {
 			
-			nodes.add(transformer.transform(object));
+			nodes.add(transformer.transform(object).build(null));
 			
 		}
 		Float time = new Float((System.nanoTime() - start)/1000000);

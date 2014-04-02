@@ -8,7 +8,7 @@ import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
-import com.mmmthatsgoodcode.hesperides.core.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.type.NullValue;
 import com.mmmthatsgoodcode.hesperides.transform.TransformerRegistry;
 
 public class ListTransformer<T extends List> implements GenericTransformer<T> {
@@ -20,18 +20,18 @@ public class ListTransformer<T extends List> implements GenericTransformer<T> {
 	}		
 	
 	@Override
-	public Node transform(T object) throws TransformationException {
-		Node listNode = new NodeImpl();
+	public Node.Builder transform(T object) throws TransformationException {
+		Node.Builder listNode = new NodeImpl.Builder();
 		
 		if (object == null) {
-			listNode.setNullValue();
+			listNode.setValue(new NullValue());
 			return listNode;
 		}
 		
 		listNode.setRepresentedType(object.getClass());
 		
 		for(Object child:((T) object)) {
-			Node childNode = TransformerRegistry.getInstance().get(getValueGenericType()).transform(child);
+			Node.Builder childNode = TransformerRegistry.getInstance().get(getValueGenericType()).transform(child);
 			listNode.addChild(childNode);
 		}
 		
@@ -39,15 +39,16 @@ public class ListTransformer<T extends List> implements GenericTransformer<T> {
 		
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public T transform(Node<? extends Object, T> node) throws TransformationException {
+	public T transform(Node<?, ?> node) throws TransformationException {
 		
 		T instance = null;
 		try {
 			
-			if (node.getValueHint() == Hesperides.Hints.NULL) return null;
+			if (node.getValue() == null || node.getValue().equals(new NullValue())) return null;
 			
-			instance = node.getRepresentedType().newInstance();
+			instance = (T) node.getRepresentedType().newInstance();
 			
 			for (Node child:node) {
 				instance.add( TransformerRegistry.getInstance().get(getValueGenericType()).transform(child) );

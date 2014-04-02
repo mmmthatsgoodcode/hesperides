@@ -34,6 +34,15 @@ public class HesperidesField {
 		
 	}
 	
+	public boolean isIndexed() {
+		
+		HField fieldAnnotation = this.field.getAnnotation(HField.class);
+		
+		if (fieldAnnotation != null) return fieldAnnotation.indexed();
+		return false;		
+		
+	}
+	
 	public Field toField() {
 		return field;
 	}

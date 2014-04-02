@@ -4,15 +4,15 @@ import java.nio.ByteBuffer;
 
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
-import com.mmmthatsgoodcode.hesperides.core.Transformer;
+import com.mmmthatsgoodcode.hesperides.core.type.ByteBufferValue;
 
-public class ByteBufferTransformer implements Transformer<ByteBuffer> {
+public class ByteBufferTransformer implements Node.Transformer<ByteBuffer> {
 
 	@Override
-	public Node transform(ByteBuffer object) {
-		Node byteNode = new NodeImpl();
+	public Node.Builder transform(ByteBuffer object) {
+		Node.Builder byteNode = new NodeImpl.Builder();
 		
-		byteNode.setValue((ByteBuffer)object);
+		byteNode.setValue(new ByteBufferValue(object));
 		byteNode.setRepresentedType(ByteBuffer.class);
 		
 		return byteNode;
@@ -21,7 +21,7 @@ public class ByteBufferTransformer implements Transformer<ByteBuffer> {
 	@Override
 	public ByteBuffer transform(Node node) {
 		
-		return (ByteBuffer) node.getValue();
+		return (ByteBuffer) node.getValue().getValue();
 	}
 
 }
