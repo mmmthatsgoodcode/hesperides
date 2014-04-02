@@ -1,5 +1,0 @@
-This creates a client-independent representation of a wide row with a DynamicComposite comparator, without making o.a.c.db a requirement to your project.
-It also reads properties from hesperides-cassify.properties in order to get the following information:
-- keyspace name
-- colunm family name
-- dynamic comparator alias chars to use

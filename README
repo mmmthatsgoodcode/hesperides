@@ -1,21 +1,3 @@
 *This project is not in a usable state yet. See the wiki and github issues at https://github.com/mmmthatsgoodcode/hesperides for details*
 
-Cultivate a Garden in Cassandra. Anything from a couple bushes to a forest.
-
-hesperides-transform - Transform any Java Object in to a simple representation of it's Graph : a tree of Nodes
-hesperides-cassify - Take a Node and turn it in to a client-idependent representation of a wide row.
-hesperides-cassify-thrift - Create Thrift Column objects.
-hesperides-cassify-astyanax - Creates an Astyanax representation of the wide row, as Transformed from your Object by hesperides-transform
-hesperides-cassify-hector - Creates a Hector representation of the wide row, as Transformed from your Object by hesperides-transform
-
-hesperides-core - common code
-
-hesperides-client - very minimal client for integration tests/examples and the console
-hesperides-console - servlet to search/browse objects in Cassandra
-hesperides-examples-thrift - a small app that persists and reads objects Objects to/from a Cassandra wide row, via Thrift
-hesperides-examples-astyanax - a small app that persists and reads objects Objects to/from a Cassandra wide row, via Astyanax
-hesperides-examples-hector - a small app that persists and reads objects Objects to/from a Cassandra wide row, via Hector
-
-See the wiki at https://github.com/mmmthatsgoodcode/hesperides/wiki and unit tests for details
-
-An Example module with the supported Cassandra client libraries is also in the works.
+# MTGC Hesperides
