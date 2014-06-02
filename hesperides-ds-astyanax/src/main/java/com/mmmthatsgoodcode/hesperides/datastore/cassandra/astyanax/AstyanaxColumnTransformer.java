@@ -233,7 +233,7 @@ public class AstyanaxColumnTransformer extends AbstractConfigurableCassandraColu
 			
 			
 			ByteBuffer value = valueSerializer.toByteBuffer(hesperidesColumn.getValue());
-			ByteBuffer valueWithHint = ByteBuffer.allocate(value.capacity()+1);
+			ByteBuffer valueWithHint = ByteBuffer.allocate(value.capacity()+2);
 
 			valueWithHint.put((Hesperides.Hint.fromSerializer(valueSerializer).alias().getBytes()));
 			valueWithHint.put(new byte[] {(byte) (hesperidesColumn.isIndexed()==true?1:0)});
