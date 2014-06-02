@@ -161,6 +161,7 @@ public class AstyanaxColumnTransformer extends AbstractConfigurableCassandraColu
 
 		LOG.debug("Value is {}", value);
 		String valueHintAlias = new String(new byte[] {value.get()});
+		hesperidesColumn.setIndexed( value.get()==(byte)1?true:false );
 		
 		LOG.debug("Looking at value hint alias '{}'", valueHintAlias);
 		Hesperides.Hint valueHint = Hesperides.Hint.fromStringAlias( valueHintAlias );
@@ -235,6 +236,7 @@ public class AstyanaxColumnTransformer extends AbstractConfigurableCassandraColu
 			ByteBuffer valueWithHint = ByteBuffer.allocate(value.capacity()+1);
 
 			valueWithHint.put((Hesperides.Hint.fromSerializer(valueSerializer).alias().getBytes()));
+			valueWithHint.put(new byte[] {(byte) (hesperidesColumn.isIndexed()==true?1:0)});
 			valueWithHint.put(value);
 
 			
@@ -259,9 +261,10 @@ public class AstyanaxColumnTransformer extends AbstractConfigurableCassandraColu
 		LOG.debug("Value serializer {}, hint: {}", valueSerializer, Hesperides.Hint.fromSerializer(valueSerializer));
 
 		ByteBuffer value = valueSerializer.toByteBuffer(hesperidesColumn.getValue());
-		ByteBuffer valueWithHint = ByteBuffer.allocate(value.capacity()+1);
+		ByteBuffer valueWithHint = ByteBuffer.allocate(value.capacity()+2);
 
 		valueWithHint.put(Hesperides.Hint.fromSerializer(valueSerializer).alias().getBytes());
+		valueWithHint.put(new byte[] {(byte) (hesperidesColumn.isIndexed()==true?1:0)});
 		valueWithHint.put(value);
 
 		return new AstyanaxColumn(cassify(nameComponents), valueWithHint.array(), hesperidesColumn.getCreated(),
