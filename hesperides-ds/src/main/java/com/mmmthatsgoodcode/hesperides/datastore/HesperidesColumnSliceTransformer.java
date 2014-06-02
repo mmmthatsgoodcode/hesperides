@@ -68,7 +68,7 @@ public class HesperidesColumnSliceTransformer implements Node.Locator.Transforme
 		switch (node.getName().getHint()) {
 
 		case STRING:
-		case INT:
+		case INT32:
 		case LONG:
 		case FLOAT:
 			nameComponents.add(node.getName());

@@ -20,7 +20,7 @@ public class IntegerValue extends AbstractType<Integer> {
 
 	@Override
 	public Hesperides.Hint getHint() {
-		return Hesperides.Hint.INT;
+		return Hesperides.Hint.INT32;
 	}
 	
 	@Override

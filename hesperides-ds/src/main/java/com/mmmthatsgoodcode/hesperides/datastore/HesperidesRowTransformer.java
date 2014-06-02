@@ -89,7 +89,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		switch(node.getName().getHint()) {
 		
 			case STRING:
-			case INT:
+			case INT32:
 			case LONG:
 			case FLOAT:
 				hesperidesColumn.addNameComponent(node.getName());
@@ -107,7 +107,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 				case NULL:
 				case STRING:
-				case INT:
+				case INT32:
 				case LONG:
 				case FLOAT:
 				case BOOLEAN:
@@ -200,7 +200,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 			switch(column.getValue().getHint()) {
 			
-				case INT:
+				case INT32:
 				case LONG:
 				case FLOAT:
 				case STRING:
