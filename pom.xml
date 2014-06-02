@@ -109,7 +109,6 @@
 		<module>hesperides-ds</module>
 		<module>hesperides-core</module>
 		<module>hesperides-ds-astyanax</module>
-		<module>hesperides-client</module>
     <module>hesperides-ds-cassandra</module>
   </modules>
 </project>
