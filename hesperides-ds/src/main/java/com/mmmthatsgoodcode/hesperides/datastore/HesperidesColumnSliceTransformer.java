@@ -2,9 +2,11 @@ package com.mmmthatsgoodcode.hesperides.datastore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import com.google.common.collect.Lists;
 import com.mmmthatsgoodcode.hesperides.core.AbstractType;
+import com.mmmthatsgoodcode.hesperides.core.ClassResolver;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
 import com.mmmthatsgoodcode.hesperides.core.TransformationException;
@@ -49,9 +51,9 @@ public class HesperidesColumnSliceTransformer implements Node.Locator.Transforme
 			
 			Node.Builder nodeBuilder = new NodeImpl.Builder().setName(nameComponents.get(0));
 			try {
-				if (nameComponents.get(1) instanceof StringValue) nodeBuilder.setRepresentedType(ClassLoader.getSystemClassLoader().loadClass( ((StringValue) nameComponents.get(1)).getValue() ));
+				if (nameComponents.get(1) instanceof StringValue) nodeBuilder.setRepresentedType(ClassResolver.getInstance().resolve(((StringValue) nameComponents.get(1)).getValue() ));
 				locator.p(nodeBuilder.build(null));
-			} catch (ClassNotFoundException e) {
+			} catch (ExecutionException e) {
 				throw new TransformationException("Failed to load represented type "+nameComponents.get(1).getValue());
 			}
 			
@@ -68,7 +70,7 @@ public class HesperidesColumnSliceTransformer implements Node.Locator.Transforme
 		switch (node.getName().getHint()) {
 
 		case STRING:
-		case INT:
+		case INT32:
 		case LONG:
 		case FLOAT:
 			nameComponents.add(node.getName());

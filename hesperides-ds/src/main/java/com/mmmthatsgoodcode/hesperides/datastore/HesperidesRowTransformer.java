@@ -2,6 +2,7 @@ package com.mmmthatsgoodcode.hesperides.datastore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.mmmthatsgoodcode.hesperides.core.AbstractSerializer;
 import com.mmmthatsgoodcode.hesperides.core.AbstractType;
+import com.mmmthatsgoodcode.hesperides.core.ClassResolver;
 import com.mmmthatsgoodcode.hesperides.core.Hesperides;
 import com.mmmthatsgoodcode.hesperides.core.Node;
 import com.mmmthatsgoodcode.hesperides.core.NodeImpl;
@@ -89,7 +91,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 		switch(node.getName().getHint()) {
 		
 			case STRING:
-			case INT:
+			case INT32:
 			case LONG:
 			case FLOAT:
 				hesperidesColumn.addNameComponent(node.getName());
@@ -107,7 +109,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 				case NULL:
 				case STRING:
-				case INT:
+				case INT32:
 				case LONG:
 				case FLOAT:
 				case BOOLEAN:
@@ -174,7 +176,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 				for (List<AbstractType> childNodeData:Lists.partition(column.getNameComponents().subList(0, column.getNameComponents().size()-1), 2)) {
 					LOG.trace("Looking at {}", childNodeData);
-					Node.Builder nodeInNameComponent = new NodeImpl.Builder().setName(childNodeData.get(0)).setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) childNodeData.get(1)).getValue()) );
+					Node.Builder nodeInNameComponent = new NodeImpl.Builder().setName(childNodeData.get(0)).setRepresentedType(ClassResolver.getInstance().resolve(((StringValue) childNodeData.get(1)).getValue()) );
 
 					LOG.trace("Adding {} to {}", childNodeData.get(0), parentNode);
 					parentNode = parentNode.addOrGetChild(nodeInNameComponent);
@@ -200,7 +202,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 			switch(column.getValue().getHint()) {
 			
-				case INT:
+				case INT32:
 				case LONG:
 				case FLOAT:
 				case STRING:
@@ -214,7 +216,7 @@ public class HesperidesRowTransformer implements Node.Transformer<HesperidesRow>
 			
 //			node.setRepresentedType(ClassLoader.getSystemClassLoader().loadClass(((StringValue) column.getNameComponents().get(column.getNameComponents().size()-1)).getValue()) );
 
-		} catch (ClassNotFoundException e) {
+		} catch (ExecutionException e) {
 			
 			throw new TransformationException(e);
 			
