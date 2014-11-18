@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.hash.Hashing;
@@ -18,6 +20,7 @@ public class NodeImpl<N extends AbstractType, T extends AbstractType> implements
 
 		private final NodeImpl<N, T> node = new NodeImpl();
 		private final Set<Node.Builder<?, ?>> children = new HashSet<Node.Builder<?, ?>>();
+		private final Map<Object, Node.Builder<?, ?>> childNameIndex = new HashMap<Object, Node.Builder<?, ?>>();
 		
 		@Override
 		public Builder<N, T> setName(N name) {
@@ -58,6 +61,7 @@ public class NodeImpl<N extends AbstractType, T extends AbstractType> implements
 		@Override
 		public Builder<N, T> addChild(Node.Builder<?, ?> child) {
 			if (node.getValue().equals(new NullValue()) == false) throw new IllegalStateException("A Node may have either a Value or child nodes. Not Both. This Node already has value.");
+			childNameIndex.put(child.getName(), child);
 			children.add(child);
 			return this;
 		}
@@ -66,9 +70,7 @@ public class NodeImpl<N extends AbstractType, T extends AbstractType> implements
 		@Override
 		public Node.Builder addOrGetChild(Node.Builder<?, ?> child) {
 			
-			for (Node.Builder c:children) {
-				if (c.getName().equals(child.getName())) return c;
-			}
+			if (childNameIndex.containsKey(child.getName())) return childNameIndex.get(child.getName());
 			
 			addChild(child);
 			
@@ -202,7 +204,8 @@ public class NodeImpl<N extends AbstractType, T extends AbstractType> implements
 	
 	private Node<?, ?> parent;
 	private Set<Node<?, ?>> children = new HashSet<Node<?, ?>>();
-
+	private Map<Object, Node<?, ?>> childNameIndex = new HashMap<Object, Node<?, ?>>();
+	
 	protected NodeImpl() {
 
 	}
@@ -327,10 +330,10 @@ public class NodeImpl<N extends AbstractType, T extends AbstractType> implements
 	
 	private void addChild(Node<?, ?> child) {
 		if (child != null) {
-			for(Node c:children) {
-				if (c.getName().equals(child.getName())) return;
-			}
 			
+			if (childNameIndex.containsKey(child.getName())) return;
+
+			childNameIndex.put(child.getName(), child);
 			this.children.add(child);
 		}
 	}
